@@ -421,35 +421,35 @@ export default function LandingPage() {
                     <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-12 bg-card dark:bg-card/50 backdrop-blur-sm p-8 md:p-12 rounded-3xl shadow-xl shadow-theme-200/20 dark:shadow-none border border-theme-100 dark:border-theme-800/50">
 
                         <div className="flex-1 text-center md:text-left space-y-6">
-                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-theme-100 dark:bg-theme-900/50 text-theme-700 dark:text-theme-300 text-sm font-semibold mb-2">
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-theme-100 dark:bg-theme-900/50 text-theme-800 dark:text-theme-200 text-sm font-semibold mb-2">
                                 <Smartphone className="w-4 h-4" /> Install from Browser
                             </div>
-                            <h2 className="text-3xl md:text-5xl font-headline font-bold text-foreground">
+                            <h2 className="text-3xl md:text-5xl font-headline font-bold text-theme-950 dark:text-theme-50">
                                 Take Fund Her Future <span className="text-theme-600 dark:text-theme-400">Anywhere.</span>
                             </h2>
-                            <p className="text-lg text-muted-foreground max-w-lg mx-auto md:mx-0">
+                            <p className="text-lg text-theme-800/80 dark:text-theme-200/80 max-w-lg mx-auto md:mx-0 font-medium">
                                 Install our fast, lightweight web app directly to your device. No app store required. Works perfectly across all your favorite platforms.
                             </p>
 
-                            <div className="flex items-center justify-center md:justify-start gap-6 pt-4 text-muted-foreground">
+                            <div className="flex items-center justify-center md:justify-start gap-6 pt-4 text-theme-700 dark:text-theme-300">
                                 <div className="flex flex-col items-center gap-2">
-                                    <Smartphone className="w-8 h-8 text-theme-500/70" />
-                                    <span className="text-xs font-medium">Android</span>
+                                    <Smartphone className="w-8 h-8 text-theme-500" />
+                                    <span className="text-xs font-semibold">Android</span>
                                 </div>
                                 <div className="flex flex-col items-center gap-2">
-                                    <Tablet className="w-8 h-8 text-theme-500/70" />
-                                    <span className="text-xs font-medium">iOS / iPadOS</span>
+                                    <Tablet className="w-8 h-8 text-theme-500" />
+                                    <span className="text-xs font-semibold">iOS / iPadOS</span>
                                 </div>
                                 <div className="flex flex-col items-center gap-2">
-                                    <Laptop className="w-8 h-8 text-theme-500/70" />
-                                    <span className="text-xs font-medium">Windows & Mac</span>
+                                    <Laptop className="w-8 h-8 text-theme-500" />
+                                    <span className="text-xs font-semibold">Windows & Mac</span>
                                 </div>
                             </div>
                         </div>
 
-                        <div className="flex-shrink-0 w-full md:w-auto flex flex-col items-center p-8 bg-theme-50 dark:bg-theme-950/50 rounded-2xl border border-theme-100 dark:border-theme-900/50">
-                            <h3 className="text-xl font-headline font-bold mb-2">Get the App Now</h3>
-                            <p className="text-sm text-center text-muted-foreground mb-6 max-w-[200px]">
+                        <div className="flex-shrink-0 w-full md:w-auto flex flex-col items-center p-8 bg-theme-100/50 dark:bg-theme-900/30 rounded-2xl border border-theme-200 dark:border-theme-800 shadow-sm">
+                            <h3 className="text-xl font-headline font-bold mb-2 text-theme-950 dark:text-theme-50">Get the App Now</h3>
+                            <p className="text-sm text-center text-theme-800/80 dark:text-theme-200/80 mb-6 max-w-[200px] font-medium">
                                 One tap to add it to your home screen or desktop.
                             </p>
                             <InstallAppWidget />
