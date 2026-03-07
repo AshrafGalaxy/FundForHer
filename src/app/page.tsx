@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { getProviderProfile } from '@/server/db/user-data';
 import type { Scholarship } from '@/lib/types';
-import { ArrowRight, BookCheck, Goal, HeartHandshake, Lightbulb, Target, Smartphone, Laptop, Tablet, CheckCircle2 } from 'lucide-react';
+import { ArrowRight, BookCheck, Goal, HeartHandshake, Lightbulb, Target, Smartphone, Laptop, Tablet, CheckCircle2, Download } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import placeholderImages from '@/lib/placeholder-images.json';
@@ -290,7 +290,7 @@ export default function LandingPage() {
                             {stats.fetching ? (
                                 <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-2" />
                             ) : (
-                                <p className="text-4xl font-bold text-theme-900 dark:text-theme-300">{stats.totalScholarships}+</p>
+                                <p className="text-4xl font-bold text-theme-900 dark:text-white">{stats.totalScholarships}+</p>
                             )}
                             <p className="text-muted-foreground font-semibold">Scholarships Listed</p>
                         </div>
@@ -298,7 +298,7 @@ export default function LandingPage() {
                             {stats.fetching ? (
                                 <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-2" />
                             ) : (
-                                <p className="text-4xl font-bold text-theme-900 dark:text-theme-300">
+                                <p className="text-4xl font-bold text-theme-900 dark:text-white">
                                     <span style={{ fontFamily: 'sans-serif' }}>₹</span>{new Intl.NumberFormat('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(stats.totalAmount)}
                                 </p>
                             )}
@@ -462,6 +462,17 @@ export default function LandingPage() {
                                     <p className="text-lg text-[#FFEBE8] max-w-lg mx-auto md:mx-0 font-medium">
                                         Install our fast, lightweight web app directly to your device. No app store required. Works perfectly across all your favorite platforms.
                                     </p>
+
+                                    <div className="pt-2 pb-2 flex justify-center md:justify-start">
+                                        <Button
+                                            size="lg"
+                                            className="bg-theme-600 hover:bg-theme-700 text-white font-bold px-8 py-6 rounded-full shadow-xl shadow-theme-900/40 border-none transition-transform hover:scale-105"
+                                            onClick={() => window.dispatchEvent(new Event('request-pwa-install'))}
+                                        >
+                                            <Download className="w-5 h-5 mr-2" />
+                                            Download App Now
+                                        </Button>
+                                    </div>
 
                                     <div className="flex items-center justify-center md:justify-start gap-8 pt-6 text-[#FDC8C0]">
                                         <div className="flex flex-col items-center gap-3">

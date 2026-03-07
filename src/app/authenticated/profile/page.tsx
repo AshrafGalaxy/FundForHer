@@ -32,7 +32,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
 import { useAuth as useFirebaseAuth, useFirestore } from '@/firebase';
-import { linkWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { linkWithPopup, GoogleAuthProvider, updateProfile } from 'firebase/auth';
 import { AvatarUploadModal } from '@/features/profile/AvatarUploadModal';
 
 export default function ProfilePage() {
@@ -136,8 +136,7 @@ export default function ProfilePage() {
     try {
       if (fieldKey === 'fullName' && newValue !== user.displayName) {
         // Also update standard Firebase Auth display name
-        await linkWithPopup(auth.currentUser!, new GoogleAuthProvider()).catch(() => { }); // Ignore error, just type checking auth
-        // Use an internal function since we import from firebase/auth below anyway
+        await updateProfile(user, { displayName: newValue }).catch(console.error);
       }
 
       const updateData = { [fieldKey]: newValue };
@@ -264,7 +263,7 @@ export default function ProfilePage() {
                       {completionPercentage < 40 && <span className="text-xs px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300 font-bold border border-amber-200 dark:border-amber-800/50">🥉 Bronze</span>}
                       {completionPercentage >= 40 && completionPercentage < 70 && <span className="text-xs px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 dark:bg-slate-800/50 dark:text-slate-300 font-bold border border-slate-300 dark:border-slate-700">🥈 Silver</span>}
                       {completionPercentage >= 70 && completionPercentage < 100 && <span className="text-xs px-2 py-0.5 rounded-full bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 font-bold border border-yellow-300 dark:border-yellow-700/50">🥇 Gold</span>}
-                      {completionPercentage === 100 && <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 font-bold border border-blue-200 dark:border-blue-800/50">💎 Verified</span>}
+                      {completionPercentage === 100 && <span className="text-xs px-2 py-0.5 rounded-full bg-blue-600 text-white dark:bg-blue-900/40 dark:text-blue-300 font-bold border border-blue-700 dark:border-blue-800/50 shadow-sm shadow-blue-500/20">💎 Verified</span>}
                     </div>
                     <div className="relative pt-1">
                       <div className="flex mb-2 items-center justify-between">
