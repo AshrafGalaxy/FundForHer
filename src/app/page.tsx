@@ -264,7 +264,7 @@ export default function LandingPage() {
                         className="w-full h-full object-cover"
                     />
 
-                    <div className="absolute inset-0 bg-gradient-to-tr from-indigo-950/90 via-background/80 to-transparent mix-blend-multiply" />
+                    <div className="absolute inset-0 bg-gradient-to-tr from-indigo-950/90 via-white/80 to-transparent mix-blend-multiply" />
                     <div className="absolute inset-0 bg-black/40" />
                 </div>
 
