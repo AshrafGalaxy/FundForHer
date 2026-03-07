@@ -264,12 +264,12 @@ export default function LandingPage() {
                         className="w-full h-full object-cover"
                     />
 
-                    {/* Light Mode Gradient */}
-                    <div className="absolute inset-0 bg-gradient-to-tr from-indigo-950/90 via-background/80 to-transparent mix-blend-multiply dark:hidden" />
+                    {/* Light Mode: Classic deep gradient — restored to original premium look */}
+                    <div className="absolute inset-0 bg-gradient-to-tr from-indigo-950/95 via-indigo-900/60 to-slate-900/20 dark:hidden" />
                     <div className="absolute inset-0 bg-black/40 dark:hidden" />
 
-                    {/* Dark Mode Gradient (No heavy multiply blending) */}
-                    <div className="hidden dark:block absolute inset-0 bg-gradient-to-r from-[#301A18]/95 via-[#301A18]/80 to-transparent" />
+                    {/* Dark Mode: Theme-consistent dark pink gradient, no heavy multiply */}
+                    <div className="hidden dark:block absolute inset-0 bg-gradient-to-r from-[#1A0E0C]/98 via-[#301A18]/85 to-transparent" />
 
                     {/* Dark Mode Animated Aurora Blobs */}
                     <div className="hidden dark:block absolute -top-[20%] -left-[10%] w-[50%] h-[70%] bg-[#FBA69B]/20 blur-[100px] rounded-full mix-blend-screen animate-pulse duration-[8000ms]" />
@@ -298,124 +298,39 @@ export default function LandingPage() {
                 </div>
             </section>
 
-            {/* Trust Building Platform Marquee */}
-            <InfiniteMarquee />
-
-            {/* Featured Scholarships Carousel (Overlaps Hero) */}
+            {/* Featured Scholarships Carousel */}
             {!fetchingLatest && latestScholarships.length > 0 && (
                 <FeaturedScholarshipCarousel scholarships={latestScholarships} />
             )}
+
+            {/* Trust-Building Infinite Partner Marquee */}
+            <InfiniteMarquee />
 
             {/* Stats Section */}
             <section className="py-12 bg-background relative z-10">
                 <div className="container mx-auto px-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-center max-w-4xl mx-auto">
-                        <div className="bg-card p-6 rounded-lg shadow-sm">
+                        <div className="bg-card border p-8 rounded-2xl shadow-sm text-center hover:shadow-md transition-shadow">
                             {stats.fetching ? (
                                 <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-2" />
                             ) : (
-                                <p className="text-4xl font-bold text-theme-900 dark:text-white">{stats.totalScholarships}+</p>
+                                <p className="text-4xl font-bold text-foreground">{stats.totalScholarships}+</p>
                             )}
-                            <p className="text-muted-foreground font-semibold">Scholarships Listed</p>
+                            <p className="text-muted-foreground font-semibold mt-1">Scholarships Listed</p>
                         </div>
-                        <div className="bg-card p-6 rounded-lg shadow-sm">
+                        <div className="bg-card border p-8 rounded-2xl shadow-sm text-center hover:shadow-md transition-shadow">
                             {stats.fetching ? (
                                 <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-2" />
                             ) : (
-                                <p className="text-4xl font-bold text-theme-900 dark:text-white">
+                                <p className="text-4xl font-bold text-foreground">
                                     <span style={{ fontFamily: 'sans-serif' }}>₹</span>{new Intl.NumberFormat('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(stats.totalAmount)}
                                 </p>
                             )}
-                            <p className="text-muted-foreground font-semibold">In Total Funding Available</p>
+                            <p className="text-muted-foreground font-semibold mt-1">In Total Funding Available</p>
                         </div>
                     </div>
                 </div>
             </section>
-
-            {/* Newly Added Scholarships Section */}
-            {(fetchingLatest || latestScholarships.length > 0) && (
-                <section className="py-16 bg-secondary/30 border-y">
-                    <div className="container mx-auto px-4">
-                        <div className="flex flex-col md:flex-row justify-between items-end mb-10">
-                            <div>
-                                <h2 className="text-3xl md:text-4xl font-headline font-bold text-foreground mb-4">Newly Added Scholarships</h2>
-                            </div>
-                            <Button asChild variant="outline" className="mt-6 md:mt-0 hidden sm:flex">
-                                <Link href="/login">View All Scholarships &rarr;</Link>
-                            </Button>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            {fetchingLatest ? (
-                                // Skeleton loader — 3 animated placeholder cards while data loads
-                                Array.from({ length: 3 }).map((_, i) => (
-                                    <div key={i} className="flex flex-col bg-background border rounded-xl overflow-hidden shadow-sm">
-                                        <div className="p-6 space-y-4">
-                                            <div className="flex justify-between items-center">
-                                                <Skeleton className="h-6 w-12 rounded" />
-                                                <Skeleton className="h-6 w-20 rounded" />
-                                            </div>
-                                            <Skeleton className="h-5 w-3/4 rounded" />
-                                            <Skeleton className="h-4 w-1/2 rounded" />
-                                            <div className="space-y-2 pt-1">
-                                                <Skeleton className="h-3 w-full rounded" />
-                                                <Skeleton className="h-3 w-5/6 rounded" />
-                                                <Skeleton className="h-3 w-4/6 rounded" />
-                                            </div>
-                                        </div>
-                                        <div className="border-t bg-muted/20 px-6 py-3 flex justify-between items-center">
-                                            <Skeleton className="h-4 w-28 rounded" />
-                                            <Skeleton className="h-7 w-20 rounded" />
-                                        </div>
-                                    </div>
-                                ))
-                            ) : (
-                                // Real scholarship cards after data loads
-                                latestScholarships.map(scholarship => (
-                                    <Card key={scholarship.id} className="flex flex-col hover:shadow-lg hover:-translate-y-1 transition-all duration-200 bg-background border-primary/10">
-                                        <CardHeader>
-                                            <div className="flex justify-between items-start mb-2">
-                                                <span className="flex items-center gap-1 bg-primary/10 text-primary text-xs font-semibold px-2 py-1 rounded w-fit">
-                                                    <Sparkles className="h-3 w-3" /> New
-                                                </span>
-                                                {scholarship.amount && (
-                                                    <span className="text-sm font-bold text-green-600 bg-green-50 px-2 py-1 rounded">
-                                                        <span style={{ fontFamily: 'sans-serif' }}>₹</span>{scholarship.amount.toLocaleString('en-IN')}
-                                                    </span>
-                                                )}
-                                            </div>
-                                            <CardTitle className="font-headline text-lg line-clamp-2">{scholarship.title}</CardTitle>
-                                            <CardDescription className="line-clamp-1">{scholarship.provider}</CardDescription>
-                                        </CardHeader>
-                                        <CardContent className="flex-grow">
-                                            <p className="text-sm text-muted-foreground line-clamp-3">
-                                                {scholarship.description}
-                                            </p>
-                                        </CardContent>
-                                        <CardFooter className="justify-between items-center text-xs text-muted-foreground border-t bg-muted/20 p-4">
-                                            <span className="flex items-center gap-1.5">
-                                                <Calendar className="h-4 w-4" />
-                                                {scholarship.deadline
-                                                    ? (scholarship.deadline instanceof Date ? scholarship.deadline : new Date(scholarship.deadline)).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
-                                                    : 'Deadline Varies'}
-                                            </span>
-                                            <Button asChild size="sm" variant="ghost" className="h-8 hover:text-theme-900 dark:hover:text-theme-300">
-                                                <Link href="/register">View Details</Link>
-                                            </Button>
-                                        </CardFooter>
-                                    </Card>
-                                ))
-                            )}
-                        </div>
-
-                        <div className="flex justify-center mt-10">
-                            <Button asChild size="lg" className="px-10">
-                                <Link href="/register">Explore All Scholarships →</Link>
-                            </Button>
-                        </div>
-                    </div>
-                </section>
-            )}
 
             {/* Problem Section */}
             <ProblemSection />
@@ -441,12 +356,12 @@ export default function LandingPage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[250px] md:auto-rows-[300px]">
                         {/* Bento Tile 1 (Large 2-column span) */}
-                        <div className="md:col-span-2 relative group rounded-[2.5rem] p-8 md:p-10 overflow-hidden bg-white/50 dark:bg-[#301A18]/50 backdrop-blur-xl border border-theme-200/50 dark:border-white/10 shadow-lg hover:shadow-2xl transition-all duration-500">
-                            <div className="absolute inset-0 bg-gradient-to-br from-theme-100/50 to-transparent dark:from-white/5 dark:to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                        <div className="md:col-span-2 relative group rounded-[2.5rem] p-8 md:p-10 overflow-hidden bg-theme-50 dark:bg-[#301A18]/50 border border-theme-200 dark:border-white/10 shadow-lg hover:shadow-2xl transition-all duration-500">
+                            <div className="absolute inset-0 bg-gradient-to-br from-theme-100/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                             <div className="h-full flex flex-col justify-end relative z-10">
-                                <Target className="w-12 h-12 text-theme-600 dark:text-theme-400 mb-6 group-hover:scale-110 transition-transform duration-500" />
-                                <h3 className="text-2xl md:text-3xl font-headline font-bold mb-3 tracking-tight">The Central Hub</h3>
-                                <p className="text-muted-foreground text-lg font-medium max-w-md">
+                                <Target className="w-12 h-12 text-theme-700 dark:text-theme-400 mb-6 group-hover:scale-110 transition-transform duration-500" />
+                                <h3 className="text-2xl md:text-3xl font-headline font-bold mb-3 tracking-tight text-theme-950 dark:text-foreground">The Central Hub</h3>
+                                <p className="text-theme-800 dark:text-muted-foreground text-lg font-medium max-w-md">
                                     Discover hundreds of high-quality verified scholarships in one unified, clutter-free space. Stop hunting across the web.
                                 </p>
                             </div>
@@ -464,12 +379,12 @@ export default function LandingPage() {
                         </div>
 
                         {/* Bento Tile 3 (Standard square) */}
-                        <div className="relative group rounded-[2.5rem] p-8 overflow-hidden bg-white/50 dark:bg-[#301A18]/50 backdrop-blur-xl border border-theme-200/50 dark:border-white/10 shadow-lg hover:shadow-2xl transition-all duration-500 flex flex-col justify-between">
-                            <div className="absolute inset-0 bg-gradient-to-tr from-rose-100/30 to-transparent dark:from-rose-900/10 dark:to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                            <BookCheck className="w-10 h-10 text-rose-500 dark:text-rose-400 group-hover:-translate-y-2 transition-transform duration-500 relative z-10" />
+                        <div className="relative group rounded-[2.5rem] p-8 overflow-hidden bg-theme-50 dark:bg-[#301A18]/50 border border-theme-200 dark:border-white/10 shadow-lg hover:shadow-2xl transition-all duration-500 flex flex-col justify-between">
+                            <div className="absolute inset-0 bg-gradient-to-tr from-rose-100/60 to-transparent dark:from-rose-900/10 dark:to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                            <BookCheck className="w-10 h-10 text-rose-600 dark:text-rose-400 group-hover:-translate-y-2 transition-transform duration-500 relative z-10" />
                             <div className="relative z-10">
-                                <h3 className="text-2xl font-headline font-bold mb-2">Universal Apply</h3>
-                                <p className="text-muted-foreground font-medium">
+                                <h3 className="text-2xl font-headline font-bold mb-2 text-theme-950 dark:text-foreground">Universal Apply</h3>
+                                <p className="text-theme-800 dark:text-muted-foreground font-medium">
                                     One profile. One unified application format. Zero repetitive paperwork.
                                 </p>
                             </div>
