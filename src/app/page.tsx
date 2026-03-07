@@ -3,7 +3,6 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import InstallAppWidget from '@/components/pwa/InstallAppWidget';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { getProviderProfile } from '@/server/db/user-data';
 import type { Scholarship } from '@/lib/types';
@@ -445,14 +444,6 @@ export default function LandingPage() {
                                     <span className="text-xs font-semibold">Windows & Mac</span>
                                 </div>
                             </div>
-                        </div>
-
-                        <div className="flex-shrink-0 w-full md:w-auto flex flex-col items-center p-8 bg-theme-50 dark:bg-theme-900 rounded-2xl border border-theme-200 dark:border-theme-800 shadow-sm">
-                            <h3 className="text-xl font-headline font-bold mb-2 text-theme-950 dark:text-theme-50">Get the App Now</h3>
-                            <p className="text-sm text-center text-theme-950 dark:text-theme-200 mb-6 max-w-[200px] font-medium">
-                                One tap to add it to your home screen or desktop.
-                            </p>
-                            <InstallAppWidget />
                         </div>
                     </div>
                 </div>

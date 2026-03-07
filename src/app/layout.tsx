@@ -6,6 +6,7 @@ import { ThemeProvider } from '@/components/ThemeProvider';
 import AuthProvider from './auth-provider';
 import { BackToTop } from '@/components/ui/BackToTop';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
+import InstallAppWidget from '@/components/pwa/InstallAppWidget';
 
 
 import { Viewport } from 'next';
@@ -45,6 +46,7 @@ export default function RootLayout({
           <FirebaseClientProvider>
             <AuthProvider>
               {children}
+              <InstallAppWidget />
             </AuthProvider>
           </FirebaseClientProvider>
           <Toaster />
