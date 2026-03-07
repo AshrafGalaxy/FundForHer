@@ -8,6 +8,7 @@ import { BackToTop } from '@/components/ui/BackToTop';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import InstallAppWidget from '@/components/pwa/InstallAppWidget';
 import { SpeedInsights } from '@vercel/speed-insights/next';
+import { Analytics } from '@vercel/analytics/react';
 
 import { Viewport } from 'next';
 
@@ -53,6 +54,7 @@ export default function RootLayout({
           <BackToTop />
         </ThemeProvider>
         <SpeedInsights />
+        <Analytics />
       </body>
     </html>
   );
