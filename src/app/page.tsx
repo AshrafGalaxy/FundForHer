@@ -17,6 +17,9 @@ import { Loader2, Sparkles, Calendar } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useFirestore } from '@/firebase';
 import { collection, getDocs, doc, getDoc, query, orderBy, limit, where, Timestamp } from 'firebase/firestore';
+import { FeaturedScholarshipCarousel } from '@/components/FeaturedScholarshipCarousel';
+import { InfiniteMarquee } from '@/components/InfiniteMarquee';
+import { MagneticWrapper } from '@/components/MagneticWrapper';
 
 const AboutSection = () => {
     const { aboutSection } = placeholderImages.landingPage;
@@ -254,14 +257,23 @@ export default function LandingPage() {
             {/* Hero Section */}
             <section className="relative text-center py-24 md:py-44 overflow-hidden flex flex-col justify-center min-h-[75vh]">
                 {/* Background Image Overlay */}
-                <div className="absolute inset-0 z-0 pointer-events-none">
+                <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
                     <img
                         src="/fresh-graduate-with-diploma.jpg"
                         alt="Female graduate holding diploma"
                         className="w-full h-full object-cover"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-tr from-indigo-950/90 via-background/80 to-transparent mix-blend-multiply" />
-                    <div className="absolute inset-0 bg-black/40" />
+
+                    {/* Light Mode Gradient */}
+                    <div className="absolute inset-0 bg-gradient-to-tr from-indigo-950/90 via-background/80 to-transparent mix-blend-multiply dark:hidden" />
+                    <div className="absolute inset-0 bg-black/40 dark:hidden" />
+
+                    {/* Dark Mode Gradient (No heavy multiply blending) */}
+                    <div className="hidden dark:block absolute inset-0 bg-gradient-to-r from-[#301A18]/95 via-[#301A18]/80 to-transparent" />
+
+                    {/* Dark Mode Animated Aurora Blobs */}
+                    <div className="hidden dark:block absolute -top-[20%] -left-[10%] w-[50%] h-[70%] bg-[#FBA69B]/20 blur-[100px] rounded-full mix-blend-screen animate-pulse duration-[8000ms]" />
+                    <div className="hidden dark:block absolute top-[20%] left-[20%] w-[40%] h-[50%] bg-[#FDC8C0]/15 blur-[120px] rounded-full mix-blend-screen animate-pulse duration-[12000ms]" style={{ animationDelay: '2s' }} />
                 </div>
 
                 <div className="container mx-auto px-4 relative z-10">
@@ -269,21 +281,33 @@ export default function LandingPage() {
                     <p className="text-xl md:text-2xl text-slate-200 max-w-3xl mx-auto mb-10 drop-shadow-md font-medium px-4">
                         {marketing?.heroSubtitle || "The ultimate scholarship platform for women in India. Your journey to higher education and a brighter future starts right here."}
                     </p>
-                    <div className="flex flex-col sm:flex-row justify-center gap-6">
-                        <Button asChild size="lg" className="h-14 px-8 text-lg font-semibold shadow-xl shadow-primary/20 transition-all hover:scale-105">
-                            <Link href="/register">
-                                Get Started <ArrowRight className="ml-2 h-5 w-5" />
-                            </Link>
-                        </Button>
-                        <Button asChild size="lg" variant="outline" className="h-14 px-8 text-lg font-semibold bg-white/10 hover:bg-white/20 text-white border-white/30 backdrop-blur-sm transition-all hover:scale-105">
-                            <Link href="/login">Login</Link>
-                        </Button>
+                    <div className="flex flex-col sm:flex-row justify-center gap-6 items-center">
+                        <MagneticWrapper strength={25}>
+                            <Button asChild size="lg" className="h-14 px-8 text-lg font-semibold shadow-xl shadow-primary/30 transition-colors group">
+                                <Link href="/register">
+                                    Get Started <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                                </Link>
+                            </Button>
+                        </MagneticWrapper>
+                        <MagneticWrapper strength={25}>
+                            <Button asChild size="lg" variant="outline" className="h-14 px-8 text-lg font-semibold bg-white/10 hover:bg-white/20 text-white border-white/30 backdrop-blur-sm transition-colors">
+                                <Link href="/login">Login</Link>
+                            </Button>
+                        </MagneticWrapper>
                     </div>
                 </div>
             </section>
 
+            {/* Trust Building Platform Marquee */}
+            <InfiniteMarquee />
+
+            {/* Featured Scholarships Carousel (Overlaps Hero) */}
+            {!fetchingLatest && latestScholarships.length > 0 && (
+                <FeaturedScholarshipCarousel scholarships={latestScholarships} />
+            )}
+
             {/* Stats Section */}
-            <section className="py-12 bg-background">
+            <section className="py-12 bg-background relative z-10">
                 <div className="container mx-auto px-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-center max-w-4xl mx-auto">
                         <div className="bg-card p-6 rounded-lg shadow-sm">
@@ -400,28 +424,70 @@ export default function LandingPage() {
             <MissionSection />
 
 
-            {/* Features Section */}
-            <section className="py-16 md:py-24">
-                <div className="container mx-auto px-4">
-                    <h2 className="text-3xl md:text-4xl font-headline font-bold text-center mb-12">
-                        Why Choose Us?
-                    </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        <FeatureCard
-                            icon={<Target className="h-8 w-8" />}
-                            title="Centralized Hub"
-                            description="Find hundreds of scholarships from various providers all in one place, saving you time and effort."
-                        />
-                        <FeatureCard
-                            icon={<BookCheck className="h-8 w-8" />}
-                            title="Easy Application"
-                            description="Our standardized application process makes it simple to apply for multiple scholarships without redundant paperwork."
-                        />
-                        <FeatureCard
-                            icon={<HeartHandshake className="h-8 w-8" />}
-                            title="Exclusively for Girls"
-                            description="A dedicated platform focusing solely on opportunities for female students across India."
-                        />
+            {/* Premium Bento Box Features Section */}
+            <section className="py-24 relative overflow-hidden bg-gradient-to-b from-background to-theme-50/20 dark:to-theme-900/10">
+                <div className="absolute inset-0 z-0 opacity-30 dark:opacity-10 pointer-events-none bg-[radial-gradient(circle_at_inset,var(--theme-600)_0%,transparent_50%)]" />
+
+                <div className="container mx-auto px-4 relative z-10 max-w-6xl">
+                    <div className="text-center mb-16">
+                        <h2 className="text-4xl md:text-5xl font-headline font-extrabold mb-4 tracking-tight">
+                            Everything you need, <br className="hidden md:block" />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-theme-600 to-rose-400 dark:from-theme-400 dark:to-rose-300">beautifully simple.</span>
+                        </h2>
+                        <p className="text-lg text-muted-foreground max-w-2xl mx-auto font-medium">
+                            We've completely reimagined the scholarship experience to be fast, secure, and exclusively tailored for you.
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[250px] md:auto-rows-[300px]">
+                        {/* Bento Tile 1 (Large 2-column span) */}
+                        <div className="md:col-span-2 relative group rounded-[2.5rem] p-8 md:p-10 overflow-hidden bg-white/50 dark:bg-[#301A18]/50 backdrop-blur-xl border border-theme-200/50 dark:border-white/10 shadow-lg hover:shadow-2xl transition-all duration-500">
+                            <div className="absolute inset-0 bg-gradient-to-br from-theme-100/50 to-transparent dark:from-white/5 dark:to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                            <div className="h-full flex flex-col justify-end relative z-10">
+                                <Target className="w-12 h-12 text-theme-600 dark:text-theme-400 mb-6 group-hover:scale-110 transition-transform duration-500" />
+                                <h3 className="text-2xl md:text-3xl font-headline font-bold mb-3 tracking-tight">The Central Hub</h3>
+                                <p className="text-muted-foreground text-lg font-medium max-w-md">
+                                    Discover hundreds of high-quality verified scholarships in one unified, clutter-free space. Stop hunting across the web.
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Bento Tile 2 (Standard square) */}
+                        <div className="relative group rounded-[2.5rem] p-8 overflow-hidden bg-theme-600 text-white shadow-lg hover:shadow-2xl hover:bg-theme-700 transition-all duration-500 flex flex-col justify-between">
+                            <HeartHandshake className="w-10 h-10 text-theme-100 group-hover:-rotate-12 transition-transform duration-500" />
+                            <div>
+                                <h3 className="text-2xl font-headline font-bold mb-2">Girls First</h3>
+                                <p className="text-theme-100 font-medium">
+                                    100% focused on opportunities exclusively available to female students.
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Bento Tile 3 (Standard square) */}
+                        <div className="relative group rounded-[2.5rem] p-8 overflow-hidden bg-white/50 dark:bg-[#301A18]/50 backdrop-blur-xl border border-theme-200/50 dark:border-white/10 shadow-lg hover:shadow-2xl transition-all duration-500 flex flex-col justify-between">
+                            <div className="absolute inset-0 bg-gradient-to-tr from-rose-100/30 to-transparent dark:from-rose-900/10 dark:to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                            <BookCheck className="w-10 h-10 text-rose-500 dark:text-rose-400 group-hover:-translate-y-2 transition-transform duration-500 relative z-10" />
+                            <div className="relative z-10">
+                                <h3 className="text-2xl font-headline font-bold mb-2">Universal Apply</h3>
+                                <p className="text-muted-foreground font-medium">
+                                    One profile. One unified application format. Zero repetitive paperwork.
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Bento Tile 4 (Large 2-column span) */}
+                        <div className="md:col-span-2 relative group rounded-[2.5rem] p-8 md:p-10 overflow-hidden bg-slate-900 text-white shadow-lg hover:shadow-2xl transition-all duration-500">
+                            {/* Decorative glowing orb */}
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-theme-500/30 blur-[60px] rounded-full mix-blend-screen opacity-50 group-hover:opacity-100 transition-opacity duration-700" />
+
+                            <div className="h-full flex flex-col justify-end relative z-10">
+                                <Sparkles className="w-12 h-12 text-theme-300 mb-6 group-hover:animate-spin-slow transition-transform duration-700" />
+                                <h3 className="text-2xl md:text-3xl font-headline font-bold mb-3 tracking-tight">AI-Powered Matches</h3>
+                                <p className="text-slate-300 text-lg font-medium max-w-md">
+                                    Our intelligent engine instantly analyzes your digital profile and highlights the exact scholarships you have the highest probability of winning.
+                                </p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -467,7 +533,18 @@ export default function LandingPage() {
                                         <Button
                                             size="lg"
                                             className="bg-theme-600 hover:bg-theme-700 text-white font-bold px-8 py-6 rounded-full shadow-xl shadow-theme-900/40 border-none transition-transform hover:scale-105"
-                                            onClick={() => window.dispatchEvent(new Event('request-pwa-install'))}
+                                            onClick={async () => {
+                                                const promptEvent = (window as any).pwaDeferredPrompt;
+                                                if (promptEvent) {
+                                                    promptEvent.prompt();
+                                                    const { outcome } = await promptEvent.userChoice;
+                                                    if (outcome === 'accepted') {
+                                                        (window as any).pwaDeferredPrompt = null;
+                                                    }
+                                                } else {
+                                                    window.dispatchEvent(new Event('direct-pwa-install'));
+                                                }
+                                            }}
                                         >
                                             <Download className="w-5 h-5 mr-2" />
                                             Download App Now

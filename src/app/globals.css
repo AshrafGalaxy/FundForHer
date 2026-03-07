@@ -84,11 +84,13 @@
     --color-theme-50: hsl(5, 100%, 97%);
     --color-theme-100: hsl(5, 100%, 94%);
     --color-theme-200: hsl(5, 96%, 86%);
-    --color-theme-300: hsl(5, 95%, 78%); /* Soft Baby Pink */
+    --color-theme-300: hsl(5, 95%, 78%);
+    /* Soft Baby Pink */
     --color-theme-400: hsl(5, 94%, 65%);
     --color-theme-500: hsl(5, 90%, 55%);
     --color-theme-600: hsl(5, 85%, 45%);
-    --color-theme-700: hsl(5, 60%, 35%); /* Lower saturation for darks */
+    --color-theme-700: hsl(5, 60%, 35%);
+    /* Lower saturation for darks */
     --color-theme-800: hsl(5, 45%, 28%);
     --color-theme-900: hsl(5, 40%, 20%);
     --color-theme-950: hsl(5, 35%, 14%);
@@ -102,8 +104,10 @@
     --popover: hsl(5, 15%, 11%);
     --popover-foreground: hsl(0, 0%, 98%);
 
-    --primary: hsl(5, 95%, 78%); /* Baby pink primary accent */
-    --primary-foreground: hsl(5, 40%, 15%); /* Dark text on light pink */
+    --primary: hsl(5, 95%, 78%);
+    /* Baby pink primary accent */
+    --primary-foreground: hsl(5, 40%, 15%);
+    /* Dark text on light pink */
 
     --secondary: hsl(5, 15%, 16%);
     --secondary-foreground: hsl(0, 0%, 98%);
@@ -164,4 +168,19 @@
   .dark ::-webkit-scrollbar-thumb:hover {
     background: var(--color-theme-600);
   }
+}
+
+/* Infinite Marquee Animation — global utility */
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+
+  100% {
+    transform: translateX(-100%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 25s linear infinite;
 }

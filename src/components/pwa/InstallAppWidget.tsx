@@ -60,6 +60,8 @@ export const InstallAppWidget = () => {
         const handleBeforeInstallPrompt = (e: Event) => {
             e.preventDefault();
             setDeferredPrompt(e);
+            // Expose globally so the Landing Page button can trigger it directly
+            (window as any).pwaDeferredPrompt = e;
         };
         window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
 
@@ -76,10 +78,17 @@ export const InstallAppWidget = () => {
         };
         window.addEventListener('request-pwa-install', handleManualRequest);
 
+        // Allow direct trigger for iOS/Desktop fallback when native prompt isn't available
+        const handleDirectRequest = () => {
+            setStatus('manual_instructions');
+        };
+        window.addEventListener('direct-pwa-install', handleDirectRequest);
+
         return () => {
             window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
             window.removeEventListener('appinstalled', handleAppInstalled);
             window.removeEventListener('request-pwa-install', handleManualRequest);
+            window.removeEventListener('direct-pwa-install', handleDirectRequest);
         };
     }, []);
 
