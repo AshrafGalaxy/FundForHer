@@ -6,6 +6,7 @@ import { ThemeProvider } from '@/components/ThemeProvider';
 import AuthProvider from './auth-provider';
 import { BackToTop } from '@/components/ui/BackToTop';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
+import { Analytics } from '@vercel/analytics/next';
 
 
 import { Viewport } from 'next';
@@ -50,6 +51,7 @@ export default function RootLayout({
           <Toaster />
           <BackToTop />
         </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   );
