@@ -281,8 +281,8 @@ export default function DashboardPage() {
               </span>
             </div>
 
-            {/* Wide and Responsive Search Bar */}
-            <div className="relative flex-1 max-w-3xl mx-auto">
+            {/* Wide and Responsive Search Bar (Hidden on Mobile, Visible on Desktop) */}
+            <div className="relative flex-1 max-w-3xl mx-auto hidden md:block">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
                 type="text"
@@ -398,9 +398,23 @@ export default function DashboardPage() {
             </div>
           </header>
 
+          {/* Mobile-Exclusive Sticky Sub-header for Search (Option 1 - Premium Native Feel) */}
+          <div className="md:hidden sticky top-16 z-20 bg-background/95 backdrop-blur-md border-b border-border/50 px-4 py-3 shadow-sm transition-all">
+            <div className="relative w-full">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-theme-500" />
+              <Input
+                type="text"
+                placeholder="Search scholarships..."
+                className="w-full rounded-2xl bg-secondary/80 pl-10 h-11 border-theme-200/50 dark:border-theme-800/50 focus-visible:ring-2 focus-visible:ring-theme-500 shadow-inner text-base"
+                value={filters.search}
+                onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
+              />
+            </div>
+          </div>
+
           {/* Scrollable Grid Content */}
-          <main className="flex-1 overflow-y-auto">
-            <div className="p-4 sm:p-6 md:p-8 space-y-6 max-w-[1600px] mx-auto">
+          <main className="flex-1 overflow-x-hidden pt-6">
+            <div className="container mx-auto px-4 sm:px-6 pb-12 md:p-8 space-y-6 max-w-[1600px] mx-auto">
               <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                   <h1 className="text-2xl md:text-3xl font-headline font-bold">Find Your Scholarship</h1>
