@@ -6,12 +6,8 @@ import { ThemeProvider } from '@/components/ThemeProvider';
 import AuthProvider from './auth-provider';
 import { BackToTop } from '@/components/ui/BackToTop';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
-<<<<<<< HEAD
 import InstallAppWidget from '@/components/pwa/InstallAppWidget';
-=======
 import { SpeedInsights } from '@vercel/speed-insights/next';
->>>>>>> a16c158be60850b7fb26cd1e5e940012dc77c254
-
 
 import { Viewport } from 'next';
 
