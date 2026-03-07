@@ -12,33 +12,22 @@ export const InfiniteMarquee = () => {
         { name: "State University System", icon: <School className="w-8 h-8 text-slate-400 dark:text-slate-600" /> },
     ];
 
-    // Duplicate the array to create the seamless infinite scroll illusion
-    const scrollItems = [...partners, ...partners];
+    // Duplicate the array multiple times to ensure it covers very wide screens and works with a -50% CSS translation loop
+    const scrollItems = [...partners, ...partners, ...partners, ...partners];
 
     return (
-        <div className="w-full bg-slate-50/50 dark:bg-background py-10 border-b border-slate-200/60 dark:border-slate-800/50 overflow-hidden">
+        <div className="w-full bg-slate-50/50 dark:bg-[#1D1414]/90 py-10 border-y border-rose-100/60 dark:border-white/5 overflow-hidden">
             <div className="container mx-auto px-4 mb-6">
                 <p className="text-center text-sm font-semibold tracking-widest text-slate-500 dark:text-slate-400 uppercase">
                     Trusted by top institutions & organizations
                 </p>
             </div>
 
-            <div className="relative flex overflow-x-hidden group">
-                <div className="animate-marquee flex whitespace-nowrap group-hover:[animation-play-state:paused]">
+            <div className="relative flex overflow-x-hidden group w-full">
+                {/* We render exactly one track, wide enough to scroll by 50% seamlessly */}
+                <div className="animate-marquee flex w-max whitespace-nowrap group-hover:[animation-play-state:paused]">
                     {scrollItems.map((partner, index) => (
-                        <div key={index} className="flex items-center justify-center gap-3 mx-8 md:mx-16 min-w-max mix-blend-luminosity opacity-60 hover:opacity-100 transition-opacity duration-300">
-                            {partner.icon}
-                            <span className="text-xl font-headline font-bold text-slate-400 dark:text-slate-500">
-                                {partner.name}
-                            </span>
-                        </div>
-                    ))}
-                </div>
-
-                {/* Second duplicated container for the infinite loop gap fix */}
-                <div className="animate-marquee flex whitespace-nowrap absolute top-0 group-hover:[animation-play-state:paused]">
-                    {scrollItems.map((partner, index) => (
-                        <div key={`dup-${index}`} className="flex items-center justify-center gap-3 mx-8 md:mx-16 min-w-max mix-blend-luminosity opacity-60 hover:opacity-100 transition-opacity duration-300">
+                        <div key={index} className="flex items-center justify-center gap-3 mx-8 md:mx-16 mix-blend-luminosity opacity-60 hover:opacity-100 transition-opacity duration-300">
                             {partner.icon}
                             <span className="text-xl font-headline font-bold text-slate-400 dark:text-slate-500">
                                 {partner.name}
