@@ -29,10 +29,6 @@ export const Logo: React.FC<LogoProps> = ({
       className={className}
       {...props}
     >
-      {/* 0. Elegant Circular Square (Squircle) Boundary */}
-      <rect x="1" y="1" width="30" height="30" rx="10" fill="none" stroke={lightColor} strokeWidth="1.5" className="transition-colors duration-300 opacity-80" />
-      <rect x="3" y="3" width="26" height="26" rx="8" fill="none" stroke={darkColor} strokeWidth="0.5" className="transition-colors duration-300 opacity-50" />
-
       {/* 1. Education Base: Open Book with Page Definition */}
       <path
         d="M16 29C16 29 8 24 2 24V16C8 16 16 21 16 21C16 21 24 16 30 16V24C24 24 16 29 16 29Z"

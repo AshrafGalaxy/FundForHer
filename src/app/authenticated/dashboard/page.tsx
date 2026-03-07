@@ -9,7 +9,8 @@ import type { Scholarship } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Search, Loader2, Bookmark, GraduationCap } from 'lucide-react';
+import { Search, Loader2, Bookmark } from 'lucide-react';
+import Logo from '@/components/ui/Logo';
 import { SidebarProvider, Sidebar, SidebarTrigger } from '@/components/ui/sidebar';
 import { useUser } from '@/firebase/auth/use-user';
 import { collection, doc, onSnapshot, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
@@ -272,7 +273,7 @@ export default function DashboardPage() {
           <header className="sticky top-0 z-30 flex h-16 shrink-0 items-center gap-4 border-b bg-card px-4 sm:px-6 shadow-sm">
             <SidebarTrigger />
             <div className="flex items-center gap-2 mr-4 shrink-0">
-              <GraduationCap className="h-6 w-6 text-primary" />
+              <Logo className="w-7 h-7" />
               <span className="text-lg font-headline font-bold text-card-foreground hidden lg:inline-block">
                 FUND HER FUTURE
               </span>
