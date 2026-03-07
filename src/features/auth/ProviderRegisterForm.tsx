@@ -19,13 +19,13 @@ const formSchema = z.object({
   companyName: z.string().min(3, { message: 'Company name must be at least 3 characters.' }),
   companyPhone: z.string().regex(/^\d{10}$/, { message: 'Please enter a valid 10-digit phone number.' }),
   email: z.string().email({ message: 'Please enter a valid company email address.' }),
-  registrationNumber: z.string().min(5, { message: 'Registration number is required.'}),
-  gstNumber: z.string().length(15, { message: 'Please enter a valid 15-character GST number.'}),
+  registrationNumber: z.string().min(5, { message: 'Registration number is required.' }),
+  gstNumber: z.string().length(15, { message: 'Please enter a valid 15-character GST number.' }),
   password: z.string().min(6, { message: 'Password must be at least 6 characters.' }),
   confirmPassword: z.string(),
 }).refine(data => data.password === data.confirmPassword, {
-    message: "Passwords don't match",
-    path: ["confirmPassword"],
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -52,8 +52,8 @@ export function ProviderRegisterForm() {
 
   async function onSubmit(values: FormValues) {
     if (!auth || !db) {
-        toast({ variant: 'destructive', title: 'Error', description: 'Firebase not initialized.' });
-        return;
+      toast({ variant: 'destructive', title: 'Error', description: 'Firebase not initialized.' });
+      return;
     }
     setIsLoading(true);
     try {
@@ -74,7 +74,7 @@ export function ProviderRegisterForm() {
 
   return (
     <Card>
-       <CardHeader className="text-center">
+      <CardHeader className="text-center">
         <CardTitle className="font-headline text-2xl">Create a Provider Account</CardTitle>
         <CardDescription>Join our platform to list and manage your scholarships</CardDescription>
       </CardHeader>
@@ -82,73 +82,73 @@ export function ProviderRegisterForm() {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                    control={form.control}
-                    name="companyName"
-                    render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Company Name</FormLabel>
-                        <FormControl>
-                        <Input placeholder="Your Company Inc." {...field} />
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-                    )}
-                />
-                <FormField
-                    control={form.control}
-                    name="email"
-                    render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Official Email Address</FormLabel>
-                        <FormControl>
-                        <Input type="email" placeholder="contact@yourcompany.com" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-                    )}
-                />
+              <FormField
+                control={form.control}
+                name="companyName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Company Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Your Company Inc." {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="email"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Official Email Address</FormLabel>
+                    <FormControl>
+                      <Input type="email" placeholder="contact@yourcompany.com" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
-             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                 <FormField
-                    control={form.control}
-                    name="companyPhone"
-                    render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Company Phone</FormLabel>
-                        <FormControl>
-                        <Input placeholder="9876543210" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-                    )}
-                />
-                <FormField
-                    control={form.control}
-                    name="registrationNumber"
-                    render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Company Reg. Number</FormLabel>
-                        <FormControl>
-                        <Input placeholder="CIN or other" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-                    )}
-                />
-                 <FormField
-                    control={form.control}
-                    name="gstNumber"
-                    render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>GST Number</FormLabel>
-                        <FormControl>
-                        <Input placeholder="15-digit GSTIN" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-                    )}
-                />
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <FormField
+                control={form.control}
+                name="companyPhone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Company Phone</FormLabel>
+                    <FormControl>
+                      <Input placeholder="9876543210" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="registrationNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Company Reg. Number</FormLabel>
+                    <FormControl>
+                      <Input placeholder="CIN or other" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="gstNumber"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>GST Number</FormLabel>
+                    <FormControl>
+                      <Input placeholder="15-digit GSTIN" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
@@ -195,7 +195,7 @@ export function ProviderRegisterForm() {
         </Form>
       </CardContent>
       <CardFooter className="flex justify-center text-sm">
-          <p>Already have a provider account? <Link href="/provider/login" className="text-primary hover:underline">Log In</Link></p>
+        <p>Already have a provider account? <Link href="/provider/login" className="text-theme-900 dark:text-theme-300 hover:text-theme-950 dark:hover:text-theme-200 hover:underline">Log In</Link></p>
       </CardFooter>
     </Card>
   );

@@ -271,7 +271,7 @@ export default function LandingPage() {
                             {stats.fetching ? (
                                 <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-2" />
                             ) : (
-                                <p className="text-4xl font-bold text-primary">{stats.totalScholarships}+</p>
+                                <p className="text-4xl font-bold text-theme-900 dark:text-theme-300">{stats.totalScholarships}+</p>
                             )}
                             <p className="text-muted-foreground font-semibold">Scholarships Listed</p>
                         </div>
@@ -279,7 +279,7 @@ export default function LandingPage() {
                             {stats.fetching ? (
                                 <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-2" />
                             ) : (
-                                <p className="text-4xl font-bold text-primary">
+                                <p className="text-4xl font-bold text-theme-900 dark:text-theme-300">
                                     <span style={{ fontFamily: 'sans-serif' }}>₹</span>{new Intl.NumberFormat('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(stats.totalAmount)}
                                 </p>
                             )}
@@ -356,7 +356,7 @@ export default function LandingPage() {
                                                     ? (scholarship.deadline instanceof Date ? scholarship.deadline : new Date(scholarship.deadline)).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
                                                     : 'Deadline Varies'}
                                             </span>
-                                            <Button asChild size="sm" variant="ghost" className="h-8 hover:text-primary">
+                                            <Button asChild size="sm" variant="ghost" className="h-8 hover:text-theme-900 dark:hover:text-theme-300">
                                                 <Link href="/register">View Details</Link>
                                             </Button>
                                         </CardFooter>

@@ -248,7 +248,7 @@ export default function DashboardPage() {
     return (
       <div className="flex justify-center items-center h-screen bg-background">
         <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-16 w-16 animate-spin text-primary" />
+          <Loader2 className="h-16 w-16 animate-spin text-theme-600 dark:text-theme-400" />
           <p className="text-muted-foreground">Loading scholarships...</p>
         </div>
       </div>
@@ -296,7 +296,7 @@ export default function DashboardPage() {
               <Popover>
                 <PopoverTrigger asChild>
                   <Button variant="ghost" size="icon" className="rounded-full h-9 w-9 relative hover:bg-primary/10 transition-colors">
-                    <Bookmark className="h-4 w-4 text-primary" />
+                    <Bookmark className="h-4 w-4 text-theme-600 dark:text-theme-400" />
                     {bookmarkedIds.size > 0 && (
                       <span className="absolute top-2 right-2 flex h-2 w-2 rounded-full bg-primary" />
                     )}
@@ -304,7 +304,7 @@ export default function DashboardPage() {
                 </PopoverTrigger>
                 <PopoverContent align="end" className="w-80 p-0 overflow-hidden shadow-lg border-primary/20">
                   <div className="flex flex-col p-4 bg-primary/5 border-b">
-                    <h4 className="font-semibold font-headline text-primary flex items-center gap-2"><Bookmark className="h-4 w-4" /> Quick Saves</h4>
+                    <h4 className="font-semibold font-headline text-theme-600 dark:text-theme-400 flex items-center gap-2"><Bookmark className="h-4 w-4" /> Quick Saves</h4>
                     <p className="text-sm text-muted-foreground mt-1">You have {bookmarkedIds.size} saved scholarship{bookmarkedIds.size === 1 ? '' : 's'}.</p>
                   </div>
                   <div className="flex flex-col max-h-[300px] overflow-y-auto">
@@ -316,14 +316,14 @@ export default function DashboardPage() {
                     ) : (
                       scholarships.filter(s => bookmarkedIds.has(s.id)).slice(0, 4).map(s => (
                         <Link key={s.id} href={`/scholarship/${s.id}`} className="flex flex-col p-4 hover:bg-muted/60 transition-colors border-b last:border-0 group">
-                          <span className="font-medium text-sm line-clamp-1 group-hover:text-primary transition-colors">{s.title}</span>
+                          <span className="font-medium text-sm line-clamp-1 group-hover:text-theme-600 dark:text-theme-400 transition-colors">{s.title}</span>
                           <span className="text-xs text-muted-foreground line-clamp-1 mt-1">{s.provider}</span>
                         </Link>
                       ))
                     )}
                   </div>
                   <div className="p-2 border-t bg-muted/20">
-                    <Button variant="ghost" className="w-full text-xs hover:bg-primary/10 hover:text-primary transition-colors" asChild>
+                    <Button variant="ghost" className="w-full text-xs hover:bg-primary/10 hover:text-theme-600 dark:text-theme-400 transition-colors" asChild>
                       <Link href="/authenticated/profile">View All Saved In Profile &rarr;</Link>
                     </Button>
                   </div>
@@ -391,8 +391,8 @@ export default function DashboardPage() {
               <div className="flex flex-col gap-6">
                 <div className="border-b">
                   <div className="flex gap-4">
-                    <button onClick={() => setActiveTab('all')} className={`py-2 px-4 text-sm font-medium transition-colors ${activeTab === 'all' ? 'border-b-2 border-primary text-primary' : 'text-muted-foreground hover:text-foreground'}`}>All Scholarships</button>
-                    <button onClick={() => setActiveTab('saved')} className={`flex items-center gap-2 py-2 px-4 text-sm font-medium transition-colors ${activeTab === 'saved' ? 'border-b-2 border-primary text-primary' : 'text-muted-foreground hover:text-foreground'}`}>
+                    <button onClick={() => setActiveTab('all')} className={`py-2 px-4 text-sm font-medium transition-colors ${activeTab === 'all' ? 'border-b-2 border-theme-900 dark:border-theme-200 text-theme-900 dark:text-theme-200 font-bold' : 'border-b-2 border-transparent text-theme-700 dark:text-theme-300 hover:text-theme-900 dark:hover:text-theme-100'}`}>All Scholarships</button>
+                    <button onClick={() => setActiveTab('saved')} className={`flex items-center gap-2 py-2 px-4 text-sm font-medium transition-colors ${activeTab === 'saved' ? 'border-b-2 border-theme-900 dark:border-theme-200 text-theme-900 dark:text-theme-200 font-bold' : 'border-b-2 border-transparent text-theme-700 dark:text-theme-300 hover:text-theme-900 dark:hover:text-theme-100'}`}>
                       <Bookmark className="h-4 w-4" /> Saved Scholarships
                     </button>
                   </div>
@@ -401,16 +401,16 @@ export default function DashboardPage() {
                 {activeTab === 'all' && (
                   <div className="flex flex-wrap gap-2">
                     <Button onClick={() => setActiveStatus('All')} variant={activeStatus === 'All' ? 'default' : 'outline'} size="sm">
-                      All <span className="ml-2 bg-primary-foreground text-primary rounded-full px-2 py-0.5 text-[10px]">{filteredScholarships.length}</span>
+                      All <span className="ml-2 bg-primary-foreground text-theme-600 dark:text-theme-400 rounded-full px-2 py-0.5 text-[10px]">{filteredScholarships.length}</span>
                     </Button>
                     <Button onClick={() => setActiveStatus('Live')} variant={activeStatus === 'Live' ? 'default' : 'outline'} size="sm">
-                      Live <span className="ml-2 bg-primary-foreground text-primary rounded-full px-2 py-0.5 text-[10px]">{liveCount}</span>
+                      Live <span className="ml-2 bg-primary-foreground text-theme-600 dark:text-theme-400 rounded-full px-2 py-0.5 text-[10px]">{liveCount}</span>
                     </Button>
                     <Button onClick={() => setActiveStatus('Upcoming')} variant={activeStatus === 'Upcoming' ? 'default' : 'outline'} size="sm">
-                      Upcoming <span className="ml-2 bg-primary-foreground text-primary rounded-full px-2 py-0.5 text-[10px]">{upcomingCount}</span>
+                      Upcoming <span className="ml-2 bg-primary-foreground text-theme-600 dark:text-theme-400 rounded-full px-2 py-0.5 text-[10px]">{upcomingCount}</span>
                     </Button>
                     <Button onClick={() => setActiveStatus('Always Open')} variant={activeStatus === 'Always Open' ? 'default' : 'outline'} size="sm">
-                      Always Open <span className="ml-2 bg-primary-foreground text-primary rounded-full px-2 py-0.5 text-[10px]">{alwaysOpenCount}</span>
+                      Always Open <span className="ml-2 bg-primary-foreground text-theme-600 dark:text-theme-400 rounded-full px-2 py-0.5 text-[10px]">{alwaysOpenCount}</span>
                     </Button>
                   </div>
                 )}

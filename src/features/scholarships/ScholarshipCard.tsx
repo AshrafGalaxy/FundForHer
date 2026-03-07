@@ -48,28 +48,28 @@ export const ScholarshipCard = ({
   }
 
   return (
-     <Card className="flex flex-col h-full transition-all duration-300 hover:shadow-xl hover:bg-accent/50 relative group">
+    <Card className="flex flex-col h-full transition-all duration-300 hover:shadow-xl hover:bg-accent/50 relative group">
       <Link href={`/scholarship/${id}`} className="flex flex-col flex-grow p-0">
         <CardHeader className="pt-6 pb-4 w-full">
-            <div className="flex justify-between items-start mb-2">
-                {providerLogo ? (
-                    <div className="w-16 h-8 relative mr-4">
-                        <Image src={providerLogo} alt={`${provider} logo`} layout="fill" objectFit="contain" />
-                    </div>
-                ) : (
-                    isFeatured && <Badge variant="default" className="bg-green-600 hover:bg-green-700">Featured</Badge>
-                )}
-                
-                {status === 'Live' && deadline && (
-                <div className={`px-2 py-1 text-xs text-white rounded-md ${getDeadlineColor()}`}>
-                    {daysRemaining.replace('about ', '')} to go
-                </div>
-                )}
-                {status === 'Upcoming' && <Badge variant="secondary">Upcoming</Badge>}
-                {status === 'Always Open' && <Badge variant="outline">Always Open</Badge>}
-            </div>
+          <div className="flex justify-between items-start mb-2">
+            {providerLogo ? (
+              <div className="w-16 h-8 relative mr-4">
+                <Image src={providerLogo} alt={`${provider} logo`} layout="fill" objectFit="contain" />
+              </div>
+            ) : (
+              isFeatured && <Badge variant="default" className="bg-green-600 hover:bg-green-700">Featured</Badge>
+            )}
+
+            {status === 'Live' && deadline && (
+              <div className={`px-2 py-1 text-xs text-white rounded-md ${getDeadlineColor()}`}>
+                {daysRemaining.replace('about ', '')} to go
+              </div>
+            )}
+            {status === 'Upcoming' && <Badge variant="secondary">Upcoming</Badge>}
+            {status === 'Always Open' && <Badge variant="outline">Always Open</Badge>}
+          </div>
           <div className="flex justify-between items-start pt-2">
-            <CardTitle className="font-headline text-base leading-snug mb-1 pr-8 group-hover:text-primary transition-colors">{title}</CardTitle>
+            <CardTitle className="font-headline text-base leading-snug mb-1 pr-8 group-hover:text-theme-900 dark:group-hover:text-theme-300 transition-colors">{title}</CardTitle>
           </div>
           <CardDescription className="flex items-center gap-2 text-sm">
             <School className="h-4 w-4" />
@@ -80,7 +80,7 @@ export const ScholarshipCard = ({
           <div className="flex items-center gap-2">
             <IndianRupee className="h-5 w-5 text-primary" />
             <div>
-              <p className="font-semibold"><span style={{fontFamily: 'sans-serif'}}>₹</span>{new Intl.NumberFormat('en-IN').format(amount)}</p>
+              <p className="font-semibold"><span style={{ fontFamily: 'sans-serif' }}>₹</span>{new Intl.NumberFormat('en-IN').format(amount)}</p>
               <p className="text-xs text-muted-foreground">Award</p>
             </div>
           </div>
@@ -91,15 +91,15 @@ export const ScholarshipCard = ({
               <p className="text-muted-foreground line-clamp-2">{eligibility.details}</p>
             </div>
           </div>
-           {deadline && (
-             <div className="flex items-center gap-2">
-                <Calendar className="h-5 w-5 text-primary" />
-                <div>
-                  <p className="font-semibold">{isClient ? format(deadline, 'd MMM yyyy') : '...'}</p>
-                  <p className="text-xs text-muted-foreground">Deadline</p>
-                </div>
+          {deadline && (
+            <div className="flex items-center gap-2">
+              <Calendar className="h-5 w-5 text-primary" />
+              <div>
+                <p className="font-semibold">{isClient ? format(deadline, 'd MMM yyyy') : '...'}</p>
+                <p className="text-xs text-muted-foreground">Deadline</p>
               </div>
-           )}
+            </div>
+          )}
         </CardContent>
         <CardFooter className="flex-col items-start gap-3 pt-2 mt-auto w-full">
           <div className="flex flex-wrap gap-2">
@@ -124,8 +124,8 @@ export const ScholarshipCard = ({
       >
         <Bookmark
           className={cn(
-            'h-5 w-5 text-muted-foreground transition-colors group-hover:text-primary/70',
-            isBookmarked && 'fill-primary text-primary'
+            'h-5 w-5 text-muted-foreground transition-colors group-hover:text-theme-900 dark:group-hover:text-theme-300/70',
+            isBookmarked && 'fill-theme-600 dark:fill-theme-400 text-theme-600 dark:text-theme-400'
           )}
         />
       </Button>

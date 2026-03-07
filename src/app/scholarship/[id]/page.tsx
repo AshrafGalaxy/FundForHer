@@ -53,7 +53,7 @@ export default function ScholarshipDetailsPage({ params }: { params: Promise<{ i
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[50vh]">
-        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        <Loader2 className="h-12 w-12 animate-spin text-theme-600 dark:text-theme-400" />
       </div>
     );
   }
@@ -112,7 +112,7 @@ export default function ScholarshipDetailsPage({ params }: { params: Promise<{ i
             </div>
 
             <div>
-              <h3 className="text-xl font-headline font-semibold mb-3 flex items-center gap-2"><UserCheck className="h-5 w-5 text-primary" />Eligibility Details</h3>
+              <h3 className="text-xl font-headline font-semibold mb-3 flex items-center gap-2"><UserCheck className="h-5 w-5 text-theme-600 dark:text-theme-400" />Eligibility Details</h3>
               <div className="p-4 bg-secondary/70 rounded-lg border">
                 <p className="font-semibold">{scholarship.eligibility?.title || 'General Eligibility'}</p>
                 <p className="text-muted-foreground mt-1">{scholarship.eligibility?.details || 'No specific eligibility details provided.'}</p>
@@ -131,7 +131,7 @@ export default function ScholarshipDetailsPage({ params }: { params: Promise<{ i
 
 const InfoItem = ({ icon, label, value }: { icon: React.ReactNode; label: string; value: string | React.ReactNode }) => (
   <div className="flex items-start gap-4">
-    <div className="text-primary mt-1 flex-shrink-0">{icon}</div>
+    <div className="text-theme-600 dark:text-theme-400 mt-1 flex-shrink-0">{icon}</div>
     <div>
       <p className="text-sm text-muted-foreground font-medium">{label}</p>
       <p className="font-semibold text-foreground">{value}</p>

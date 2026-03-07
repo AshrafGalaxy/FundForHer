@@ -128,7 +128,7 @@ export default function ProfilePage() {
 
   const InfoField = ({ icon, label, value, placeholder }: { icon: React.ReactNode, label: string, value: string | number | null | undefined, placeholder: string }) => (
     <div className="flex items-start gap-3">
-      <div className="text-primary mt-1">{icon}</div>
+      <div className="text-theme-600 dark:text-theme-400 mt-1">{icon}</div>
       <div>
         <p className="text-sm text-muted-foreground">{label}</p>
         <p className="font-semibold text-foreground">{value || <span className="text-muted-foreground italic">{placeholder}</span>}</p>
@@ -210,7 +210,7 @@ export default function ProfilePage() {
                 <div className="mt-6 mb-4 text-left">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-sm font-medium text-muted-foreground">Profile Completion</span>
-                    <span className="text-sm font-bold text-primary">{completionPercentage}%</span>
+                    <span className="text-sm font-bold text-theme-600 dark:text-theme-400">{completionPercentage}%</span>
                   </div>
                   <Progress value={completionPercentage} className="h-2 w-full" />
                   {completionPercentage < 100 && (
@@ -302,7 +302,7 @@ export default function ProfilePage() {
           <div className="lg:col-span-2 space-y-8">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 font-headline text-xl"><BookUser className="text-primary" /> Personal Details</CardTitle>
+                <CardTitle className="flex items-center gap-2 font-headline text-xl"><BookUser className="text-theme-600 dark:text-theme-400" /> Personal Details</CardTitle>
               </CardHeader>
               <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <InfoField icon={<UserIcon />} label="Full Name" value={userProfile.fullName} placeholder="Not set" />
@@ -316,7 +316,7 @@ export default function ProfilePage() {
 
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 font-headline text-xl"><GraduationCap className="text-primary" /> Educational Background</CardTitle>
+                <CardTitle className="flex items-center gap-2 font-headline text-xl"><GraduationCap className="text-theme-600 dark:text-theme-400" /> Educational Background</CardTitle>
               </CardHeader>
               <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <InfoField icon={<Briefcase />} label="Highest Qualification" value={userProfile.qualification} placeholder="Not set" />
@@ -327,7 +327,7 @@ export default function ProfilePage() {
 
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 font-headline text-xl"><FileText className="text-primary" /> Documents & Identity</CardTitle>
+                <CardTitle className="flex items-center gap-2 font-headline text-xl"><FileText className="text-theme-600 dark:text-theme-400" /> Documents & Identity</CardTitle>
               </CardHeader>
               <CardContent>
                 <InfoField icon={<FileText />} label="Aadhar Number" value={userProfile.aadhar} placeholder="e.g., 1234 5678 9012" />

@@ -104,7 +104,7 @@ export const Header = () => {
       <Link
         href={href}
         className={cn(
-          'text-muted-foreground transition-colors hover:text-primary',
+          'text-muted-foreground transition-colors hover:text-theme-900 dark:hover:text-theme-300',
           isActive && 'text-sidebar-primary font-semibold',
           className
         )}
@@ -121,7 +121,7 @@ export const Header = () => {
         href={href}
         onClick={onClick}
         className={cn(
-          'text-muted-foreground transition-colors hover:text-primary flex items-center gap-2',
+          'text-muted-foreground transition-colors hover:text-theme-900 dark:hover:text-theme-300 flex items-center gap-2',
           isActive && 'text-sidebar-primary font-semibold'
         )}
       >
@@ -296,7 +296,7 @@ export const Header = () => {
                           >
                             <User className="h-5 w-5" /> {isProvider ? 'Dashboard' : 'Profile'}
                           </MobileNavLink>
-                          <Button variant="ghost" onClick={() => { handleLogout(); setIsMenuOpen(false); }} className="flex items-center justify-start gap-2 text-lg text-muted-foreground hover:text-primary p-0 h-auto">
+                          <Button variant="ghost" onClick={() => { handleLogout(); setIsMenuOpen(false); }} className="flex items-center justify-start gap-2 text-lg text-muted-foreground hover:text-theme-900 dark:hover:text-theme-300 p-0 h-auto">
                             <LogOut className="h-5 w-5" /> Logout
                           </Button>
                         </>

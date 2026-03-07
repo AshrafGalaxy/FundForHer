@@ -315,7 +315,7 @@ export function LoginForm({ isProviderLogin }: LoginFormProps) {
                   <button
                     type="button"
                     onClick={handleForgotPassword}
-                    className="text-sm font-medium text-primary hover:underline"
+                    className="text-sm font-medium text-theme-900 dark:text-theme-300 hover:text-theme-950 dark:hover:text-theme-200 hover:underline"
                     disabled={isLoading}
                   >
                     Forgot password?
@@ -428,11 +428,11 @@ export function LoginForm({ isProviderLogin }: LoginFormProps) {
       <CardFooter className="flex flex-col gap-4 justify-center text-sm border-t pt-6 text-muted-foreground">
         {!isProviderLogin ? (
           <>
-            <p>Don't have an account? <Link href="/register" className="font-semibold text-primary hover:underline">Sign Up</Link></p>
-            <p>Are you a scholarship provider? <Link href="/provider/login" className="font-semibold text-primary hover:underline">Login here</Link></p>
+            <p>Don't have an account? <Link href="/register" className="font-semibold text-theme-900 dark:text-theme-300 hover:text-theme-950 dark:hover:text-theme-200 hover:underline">Sign Up</Link></p>
+            <p>Are you a scholarship provider? <Link href="/provider/login" className="font-semibold text-theme-900 dark:text-theme-300 hover:text-theme-950 dark:hover:text-theme-200 hover:underline">Login here</Link></p>
           </>
         ) : (
-          <p>Don't have a provider account? <Link href="/provider/register" className="font-semibold text-primary hover:underline">Register your Company</Link></p>
+          <p>Don't have a provider account? <Link href="/provider/register" className="font-semibold text-theme-900 dark:text-theme-300 hover:text-theme-950 dark:hover:text-theme-200 hover:underline">Register your Company</Link></p>
         )}
       </CardFooter>
     </Card>
