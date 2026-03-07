@@ -430,10 +430,10 @@ export default function LandingPage() {
             <AboutSection />
 
             {/* App Download / PWA Section (Premium Dark Banner) */}
-            <section className="py-20 md:py-28 bg-[#361106] relative overflow-hidden border-y border-[#591C0C]">
+            <section className="py-20 md:py-28 bg-[#3A0819] relative overflow-hidden border-y border-[#590C26]">
                 {/* Decorative background glows */}
-                <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 rounded-full bg-[#D43A08]/20 blur-3xl pointer-events-none" />
-                <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-96 h-96 rounded-full bg-[#D43A08]/10 blur-3xl pointer-events-none" />
+                <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 rounded-full bg-[#D31C56]/20 blur-3xl pointer-events-none" />
+                <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-96 h-96 rounded-full bg-[#D31C56]/10 blur-3xl pointer-events-none" />
 
                 <div className="container mx-auto px-4 relative z-10">
                     <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-12 p-4 md:p-8">
@@ -441,39 +441,39 @@ export default function LandingPage() {
                         <div className="flex-1 text-center md:text-left space-y-6">
                             {isPwaInstalled ? (
                                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#591C0C] text-[#F9A482] text-sm font-semibold mb-2 border border-[#7D250C] shadow-sm">
+                                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#590C26] text-[#F785A8] text-sm font-semibold mb-2 border border-[#7D1236] shadow-sm">
                                         <CheckCircle2 className="w-4 h-4" /> App Installed
                                     </div>
-                                    <h2 className="text-3xl md:text-5xl font-headline font-bold text-[#FFF0E6]">
-                                        You're all <span className="text-[#F47238]">set!</span>
+                                    <h2 className="text-3xl md:text-5xl font-headline font-bold text-[#FFF0F4]">
+                                        You're all <span className="text-[#F24E82]">set!</span>
                                     </h2>
-                                    <p className="text-lg text-[#FDCDBB] max-w-lg mx-auto md:mx-0 font-medium">
+                                    <p className="text-lg text-[#FBB9CB] max-w-lg mx-auto md:mx-0 font-medium">
                                         Fund Her Future is successfully installed on your device. Enjoy the fastest, offline-ready experience right from your home screen.
                                     </p>
                                 </div>
                             ) : (
                                 <div className="space-y-6">
-                                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#591C0C] text-[#FFF0E6] text-sm font-semibold mb-2 border border-[#7D250C]">
+                                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#590C26] text-[#FFF0F4] text-sm font-semibold mb-2 border border-[#7D1236]">
                                         <Smartphone className="w-4 h-4" /> Install from Browser
                                     </div>
-                                    <h2 className="text-3xl md:text-5xl font-headline font-bold text-[#FFF0E6]">
-                                        Take Fund Her Future <span className="text-[#F47238]">Anywhere.</span>
+                                    <h2 className="text-3xl md:text-5xl font-headline font-bold text-[#FFF0F4]">
+                                        Take Fund Her Future <span className="text-[#F24E82]">Anywhere.</span>
                                     </h2>
-                                    <p className="text-lg text-[#FDCDBB] max-w-lg mx-auto md:mx-0 font-medium">
+                                    <p className="text-lg text-[#FBB9CB] max-w-lg mx-auto md:mx-0 font-medium">
                                         Install our fast, lightweight web app directly to your device. No app store required. Works perfectly across all your favorite platforms.
                                     </p>
 
-                                    <div className="flex items-center justify-center md:justify-start gap-8 pt-6 text-[#F9A482]">
+                                    <div className="flex items-center justify-center md:justify-start gap-8 pt-6 text-[#F785A8]">
                                         <div className="flex flex-col items-center gap-3">
-                                            <Smartphone className="w-8 h-8 text-[#F47238]" />
+                                            <Smartphone className="w-8 h-8 text-[#F24E82]" />
                                             <span className="text-xs font-semibold tracking-wide">ANDROID</span>
                                         </div>
                                         <div className="flex flex-col items-center gap-3">
-                                            <Tablet className="w-8 h-8 text-[#F47238]" />
+                                            <Tablet className="w-8 h-8 text-[#F24E82]" />
                                             <span className="text-xs font-semibold tracking-wide">iOS & iPAD</span>
                                         </div>
                                         <div className="flex flex-col items-center gap-3">
-                                            <Laptop className="w-8 h-8 text-[#F47238]" />
+                                            <Laptop className="w-8 h-8 text-[#F24E82]" />
                                             <span className="text-xs font-semibold tracking-wide">PC & MAC</span>
                                         </div>
                                     </div>
@@ -483,12 +483,12 @@ export default function LandingPage() {
 
                         {/* Right side illustration or spacing */}
                         <div className="hidden md:flex flex-1 justify-center relative">
-                            <div className="w-64 h-64 bg-[#591C0C]/50 rounded-full blur-3xl absolute -z-10" />
-                            <div className="w-48 h-64 bg-gradient-to-tr from-[#7D250C] to-[#D43A08] rounded-[2rem] shadow-2xl border border-[#F47238]/30 flex items-center justify-center -rotate-6 transform hover:rotate-0 transition-all duration-500">
-                                <div className="w-40 h-56 bg-[#361106] rounded-[1.5rem] border border-[#591C0C] flex flex-col items-center justify-center p-4">
+                            <div className="w-64 h-64 bg-[#590C26]/50 rounded-full blur-3xl absolute -z-10" />
+                            <div className="w-48 h-64 bg-gradient-to-tr from-[#7D1236] to-[#D31C56] rounded-[2rem] shadow-2xl border border-[#F24E82]/30 flex items-center justify-center -rotate-6 transform hover:rotate-0 transition-all duration-500">
+                                <div className="w-40 h-56 bg-[#3A0819] rounded-[1.5rem] border border-[#590C26] flex flex-col items-center justify-center p-4">
                                     <Image src="/icon-192x192.svg" alt="App Icon" width={64} height={64} className="mb-4" />
-                                    <div className="w-20 h-2 bg-[#591C0C] rounded-full mb-2" />
-                                    <div className="w-16 h-2 bg-[#591C0C] rounded-full" />
+                                    <div className="w-20 h-2 bg-[#590C26] rounded-full mb-2" />
+                                    <div className="w-16 h-2 bg-[#590C26] rounded-full" />
                                 </div>
                             </div>
                         </div>
