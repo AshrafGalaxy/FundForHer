@@ -9,7 +9,7 @@ import type { Scholarship } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Search, Loader2, Bookmark, Sun, Moon, Monitor } from 'lucide-react';
+import { Search, Loader2, Bookmark, Sun, Moon, Monitor, SearchX, Telescope } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import Logo from '@/components/ui/Logo';
 import { SidebarProvider, Sidebar, SidebarTrigger } from '@/components/ui/sidebar';
@@ -453,19 +453,42 @@ export default function DashboardPage() {
                     ))}
                   </div>
                 ) : (
-                  <div className="text-center py-20 bg-card rounded-xl shadow-sm border">
-                    <h2 className="text-2xl font-headline font-semibold text-card-foreground">
-                      {activeTab === 'saved' ? "No saved scholarships" : "No scholarships match your criteria"}
+                  <div className="flex flex-col items-center justify-center py-20 px-4 text-center bg-card/40 backdrop-blur-sm rounded-2xl border border-dashed border-theme-200 dark:border-theme-800 animate-in fade-in duration-700">
+                    <div className="w-20 h-20 bg-theme-100 dark:bg-theme-900/50 rounded-full flex items-center justify-center mb-6 shadow-inner">
+                      {activeTab === 'saved' ? (
+                        <Telescope className="w-10 h-10 text-theme-500 animate-pulse" />
+                      ) : (
+                        <SearchX className="w-10 h-10 text-theme-500" />
+                      )}
+                    </div>
+                    <h2 className="text-2xl font-headline font-semibold text-card-foreground mb-3">
+                      {activeTab === 'saved' ? "Your saved list is empty" : "No exact matches found"}
                     </h2>
-                    <p className="text-muted-foreground mt-2">
-                      {activeTab === 'saved' ? "Start exploring and save scholarships you're interested in!" : "Try clearing your filters or changing categories."}
+                    <p className="text-muted-foreground max-w-md mx-auto mb-8">
+                      {activeTab === 'saved'
+                        ? "You haven't bookmarked any scholarships yet. Start exploring the dashboard to build your personalized list!"
+                        : "We couldn't find any scholarships matching all your selected filters. Try broadening your search criteria."}
                     </p>
+
+                    {activeTab === 'saved' ? (
+                      <Button onClick={() => setActiveTab('all')} className="bg-theme-600 hover:bg-theme-700 text-white rounded-full px-8 h-12">
+                        Explore Scholarships
+                      </Button>
+                    ) : (
+                      <Button
+                        onClick={() => setFilters({ search: '', fieldOfStudy: [], eligibilityLevel: [], scholarshipType: [], gender: 'female', religion: 'all', location: 'all' })}
+                        variant="outline"
+                        className="rounded-full px-8 h-12 border-theme-200 hover:bg-theme-50 dark:border-theme-800 dark:hover:bg-theme-900/50"
+                      >
+                        Clear All Filters
+                      </Button>
+                    )}
                   </div>
                 )
               ) : (
-                <div className="text-center py-20">
-                  <h2 className="text-2xl font-headline font-semibold text-card-foreground">No Scholarships Found</h2>
-                  <p className="text-muted-foreground mt-2">Check back later for new opportunities!</p>
+                <div className="flex flex-col items-center justify-center py-24 text-center">
+                  <div className="w-16 h-16 border-4 border-theme-200 border-t-theme-600 rounded-full animate-spin mb-6"></div>
+                  <h2 className="text-xl font-headline font-semibold text-muted-foreground animate-pulse">Loading opportunities...</h2>
                 </div>
               )}
             </div>

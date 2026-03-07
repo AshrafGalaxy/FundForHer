@@ -48,9 +48,12 @@ export const ScholarshipCard = ({
   }
 
   return (
-    <Card className="flex flex-col h-full transition-all duration-300 hover:shadow-xl hover:bg-accent/50 relative group">
-      <Link href={`/scholarship/${id}`} className="flex flex-col flex-grow p-0">
-        <CardHeader className="pt-6 pb-4 w-full">
+    <Card className="flex flex-col h-full transition-all duration-300 hover:shadow-2xl hover:shadow-theme-200/50 dark:hover:shadow-theme-900/30 hover:-translate-y-1 relative group overflow-hidden border-border dark:border-border hover:border-theme-300/50 dark:hover:border-theme-700/50">
+      <Link href={`/scholarship/${id}`} className="flex flex-col flex-grow p-0 relative z-10">
+        <CardHeader className="pt-6 pb-4 w-full relative">
+          {/* Subtle Glassmorphism Header Gradient */}
+          <div className="absolute inset-0 bg-gradient-to-b from-theme-50/80 to-transparent dark:from-theme-950/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none -z-10" />
+
           <div className="flex justify-between items-start mb-2">
             {providerLogo ? (
               <div className="w-16 h-8 relative mr-4">

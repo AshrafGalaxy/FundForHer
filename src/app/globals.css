@@ -123,4 +123,32 @@
     min-height: 100vh;
     transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
   }
+
+  /* Custom Scrollbar Styles */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-theme-200);
+    border-radius: 10px;
+    transition: background 0.3s ease;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-theme-400);
+  }
+
+  .dark ::-webkit-scrollbar-thumb {
+    background: var(--color-theme-800);
+  }
+
+  .dark ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-theme-600);
+  }
 }

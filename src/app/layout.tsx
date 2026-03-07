@@ -4,6 +4,7 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import AuthProvider from './auth-provider';
+import { BackToTop } from '@/components/ui/BackToTop';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 
 
@@ -38,6 +39,7 @@ export default function RootLayout({
             </AuthProvider>
           </FirebaseClientProvider>
           <Toaster />
+          <BackToTop />
         </ThemeProvider>
       </body>
     </html>
