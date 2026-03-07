@@ -9,7 +9,8 @@ import type { Scholarship } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Search, Loader2, Bookmark } from 'lucide-react';
+import { Search, Loader2, Bookmark, Sun, Moon, Monitor } from 'lucide-react';
+import { useTheme } from 'next-themes';
 import Logo from '@/components/ui/Logo';
 import { SidebarProvider, Sidebar, SidebarTrigger } from '@/components/ui/sidebar';
 import { useUser } from '@/firebase/auth/use-user';
@@ -88,6 +89,7 @@ export default function DashboardPage() {
   const user = useUser();
   const db = useFirestore();
   const router = useRouter();
+  const { setTheme } = useTheme();
 
   const [filters, setFilters] = useState<Filters>({
     search: '',
@@ -292,6 +294,28 @@ export default function DashboardPage() {
             </div>
 
             <div className="flex items-center gap-4 ml-auto">
+              {/* Theme Toggle */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="rounded-full h-9 w-9 relative hover:bg-primary/10 transition-colors">
+                    <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0 text-theme-600 dark:text-theme-400" />
+                    <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100 text-theme-600 dark:text-theme-400" />
+                    <span className="sr-only">Toggle theme</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={() => setTheme("light")} className="cursor-pointer">
+                    <Sun className="mr-2 h-4 w-4" /> Light
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setTheme("dark")} className="cursor-pointer">
+                    <Moon className="mr-2 h-4 w-4" /> Dark
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setTheme("system")} className="cursor-pointer">
+                    <Monitor className="mr-2 h-4 w-4" /> System
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+
               {/* Notifications / Bookmarks - Popover */}
               <Popover>
                 <PopoverTrigger asChild>
