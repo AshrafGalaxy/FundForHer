@@ -58,55 +58,54 @@ export const FeaturedScholarshipCarousel = ({ scholarships }: FeaturedScholarshi
                                 <div
                                     className={`group relative overflow-hidden h-[280px] md:h-[340px] rounded-[2rem] transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]
                                         ${isActive
-                                            ? 'opacity-100 scale-100 shadow-[0_30px_60px_-15px_rgba(244,63,94,0.15)] dark:shadow-[0_20px_50px_-15px_rgba(0,0,0,0.5)] z-10'
+                                            ? 'opacity-100 scale-100 shadow-[0_30px_60px_-15px_rgba(251,166,155,0.4)] dark:shadow-[0_20px_50px_-15px_rgba(0,0,0,0.5)] z-10'
                                             : 'opacity-50 scale-[0.92] hover:opacity-80 hover:scale-[0.94] z-0'
                                         }
-                                        bg-white dark:bg-[#1F1616]
-                                        border border-rose-100/50 dark:border-white/5
+                                        bg-white dark:bg-zinc-950
+                                        border border-[#FBA69B]/30 dark:border-white/10
                                     `}
                                 >
                                     {/* Glass reflection highlight */}
-                                    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white to-transparent opacity-50 dark:opacity-10 pointer-events-none" />
+                                    <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white to-transparent opacity-80 dark:opacity-10 pointer-events-none" />
 
-                                    {/* Decorative vibrant glow top-right */}
-                                    <div className={`absolute -top-16 -right-16 w-56 h-56 bg-rose-400/15 dark:bg-rose-500/10 rounded-full blur-[50px] pointer-events-none transition-opacity duration-700 ${isActive ? 'opacity-100' : 'opacity-0'}`} />
-                                    {/* Bottom-left dark rose accent */}
-                                    <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-pink-100/50 dark:bg-rose-900/10 rounded-full blur-3xl pointer-events-none" />
+                                    {/* Premium soft peach ambient glows */}
+                                    <div className={`absolute -top-16 -right-16 w-64 h-64 bg-[#FBA69B]/20 dark:bg-[#FBA69B]/10 rounded-full blur-[60px] pointer-events-none transition-opacity duration-700 ${isActive ? 'opacity-100' : 'opacity-0'}`} />
+                                    <div className="absolute -bottom-10 -left-10 w-48 h-48 bg-[#FBA69B]/20 dark:bg-blue-500/5 rounded-full blur-3xl pointer-events-none" />
 
                                     <div className="p-7 md:p-10 h-full flex flex-col justify-between relative z-10">
                                         {/* Top: Badge + Title + Provider */}
                                         <div className="space-y-4">
-                                            <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400 text-xs font-bold tracking-widest uppercase shadow-sm border border-rose-200/50 dark:border-rose-500/20">
+                                            <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#FBA69B]/10 dark:bg-[#FBA69B]/10 text-pink-600 dark:text-[#FBA69B] text-xs font-bold tracking-widest uppercase shadow-sm border border-[#FBA69B]/30 dark:border-[#FBA69B]/20">
                                                 <Trophy className="w-3.5 h-3.5" />
                                                 Featured
                                             </div>
 
-                                            <h3 className="text-2xl md:text-3xl font-headline font-extrabold text-slate-900 dark:text-slate-50 leading-tight line-clamp-2">
+                                            <h3 className="text-2xl md:text-3xl font-headline font-extrabold text-zinc-900 dark:text-white leading-tight line-clamp-2">
                                                 {scholarship.title}
                                             </h3>
 
-                                            <p className="text-slate-600 dark:text-slate-400 font-medium flex items-center gap-2 line-clamp-1 text-sm">
-                                                <MapPin className="w-4 h-4 flex-shrink-0 text-rose-500" />
+                                            <p className="text-zinc-800 dark:text-zinc-300 font-medium flex items-center gap-2 line-clamp-1 text-sm">
+                                                <MapPin className="w-4 h-4 flex-shrink-0 text-pink-500 dark:text-[#FBA69B]" />
                                                 {scholarship.provider}
                                             </p>
                                         </div>
 
                                         {/* Bottom: Meta + CTA */}
-                                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-5 border-t border-slate-100 dark:border-white/5">
+                                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-5 border-t border-zinc-100 dark:border-white/10">
                                             <div className="flex items-center gap-6">
                                                 {scholarship.amount && (
                                                     <div>
-                                                        <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider mb-0.5">Funding</p>
-                                                        <p className="text-lg md:text-xl font-bold text-slate-900 dark:text-slate-50">
-                                                            <span className="text-rose-500 mr-0.5">₹</span>
+                                                        <p className="text-xs text-zinc-500 dark:text-zinc-400 font-semibold uppercase tracking-wider mb-0.5">Funding</p>
+                                                        <p className="text-lg md:text-xl font-bold text-zinc-900 dark:text-white">
+                                                            <span className="text-pink-500 dark:text-[#FBA69B] mr-0.5">₹</span>
                                                             {scholarship.amount.toLocaleString('en-IN')}
                                                         </p>
                                                     </div>
                                                 )}
                                                 <div>
-                                                    <p className="text-xs text-slate-500 dark:text-slate-400 font-semibold uppercase tracking-wider mb-0.5">Deadline</p>
-                                                    <p className="text-sm font-medium flex items-center gap-1.5 text-slate-900 dark:text-slate-50">
-                                                        <CalendarClock className="w-4 h-4 flex-shrink-0 text-rose-500" />
+                                                    <p className="text-xs text-zinc-500 dark:text-zinc-400 font-semibold uppercase tracking-wider mb-0.5">Deadline</p>
+                                                    <p className="text-sm font-medium flex items-center gap-1.5 text-zinc-900 dark:text-white">
+                                                        <CalendarClock className="w-4 h-4 flex-shrink-0 text-pink-500 dark:text-[#FBA69B]" />
                                                         {scholarship.deadline
                                                             ? (scholarship.deadline instanceof Date ? scholarship.deadline : new Date(scholarship.deadline)).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
                                                             : 'Varies'}
@@ -117,7 +116,7 @@ export const FeaturedScholarshipCarousel = ({ scholarships }: FeaturedScholarshi
                                             <Button
                                                 asChild
                                                 size="sm"
-                                                className="rounded-full bg-rose-500 hover:bg-rose-600 text-white dark:bg-rose-600 dark:hover:bg-rose-500 border-none font-bold px-7 h-11 shadow-lg shadow-rose-500/25 dark:shadow-rose-900/20 group flex-shrink-0 transition-all hover:scale-105"
+                                                className="rounded-full bg-pink-500 hover:bg-pink-600 text-white dark:bg-[#FBA69B] dark:hover:bg-[#f89588] dark:text-zinc-950 border-none font-bold px-7 h-11 shadow-lg shadow-pink-500/25 dark:shadow-[#FBA69B]/20 group flex-shrink-0 transition-all hover:scale-105"
                                             >
                                                 <Link href="/register">
                                                     Apply Now
@@ -139,8 +138,8 @@ export const FeaturedScholarshipCarousel = ({ scholarships }: FeaturedScholarshi
                     <button
                         key={i}
                         className={`h-2 rounded-full transition-all duration-500 ${i === selectedIndex
-                            ? 'bg-rose-500 w-10 shadow-[0_0_10px_rgba(244,63,94,0.5)]'
-                            : 'bg-slate-200 dark:bg-white/10 w-2 hover:bg-rose-300 dark:hover:bg-white/20'
+                            ? 'bg-pink-500 dark:bg-[#FBA69B] w-10 shadow-[0_0_10px_rgba(236,72,153,0.5)] dark:shadow-[0_0_10px_rgba(251,166,155,0.5)]'
+                            : 'bg-zinc-200 dark:bg-zinc-800 w-2 hover:bg-pink-300 dark:hover:bg-zinc-600'
                             }`}
                         onClick={() => emblaApi?.scrollTo(i)}
                         aria-label={`Go to slide ${i + 1}`}

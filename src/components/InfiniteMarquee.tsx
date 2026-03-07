@@ -16,9 +16,9 @@ export const InfiniteMarquee = () => {
     const scrollItems = [...partners, ...partners, ...partners, ...partners];
 
     return (
-        <div className="w-full bg-slate-50/50 dark:bg-[#1D1414]/90 py-10 border-y border-rose-100/60 dark:border-white/5 overflow-hidden">
+        <div className="w-full bg-slate-50/50 dark:bg-zinc-950/90 py-10 border-y border-[#FBA69B]/30 dark:border-white/5 overflow-hidden">
             <div className="container mx-auto px-4 mb-6">
-                <p className="text-center text-sm font-semibold tracking-widest text-slate-500 dark:text-slate-400 uppercase">
+                <p className="text-center text-sm font-semibold tracking-widest text-zinc-500 dark:text-zinc-400 uppercase">
                     Trusted by top institutions & organizations
                 </p>
             </div>
