@@ -3,6 +3,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import InstallAppWidget from '@/components/pwa/InstallAppWidget';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { getProviderProfile } from '@/server/db/user-data';
 import type { Scholarship } from '@/lib/types';
@@ -259,6 +260,10 @@ export default function LandingPage() {
                         <Button asChild size="lg" variant="outline" className="h-14 px-8 text-lg font-semibold bg-white/10 hover:bg-white/20 text-white border-white/30 backdrop-blur-sm transition-all hover:scale-105">
                             <Link href="/login">Login</Link>
                         </Button>
+                    </div>
+                    {/* Dynamic PWA Installer Widget */}
+                    <div className="mt-8">
+                        <InstallAppWidget />
                     </div>
                 </div>
             </section>
