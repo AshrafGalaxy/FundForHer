@@ -264,14 +264,20 @@ export default function LandingPage() {
                         className="w-full h-full object-cover"
                     />
 
-                    {/* Light Mode: Full coverage dark overlay for strong text legibility */}
-                    <div className="absolute inset-0 bg-gradient-to-b from-black/75 via-black/60 to-black/80 dark:hidden" />
-                    <div className="absolute inset-0 bg-gradient-to-r from-indigo-950/80 to-transparent dark:hidden" />
+                    {/* Light Mode: Premium edge-only dark fades, keeping the center clear */}
+                    <div className="absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-black/80 to-transparent dark:hidden" />
+                    <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-background via-background/80 to-transparent dark:hidden" />
+                    <div className="absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-black/50 to-transparent dark:hidden" />
+                    <div className="absolute inset-y-0 right-0 w-1/3 bg-gradient-to-l from-black/50 to-transparent dark:hidden" />
+                    <div className="absolute inset-0 bg-black/10 dark:hidden" />
 
-                    {/* Dark Mode: Deep theme-consistent warm dark gradient */}
-                    <div className="hidden dark:block absolute inset-0 bg-gradient-to-br from-[#0D0605]/98 via-[#1A0E0C]/90 to-[#231210]/70" />
+                    {/* Dark Mode: Edge-only deep warm dark gradient */}
+                    <div className="hidden dark:block absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-[#0D0605] to-transparent" />
+                    <div className="hidden dark:block absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-background via-[#1A0E0C]/90 to-transparent" />
+                    <div className="hidden dark:block absolute inset-y-0 left-0 w-1/2 bg-gradient-to-r from-[#0D0605]/90 to-transparent" />
+                    <div className="hidden dark:block absolute inset-y-0 right-0 w-1/2 bg-gradient-to-l from-[#0D0605]/90 to-transparent" />
 
-                    {/* Dark Mode: Subtle Aurora Blobs */}
+                    {/* Subtle Aurora Blobs */}
                     <div className="hidden dark:block absolute -top-[20%] -left-[10%] w-[50%] h-[70%] bg-theme-500/10 blur-[120px] rounded-full animate-pulse" style={{ animationDuration: '8s' }} />
                     <div className="hidden dark:block absolute top-[30%] left-[15%] w-[35%] h-[50%] bg-theme-400/8 blur-[140px] rounded-full animate-pulse" style={{ animationDuration: '12s', animationDelay: '3s' }} />
                 </div>
@@ -344,7 +350,7 @@ export default function LandingPage() {
                 <div className="container mx-auto px-4 max-w-6xl">
                     <div className="text-center mb-16">
                         <h2 className="text-4xl md:text-5xl font-headline font-extrabold mb-4 tracking-tight text-foreground">
-                            Everything you need,{' '}
+                            Everything you need, <br className="hidden md:block" />
                             <span className="text-transparent bg-clip-text bg-gradient-to-r from-theme-700 to-theme-500 dark:from-theme-400 dark:to-theme-200">
                                 beautifully simple.
                             </span>
@@ -356,66 +362,69 @@ export default function LandingPage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-5 auto-rows-[260px] md:auto-rows-[300px]">
 
-                        {/* Tile 1 — Large (Warm cream in light, deep warm dark) */}
+                        {/* Tile 1 — The Central Hub */}
                         <div className="md:col-span-2 relative group rounded-3xl p-8 md:p-10 overflow-hidden
-                            bg-theme-50 border border-theme-200
-                            dark:bg-[#1E0E0C] dark:border-theme-900
-                            shadow-md hover:shadow-xl transition-all duration-500"
+                            bg-white border border-slate-200/60
+                            dark:bg-[#1A0A09]/80 dark:border-theme-900/50 backdrop-blur-sm
+                            shadow-sm hover:shadow-xl transition-all duration-500"
                         >
-                            <div className="absolute inset-0 bg-gradient-to-br from-theme-100 to-transparent dark:from-theme-900/50 dark:to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                            <div className="absolute inset-0 bg-gradient-to-br from-theme-50/50 to-transparent dark:from-theme-900/20 dark:to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                             <div className="h-full flex flex-col justify-end relative z-10">
-                                <Target className="w-12 h-12 text-theme-700 dark:text-theme-400 mb-5 group-hover:scale-110 transition-transform duration-500" />
-                                <h3 className="text-2xl md:text-3xl font-headline font-bold mb-2 text-theme-950 dark:text-theme-50">The Central Hub</h3>
-                                <p className="text-theme-700 dark:text-theme-400 text-base font-medium max-w-md">
+                                <Target className="w-12 h-12 text-theme-600 dark:text-theme-400 mb-5 group-hover:scale-110 transition-transform duration-500" />
+                                <h3 className="text-2xl md:text-3xl font-headline font-bold mb-2 text-foreground">The Central Hub</h3>
+                                <p className="text-muted-foreground text-base font-medium max-w-md">
                                     Discover hundreds of verified scholarships in one unified, clutter-free space. Stop hunting across the web.
                                 </p>
                             </div>
                         </div>
 
-                        {/* Tile 2 — Brand accent tile (solid theme-700) */}
+                        {/* Tile 2 — Girls First */}
                         <div className="relative group rounded-3xl p-8 overflow-hidden
-                            bg-theme-700 dark:bg-theme-800
-                            shadow-md hover:shadow-xl hover:bg-theme-800 dark:hover:bg-theme-700 transition-all duration-500
+                            bg-white border border-slate-200/60
+                            dark:bg-[#1A0A09]/80 dark:border-theme-900/50 backdrop-blur-sm
+                            shadow-sm hover:shadow-xl transition-all duration-500
                             flex flex-col justify-between"
                         >
-                            <HeartHandshake className="w-10 h-10 text-theme-100 group-hover:-rotate-12 transition-transform duration-500" />
-                            <div>
-                                <h3 className="text-2xl font-headline font-bold mb-2 text-white">Girls First</h3>
-                                <p className="text-theme-100 font-medium text-sm">
+                            <div className="absolute inset-0 bg-gradient-to-tr from-theme-50/80 to-transparent dark:from-theme-900/30 dark:to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                            <HeartHandshake className="w-10 h-10 text-theme-600 dark:text-theme-400 group-hover:-rotate-12 transition-transform duration-500 relative z-10" />
+                            <div className="relative z-10">
+                                <h3 className="text-2xl font-headline font-bold mb-2 text-foreground">Girls First</h3>
+                                <p className="text-muted-foreground font-medium text-sm">
                                     100% focused on opportunities exclusively for female students across India.
                                 </p>
                             </div>
                         </div>
 
-                        {/* Tile 3 — Warm rose accent (light) / deep dark tile */}
+                        {/* Tile 3 — Universal Apply */}
                         <div className="relative group rounded-3xl p-8 overflow-hidden
-                            bg-rose-50 border border-rose-200
-                            dark:bg-[#200C0C] dark:border-rose-900/50
-                            shadow-md hover:shadow-xl transition-all duration-500
+                            bg-white border border-slate-200/60
+                            dark:bg-[#1A0A09]/80 dark:border-theme-900/50 backdrop-blur-sm
+                            shadow-sm hover:shadow-xl transition-all duration-500
                             flex flex-col justify-between"
                         >
-                            <div className="absolute inset-0 bg-gradient-to-tr from-rose-100 to-transparent dark:from-rose-900/30 dark:to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                            <BookCheck className="w-10 h-10 text-rose-600 dark:text-rose-400 group-hover:-translate-y-2 transition-transform duration-500 relative z-10" />
+                            <div className="absolute inset-0 bg-gradient-to-tr from-rose-50/80 to-transparent dark:from-rose-900/20 dark:to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                            <BookCheck className="w-10 h-10 text-rose-500 dark:text-rose-400 group-hover:-translate-y-2 transition-transform duration-500 relative z-10" />
                             <div className="relative z-10">
-                                <h3 className="text-2xl font-headline font-bold mb-2 text-rose-950 dark:text-rose-50">Universal Apply</h3>
-                                <p className="text-rose-800 dark:text-rose-300 font-medium text-sm">
+                                <h3 className="text-2xl font-headline font-bold mb-2 text-foreground">Universal Apply</h3>
+                                <p className="text-muted-foreground font-medium text-sm">
                                     One profile. One unified format. Zero repetitive paperwork.
                                 </p>
                             </div>
                         </div>
 
-                        {/* Tile 4 — Dark feature tile, deep warm black */}
+                        {/* Tile 4 — AI-Powered Matches */}
                         <div className="md:col-span-2 relative group rounded-3xl p-8 md:p-10 overflow-hidden
-                            bg-theme-950 dark:bg-[#120707]
-                            shadow-md hover:shadow-2xl transition-all duration-500"
+                            bg-white border border-slate-200/60
+                            dark:bg-[#1A0A09]/80 dark:border-theme-900/50 backdrop-blur-sm
+                            shadow-sm hover:shadow-xl transition-all duration-500"
                         >
-                            <div className="absolute inset-0 bg-gradient-to-br from-theme-800/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                            <div className="absolute inset-0 bg-gradient-to-br from-theme-50/50 to-transparent dark:from-theme-900/20 dark:to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                             {/* Decorative glowing orb */}
-                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-theme-600/20 blur-[70px] rounded-full opacity-60 group-hover:opacity-100 transition-opacity duration-700" />
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-theme-300/30 dark:bg-theme-600/10 blur-[60px] rounded-full opacity-60 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
                             <div className="h-full flex flex-col justify-end relative z-10">
-                                <Sparkles className="w-12 h-12 text-theme-300 mb-5" />
-                                <h3 className="text-2xl md:text-3xl font-headline font-bold mb-2 text-white">AI-Powered Matches</h3>
-                                <p className="text-theme-200 text-base font-medium max-w-md">
+                                <Sparkles className="w-12 h-12 text-theme-600 dark:text-theme-400 mb-5 group-hover:animate-pulse" />
+                                <h3 className="text-2xl md:text-3xl font-headline font-bold mb-2 text-foreground">AI-Powered Matches</h3>
+                                <p className="text-muted-foreground text-base font-medium max-w-md">
                                     Our intelligent engine instantly analyzes your profile and highlights the exact scholarships you're most likely to win.
                                 </p>
                             </div>

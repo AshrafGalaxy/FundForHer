@@ -58,52 +58,52 @@ export const FeaturedScholarshipCarousel = ({ scholarships }: FeaturedScholarshi
                                 <div
                                     className={`relative overflow-hidden h-[280px] md:h-[340px] rounded-3xl transition-all duration-500 ease-out
                                         ${isActive
-                                            ? 'opacity-100 scale-100 shadow-2xl shadow-theme-900/20 dark:shadow-theme-900/40'
+                                            ? 'opacity-100 scale-100 shadow-xl shadow-slate-200/50 dark:shadow-none'
                                             : 'opacity-40 scale-95 blur-[1px]'
                                         }
-                                        bg-theme-50 dark:bg-[#231210]
-                                        border border-theme-200 dark:border-theme-900
+                                        bg-white dark:bg-[#1A0A09]/90 backdrop-blur-md
+                                        border border-slate-200/60 dark:border-theme-900/50
                                     `}
                                 >
                                     {/* Decorative warm glow top-right */}
-                                    <div className="absolute -top-16 -right-16 w-48 h-48 bg-theme-300/40 dark:bg-theme-800/40 rounded-full blur-3xl pointer-events-none" />
+                                    <div className="absolute -top-16 -right-16 w-48 h-48 bg-theme-100/60 dark:bg-theme-900/20 rounded-full blur-3xl pointer-events-none" />
                                     {/* Bottom-left accent */}
-                                    <div className="absolute -bottom-10 -left-10 w-36 h-36 bg-theme-200/30 dark:bg-theme-900/30 rounded-full blur-2xl pointer-events-none" />
+                                    <div className="absolute -bottom-10 -left-10 w-36 h-36 bg-theme-50/80 dark:bg-theme-900/10 rounded-full blur-2xl pointer-events-none" />
 
                                     <div className="p-7 md:p-10 h-full flex flex-col justify-between relative z-10">
                                         {/* Top: Badge + Title + Provider */}
                                         <div className="space-y-3">
-                                            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-theme-700 dark:bg-theme-800 text-white text-xs font-bold tracking-widest uppercase shadow-sm">
+                                            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-theme-100 dark:bg-theme-900/50 text-theme-800 dark:text-theme-300 text-xs font-bold tracking-widest uppercase shadow-sm border border-theme-200/50 dark:border-theme-800">
                                                 <Trophy className="w-3 h-3" />
                                                 Featured
                                             </div>
 
-                                            <h3 className="text-xl md:text-3xl font-headline font-extrabold text-theme-950 dark:text-theme-50 leading-tight line-clamp-2">
+                                            <h3 className="text-xl md:text-3xl font-headline font-extrabold text-foreground leading-tight line-clamp-2">
                                                 {scholarship.title}
                                             </h3>
 
-                                            <p className="text-theme-700 dark:text-theme-400 font-medium flex items-center gap-2 line-clamp-1 text-sm">
-                                                <MapPin className="w-4 h-4 flex-shrink-0" />
+                                            <p className="text-muted-foreground font-medium flex items-center gap-2 line-clamp-1 text-sm">
+                                                <MapPin className="w-4 h-4 flex-shrink-0 text-theme-600 dark:text-theme-400" />
                                                 {scholarship.provider}
                                             </p>
                                         </div>
 
                                         {/* Bottom: Meta + CTA */}
-                                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-5 border-t border-theme-200 dark:border-theme-800">
+                                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-5 border-t border-slate-100 dark:border-theme-900/50">
                                             <div className="flex items-center gap-6">
                                                 {scholarship.amount && (
                                                     <div>
-                                                        <p className="text-xs text-theme-600 dark:text-theme-500 font-semibold uppercase tracking-wider mb-0.5">Funding</p>
-                                                        <p className="text-lg md:text-xl font-bold text-green-700 dark:text-green-400">
+                                                        <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider mb-0.5">Funding</p>
+                                                        <p className="text-lg md:text-xl font-bold text-green-600 dark:text-green-400">
                                                             <span style={{ fontFamily: 'sans-serif' }}>₹</span>
                                                             {scholarship.amount.toLocaleString('en-IN')}
                                                         </p>
                                                     </div>
                                                 )}
                                                 <div>
-                                                    <p className="text-xs text-theme-600 dark:text-theme-500 font-semibold uppercase tracking-wider mb-0.5">Deadline</p>
-                                                    <p className="text-sm font-medium flex items-center gap-1.5 text-theme-800 dark:text-theme-300">
-                                                        <CalendarClock className="w-4 h-4 flex-shrink-0" />
+                                                    <p className="text-xs text-muted-foreground font-semibold uppercase tracking-wider mb-0.5">Deadline</p>
+                                                    <p className="text-sm font-medium flex items-center gap-1.5 text-foreground">
+                                                        <CalendarClock className="w-4 h-4 flex-shrink-0 text-theme-600 dark:text-theme-400" />
                                                         {scholarship.deadline
                                                             ? (scholarship.deadline instanceof Date ? scholarship.deadline : new Date(scholarship.deadline)).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
                                                             : 'Varies'}
@@ -114,7 +114,7 @@ export const FeaturedScholarshipCarousel = ({ scholarships }: FeaturedScholarshi
                                             <Button
                                                 asChild
                                                 size="sm"
-                                                className="rounded-full bg-theme-700 hover:bg-theme-800 text-white dark:bg-theme-600 dark:hover:bg-theme-500 border-none font-bold px-6 shadow-md group flex-shrink-0"
+                                                className="rounded-full bg-theme-600 hover:bg-theme-700 text-white dark:bg-theme-500 dark:hover:bg-theme-600 border-none font-bold px-6 shadow-md shadow-theme-200/50 dark:shadow-none group flex-shrink-0"
                                             >
                                                 <Link href="/register">
                                                     Apply Now
@@ -136,8 +136,8 @@ export const FeaturedScholarshipCarousel = ({ scholarships }: FeaturedScholarshi
                     <button
                         key={i}
                         className={`h-2 rounded-full transition-all duration-300 ${i === selectedIndex
-                                ? 'bg-theme-700 dark:bg-theme-400 w-8'
-                                : 'bg-theme-300/60 dark:bg-theme-700/60 w-2 hover:bg-theme-400/80'
+                            ? 'bg-theme-700 dark:bg-theme-400 w-8'
+                            : 'bg-theme-300/60 dark:bg-theme-700/60 w-2 hover:bg-theme-400/80'
                             }`}
                         onClick={() => emblaApi?.scrollTo(i)}
                         aria-label={`Go to slide ${i + 1}`}
