@@ -13,11 +13,11 @@ interface LogoProps extends React.SVGProps<SVGSVGElement> {
  * 1. An open book (symbolizing education and knowledge)
  * 2. A central spark/star (symbolizing growth, future, and empowerment)
  */
-export const Logo: React.FC<LogoProps> = ({ 
-  className = "w-8 h-8", 
-  indigoColor = "#1E3A8A", // Deep Indigo/Navy (Tailwind blue-900)
-  coralColor = "#FF7F50", // Warm Coral 
-  ...props 
+export const Logo: React.FC<LogoProps> = ({
+  className = "w-8 h-8",
+  indigoColor = "#1E3A8A", // Deep Indigo/Navy 
+  coralColor = "#FF9F89",  // Theme-matching Peach/Pink (soft coral-pink)
+  ...props
 }) => {
   return (
     <svg
@@ -36,7 +36,7 @@ export const Logo: React.FC<LogoProps> = ({
         fill={indigoColor}
         className="transition-colors duration-300"
       />
-      
+
       {/* 
         Empowerment Spark: Rising from the book 
         A clean, geometric 4-point star representing a bright future.

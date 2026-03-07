@@ -3,7 +3,8 @@
 'use client';
 
 import Link from 'next/link';
-import { GraduationCap, Menu, User, X, LogOut, LogIn, Sparkles, Sun, Moon, Monitor, BookOpen, FilePenLine, UserPlus, Briefcase, LayoutDashboard } from 'lucide-react';
+import { Menu, User, X, LogOut, LogIn, Sparkles, Sun, Moon, Monitor, BookOpen, FilePenLine, UserPlus, Briefcase, LayoutDashboard } from 'lucide-react';
+import Logo from '@/components/ui/Logo';
 import { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
@@ -197,7 +198,7 @@ export const Header = () => {
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           <Link href="/" className="flex items-center gap-2">
-            <GraduationCap className="h-7 w-7 text-primary" />
+            <Logo className="w-8 h-8 text-primary" />
             <span className="text-xl font-headline font-bold text-card-foreground">
               FUND HER FUTURE
             </span>
@@ -265,7 +266,7 @@ export const Header = () => {
                   <SheetContent side="right" className="w-[240px] bg-card">
                     <div className="flex justify-between items-center mb-8">
                       <Link href="/" className="flex items-center gap-2" onClick={() => setIsMenuOpen(false)}>
-                        <GraduationCap className="h-7 w-7 text-primary" />
+                        <Logo className="w-8 h-8 text-primary" />
                         <span className="text-lg font-headline font-bold text-card-foreground">
                           FUND HER FUTURE
                         </span>

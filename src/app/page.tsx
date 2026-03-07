@@ -13,7 +13,7 @@ import placeholderImages from '@/lib/placeholder-images.json';
 import { useAuth } from './auth-provider';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Sparkles, Calendar } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useFirestore } from '@/firebase';
 import { collection, getDocs, doc, getDoc, query, orderBy, limit, where, Timestamp } from 'firebase/firestore';
@@ -332,7 +332,9 @@ export default function LandingPage() {
                                     <Card key={scholarship.id} className="flex flex-col hover:shadow-lg hover:-translate-y-1 transition-all duration-200 bg-background border-primary/10">
                                         <CardHeader>
                                             <div className="flex justify-between items-start mb-2">
-                                                <span className="bg-primary/10 text-primary text-xs font-semibold px-2 py-1 rounded">✨ New</span>
+                                                <span className="flex items-center gap-1 bg-primary/10 text-primary text-xs font-semibold px-2 py-1 rounded w-fit">
+                                                    <Sparkles className="h-3 w-3" /> New
+                                                </span>
                                                 {scholarship.amount && (
                                                     <span className="text-sm font-bold text-green-600 bg-green-50 px-2 py-1 rounded">
                                                         ₹{scholarship.amount.toLocaleString('en-IN')}
@@ -348,10 +350,11 @@ export default function LandingPage() {
                                             </p>
                                         </CardContent>
                                         <CardFooter className="justify-between items-center text-xs text-muted-foreground border-t bg-muted/20 p-4">
-                                            <span>
+                                            <span className="flex items-center gap-1.5">
+                                                <Calendar className="h-4 w-4" />
                                                 {scholarship.deadline
-                                                    ? `📅 ${(scholarship.deadline instanceof Date ? scholarship.deadline : new Date(scholarship.deadline)).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}`
-                                                    : '📅 Deadline Varies'}
+                                                    ? (scholarship.deadline instanceof Date ? scholarship.deadline : new Date(scholarship.deadline)).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+                                                    : 'Deadline Varies'}
                                             </span>
                                             <Button asChild size="sm" variant="ghost" className="h-8 hover:text-primary">
                                                 <Link href="/register">View Details</Link>
