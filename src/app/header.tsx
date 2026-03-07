@@ -263,7 +263,7 @@ export const Header = () => {
                       <span className="sr-only">Open menu</span>
                     </Button>
                   </SheetTrigger>
-                  <SheetContent side="right" className="w-[240px] bg-card">
+                  <SheetContent side="right" className="w-[240px] bg-card [&>button]:hidden">
                     <div className="flex justify-between items-center mb-8">
                       <Link href="/" className="flex items-center gap-2" onClick={() => setIsMenuOpen(false)}>
                         <Logo className="w-8 h-8 text-primary" />
