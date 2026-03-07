@@ -421,13 +421,13 @@ export default function LandingPage() {
                     <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-12 bg-card dark:bg-card/50 backdrop-blur-sm p-8 md:p-12 rounded-3xl shadow-xl shadow-theme-200/20 dark:shadow-none border border-theme-100 dark:border-theme-800/50">
 
                         <div className="flex-1 text-center md:text-left space-y-6">
-                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-theme-100 dark:bg-theme-900/50 text-theme-800 dark:text-theme-200 text-sm font-semibold mb-2">
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-theme-100 dark:bg-theme-900 text-theme-800 dark:text-theme-200 text-sm font-semibold mb-2">
                                 <Smartphone className="w-4 h-4" /> Install from Browser
                             </div>
                             <h2 className="text-3xl md:text-5xl font-headline font-bold text-theme-950 dark:text-theme-50">
                                 Take Fund Her Future <span className="text-theme-600 dark:text-theme-400">Anywhere.</span>
                             </h2>
-                            <p className="text-lg text-theme-800/80 dark:text-theme-200/80 max-w-lg mx-auto md:mx-0 font-medium">
+                            <p className="text-lg text-theme-800 dark:text-theme-200 max-w-lg mx-auto md:mx-0 font-medium">
                                 Install our fast, lightweight web app directly to your device. No app store required. Works perfectly across all your favorite platforms.
                             </p>
 
@@ -447,9 +447,9 @@ export default function LandingPage() {
                             </div>
                         </div>
 
-                        <div className="flex-shrink-0 w-full md:w-auto flex flex-col items-center p-8 bg-theme-100/50 dark:bg-theme-900/30 rounded-2xl border border-theme-200 dark:border-theme-800 shadow-sm">
+                        <div className="flex-shrink-0 w-full md:w-auto flex flex-col items-center p-8 bg-theme-50 dark:bg-theme-900 rounded-2xl border border-theme-200 dark:border-theme-800 shadow-sm">
                             <h3 className="text-xl font-headline font-bold mb-2 text-theme-950 dark:text-theme-50">Get the App Now</h3>
-                            <p className="text-sm text-center text-theme-800/80 dark:text-theme-200/80 mb-6 max-w-[200px] font-medium">
+                            <p className="text-sm text-center text-theme-800 dark:text-theme-200 mb-6 max-w-[200px] font-medium">
                                 One tap to add it to your home screen or desktop.
                             </p>
                             <InstallAppWidget />
