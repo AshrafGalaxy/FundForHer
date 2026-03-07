@@ -16,19 +16,19 @@ export const InfiniteMarquee = () => {
     const scrollItems = [...partners, ...partners, ...partners, ...partners];
 
     return (
-        <div className="relative w-full py-16 border-y border-[#FBA69B]/30 dark:border-white/10 overflow-hidden bg-white dark:bg-zinc-950">
+        <div className="relative w-full py-16 border-y border-[#FBA69B]/20 overflow-hidden bg-[#FFF5F4]">
             {/* Dreamy Background Gradients */}
-            <div className="absolute inset-0 bg-gradient-to-r from-[#FBA69B]/20 via-transparent to-[#FBA69B]/20 dark:from-[#FBA69B]/5 dark:via-transparent dark:to-[#FBA69B]/5 pointer-events-none" />
-            <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-[500px] h-[300px] bg-[#FBA69B]/30 dark:bg-[#FBA69B]/10 rounded-full blur-[100px] pointer-events-none animate-pulse duration-[7000ms]" />
-            <div className="absolute top-1/2 right-1/4 -translate-y-1/2 w-[500px] h-[300px] bg-pink-300/20 dark:bg-rose-500/10 rounded-full blur-[100px] pointer-events-none animate-pulse duration-[5000ms]" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#FBA69B]/10 via-transparent to-[#FBA69B]/10 pointer-events-none" />
+            <div className="absolute top-1/2 left-1/4 -translate-y-1/2 w-[500px] h-[300px] bg-[#FBA69B]/20 rounded-full blur-[100px] pointer-events-none animate-pulse duration-[7000ms]" />
+            <div className="absolute top-1/2 right-1/4 -translate-y-1/2 w-[500px] h-[300px] bg-pink-300/10 rounded-full blur-[100px] pointer-events-none animate-pulse duration-[5000ms]" />
 
             <div className="container mx-auto px-4 mb-10 relative z-10">
                 <div className="flex items-center justify-center gap-3">
-                    <Sparkles className="w-5 h-5 text-pink-500 dark:text-[#FBA69B] animate-pulse" />
-                    <p className="text-center text-sm font-bold tracking-widest text-zinc-900 dark:text-zinc-50 uppercase">
+                    <Sparkles className="w-5 h-5 text-[#FBA69B] animate-pulse" />
+                    <p className="text-center text-sm font-bold tracking-widest text-[#301A18]/70 uppercase">
                         Trusted by top institutions & organizations
                     </p>
-                    <Sparkles className="w-5 h-5 text-pink-500 dark:text-[#FBA69B] animate-pulse" />
+                    <Sparkles className="w-5 h-5 text-[#FBA69B] animate-pulse" />
                 </div>
             </div>
 
@@ -38,10 +38,10 @@ export const InfiniteMarquee = () => {
                     {scrollItems.map((partner, index) => (
                         <div key={index} className="flex items-center justify-center gap-4 mx-8 md:mx-16 opacity-80 hover:opacity-100 hover:scale-[1.03] transition-all duration-300 group/item cursor-default">
                             {/* Glassmorphic Icon Container */}
-                            <div className="p-3.5 rounded-2xl bg-white/70 dark:bg-white/5 shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:shadow-[0_8px_30px_rgba(251,166,155,0.05)] backdrop-blur-md border border-[#FBA69B]/20 dark:border-white/10 group-hover/item:border-[#FBA69B]/60 transition-colors">
+                            <div className="p-3.5 rounded-2xl bg-white/70 shadow-[0_8px_30px_rgb(0,0,0,0.04)] backdrop-blur-md border border-[#FBA69B]/20 group-hover/item:border-[#FBA69B]/60 transition-colors">
                                 {partner.icon}
                             </div>
-                            <span className="text-2xl font-headline font-extrabold text-zinc-900 dark:text-white drop-shadow-sm tracking-tight">
+                            <span className="text-2xl font-headline font-extrabold text-[#301A18] drop-shadow-sm tracking-tight group-hover/item:text-[#FBA69B] transition-colors">
                                 {partner.name}
                             </span>
                         </div>
@@ -50,8 +50,8 @@ export const InfiniteMarquee = () => {
             </div>
 
             {/* Fade edges to match the dreamy gradient and ensure smooth scroll entrance/exit */}
-            <div className="absolute inset-y-0 left-0 w-24 md:w-48 bg-gradient-to-r from-white dark:from-zinc-950 to-transparent pointer-events-none z-20" />
-            <div className="absolute inset-y-0 right-0 w-24 md:w-48 bg-gradient-to-l from-white dark:from-zinc-950 to-transparent pointer-events-none z-20" />
+            <div className="absolute inset-y-0 left-0 w-24 md:w-48 bg-gradient-to-r from-[#FFF5F4] to-transparent pointer-events-none z-20" />
+            <div className="absolute inset-y-0 right-0 w-24 md:w-48 bg-gradient-to-l from-[#FFF5F4] to-transparent pointer-events-none z-20" />
         </div>
     );
 };
