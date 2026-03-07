@@ -56,13 +56,13 @@ export const FeaturedScholarshipCarousel = ({ scholarships }: FeaturedScholarshi
                                 className="flex-[0_0_92%] sm:flex-[0_0_80%] md:flex-[0_0_65%] lg:flex-[0_0_55%] min-w-0"
                             >
                                 <div
-                                    className={`relative overflow-hidden h-[280px] md:h-[340px] rounded-3xl transition-all duration-500 ease-out
+                                    className={`relative overflow-hidden h-[280px] md:h-[340px] rounded-3xl transition-all duration-700 ease-in-out
                                         ${isActive
-                                            ? 'opacity-100 scale-100 shadow-xl shadow-slate-200/50 dark:shadow-none'
-                                            : 'opacity-40 scale-95 blur-[1px]'
+                                            ? 'opacity-100 scale-100 shadow-[0_20px_60px_-15px_rgba(0,0,0,0.1)] dark:shadow-none z-10'
+                                            : 'opacity-60 scale-[0.96] hover:opacity-80 z-0'
                                         }
-                                        bg-white dark:bg-[#1A0A09]/90 backdrop-blur-md
-                                        border border-slate-200/60 dark:border-theme-900/50
+                                        bg-white dark:bg-slate-900
+                                        border border-slate-200 dark:border-slate-800
                                     `}
                                 >
                                     {/* Decorative warm glow top-right */}
