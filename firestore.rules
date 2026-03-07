@@ -1,0 +1,30 @@
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Scholarships can be read by anyone, but only created/modified/deleted by authenticated providers.
+    match /scholarships/{scholarshipId} {
+      allow read: if true;
+      allow write: if request.auth != null && exists(/databases/$(database)/documents/providers/$(request.auth.uid));
+    }
+
+    // User profiles can be created by a new user, but only read/updated/deleted by the user themselves.
+    match /users/{userId} {
+      allow read, update, delete: if request.auth != null && request.auth.uid == userId;
+      allow create: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // A user can manage their own bookmarked scholarships.
+    match /users/{userId}/bookmarkedScholarships/{scholarshipId} {
+        allow read, write, delete: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Provider profiles can be created by a new provider, and only read/updated/deleted by the provider themselves.
+    match /providers/{providerId} {
+      allow read, update, delete: if request.auth != null && request.auth.uid == providerId;
+      allow create: if request.auth != null && request.auth.uid == providerId;
+    }
+  }
+}

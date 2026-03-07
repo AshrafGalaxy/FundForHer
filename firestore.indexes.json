@@ -1,0 +1,29 @@
+{
+    "indexes": [
+        {
+            "collectionGroup": "scholarships",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "lastUpdated",
+                    "order": "DESCENDING"
+                }
+            ]
+        },
+        {
+            "collectionGroup": "scholarships",
+            "queryScope": "COLLECTION",
+            "fields": [
+                {
+                    "fieldPath": "lastUpdated",
+                    "order": "DESCENDING"
+                },
+                {
+                    "fieldPath": "status",
+                    "order": "ASCENDING"
+                }
+            ]
+        }
+    ],
+    "fieldOverrides": []
+}

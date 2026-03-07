@@ -1,0 +1,26 @@
+
+{
+    "landingPage": {
+        "aboutSection": {
+            "src": "https://campusworld.net/images/blogs/blog25.jpg",
+            "width": 600,
+            "height": 400,
+            "alt": "A group of happy young Indian female students in a classroom.",
+            "hint": "women collaboration empowerment"
+        },
+        "problemSection": {
+            "src": "https://www.indiaspend.com/h-upload/old_images/1500x900_343588-andhrapradesh-1440.jpg",
+            "width": 600,
+            "height": 400,
+            "alt": "Young Indian schoolgirls sitting in a classroom looking towards the front.",
+            "hint": "schoolgirls classroom"
+        },
+        "missionSection": {
+            "src": "https://keystoneacademic-res.cloudinary.com/image/upload/v1710503207/Women_Scholarships_af9szv.png",
+            "width": 600,
+            "height": 400,
+            "alt": "A female student celebrating graduation, holding a diploma.",
+            "hint": "student graduation success"
+        }
+    }
+}

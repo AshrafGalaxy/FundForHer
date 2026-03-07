@@ -1,0 +1,25 @@
+name: Daily Scholarship Scraper
+
+on:
+  schedule:
+    # Run at 2:00 AM IST everyday (which is 8:30 PM UTC)
+    - cron: '30 20 * * *'
+  # Allow manual trigger from the Actions tab
+  workflow_dispatch: 
+
+jobs:
+  scrape-and-sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Sync API
+        run: |
+          # Requires PROD_DOMAIN and CRON_SECRET to be set in GitHub Repository Secrets
+          HTTP_STATUS=$(curl -s -o response.txt -w "%{http_code}" -X POST "https://${{ secrets.PROD_DOMAIN }}/api/scholarships/sync?secret=${{ secrets.CRON_SECRET }}" -H "Content-Type: application/json")
+          
+          echo "Response Status: $HTTP_STATUS"
+          cat response.txt
+          
+          if [ "$HTTP_STATUS" -ne 200 ]; then
+            echo "::error::Sync API failed with status $HTTP_STATUS"
+            exit 1
+          fi
