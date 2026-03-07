@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { getProviderProfile } from '@/server/db/user-data';
 import type { Scholarship } from '@/lib/types';
-import { ArrowRight, BookCheck, Goal, HeartHandshake, Lightbulb, Target, Smartphone, Laptop, Tablet } from 'lucide-react';
+import { ArrowRight, BookCheck, Goal, HeartHandshake, Lightbulb, Target, Smartphone, Laptop, Tablet, CheckCircle2 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import placeholderImages from '@/lib/placeholder-images.json';
@@ -127,6 +127,25 @@ const FeatureCard = ({ icon, title, description }: { icon: React.ReactNode, titl
 );
 
 export default function LandingPage() {
+    const [isPwaInstalled, setIsPwaInstalled] = useState(false);
+
+    useEffect(() => {
+        // Check if the app is already installed and running in standalone mode
+        if (window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true) {
+            setIsPwaInstalled(true);
+        }
+
+        const handleAppInstalled = () => {
+            setIsPwaInstalled(true);
+        };
+        window.addEventListener('appinstalled', handleAppInstalled);
+
+        // Also check if they launched the standalone app and navigating back to home
+        return () => {
+            window.removeEventListener('appinstalled', handleAppInstalled);
+        };
+    }, []);
+
     const authContext = useAuth();
     const db = useFirestore();
     const router = useRouter();
@@ -420,30 +439,46 @@ export default function LandingPage() {
                     <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-12 bg-card dark:bg-card/50 backdrop-blur-sm p-8 md:p-12 rounded-3xl shadow-xl shadow-theme-200/20 dark:shadow-none border border-theme-100 dark:border-theme-800/50">
 
                         <div className="flex-1 text-center md:text-left space-y-6">
-                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-theme-100 dark:bg-theme-900 text-theme-800 dark:text-theme-200 text-sm font-semibold mb-2">
-                                <Smartphone className="w-4 h-4" /> Install from Browser
-                            </div>
-                            <h2 className="text-3xl md:text-5xl font-headline font-bold text-theme-950 dark:text-theme-50">
-                                Take Fund Her Future <span className="text-theme-600 dark:text-theme-400">Anywhere.</span>
-                            </h2>
-                            <p className="text-lg text-theme-950 dark:text-theme-200 max-w-lg mx-auto md:mx-0 font-medium">
-                                Install our fast, lightweight web app directly to your device. No app store required. Works perfectly across all your favorite platforms.
-                            </p>
+                            {isPwaInstalled ? (
+                                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 text-sm font-semibold mb-2 border border-green-200 dark:border-green-800/50 shadow-sm">
+                                        <CheckCircle2 className="w-4 h-4" /> App Installed
+                                    </div>
+                                    <h2 className="text-3xl md:text-5xl font-headline font-bold text-theme-950 dark:text-theme-50">
+                                        You're all <span className="text-theme-600 dark:text-theme-400">set!</span>
+                                    </h2>
+                                    <p className="text-lg text-theme-950 dark:text-theme-200 max-w-lg mx-auto md:mx-0 font-medium">
+                                        Fund Her Future is successfully installed on your device. Enjoy the fastest, offline-ready experience right from your home screen.
+                                    </p>
+                                </div>
+                            ) : (
+                                <div className="space-y-6">
+                                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-theme-100 dark:bg-theme-900 text-theme-800 dark:text-theme-200 text-sm font-semibold mb-2">
+                                        <Smartphone className="w-4 h-4" /> Install from Browser
+                                    </div>
+                                    <h2 className="text-3xl md:text-5xl font-headline font-bold text-theme-950 dark:text-theme-50">
+                                        Take Fund Her Future <span className="text-theme-600 dark:text-theme-400">Anywhere.</span>
+                                    </h2>
+                                    <p className="text-lg text-theme-950 dark:text-theme-200 max-w-lg mx-auto md:mx-0 font-medium">
+                                        Install our fast, lightweight web app directly to your device. No app store required. Works perfectly across all your favorite platforms.
+                                    </p>
 
-                            <div className="flex items-center justify-center md:justify-start gap-6 pt-4 text-theme-700 dark:text-theme-300">
-                                <div className="flex flex-col items-center gap-2">
-                                    <Smartphone className="w-8 h-8 text-theme-500" />
-                                    <span className="text-xs font-semibold">Android</span>
+                                    <div className="flex items-center justify-center md:justify-start gap-6 pt-4 text-theme-700 dark:text-theme-300">
+                                        <div className="flex flex-col items-center gap-2">
+                                            <Smartphone className="w-8 h-8 text-theme-500" />
+                                            <span className="text-xs font-semibold">Android</span>
+                                        </div>
+                                        <div className="flex flex-col items-center gap-2">
+                                            <Tablet className="w-8 h-8 text-theme-500" />
+                                            <span className="text-xs font-semibold">iOS / iPadOS</span>
+                                        </div>
+                                        <div className="flex flex-col items-center gap-2">
+                                            <Laptop className="w-8 h-8 text-theme-500" />
+                                            <span className="text-xs font-semibold">Windows & Mac</span>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="flex flex-col items-center gap-2">
-                                    <Tablet className="w-8 h-8 text-theme-500" />
-                                    <span className="text-xs font-semibold">iOS / iPadOS</span>
-                                </div>
-                                <div className="flex flex-col items-center gap-2">
-                                    <Laptop className="w-8 h-8 text-theme-500" />
-                                    <span className="text-xs font-semibold">Windows & Mac</span>
-                                </div>
-                            </div>
+                            )}
                         </div>
                     </div>
                 </div>
