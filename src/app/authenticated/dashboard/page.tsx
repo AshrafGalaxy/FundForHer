@@ -415,8 +415,8 @@ export default function DashboardPage() {
               <div className="flex flex-col gap-6">
                 <div className="border-b">
                   <div className="flex gap-4">
-                    <button onClick={() => setActiveTab('all')} className={`py-2 px-4 text-sm font-medium transition-colors ${activeTab === 'all' ? 'border-b-2 border-theme-900 dark:border-theme-200 text-theme-900 dark:text-theme-200 font-bold' : 'border-b-2 border-transparent text-theme-700 dark:text-theme-300 hover:text-theme-900 dark:hover:text-theme-100'}`}>All Scholarships</button>
-                    <button onClick={() => setActiveTab('saved')} className={`flex items-center gap-2 py-2 px-4 text-sm font-medium transition-colors ${activeTab === 'saved' ? 'border-b-2 border-theme-900 dark:border-theme-200 text-theme-900 dark:text-theme-200 font-bold' : 'border-b-2 border-transparent text-theme-700 dark:text-theme-300 hover:text-theme-900 dark:hover:text-theme-100'}`}>
+                    <button onClick={() => setActiveTab('all')} className={`py-2 px-4 text-sm font-medium transition-colors rounded-t-lg ${activeTab === 'all' ? 'bg-theme-100 dark:bg-theme-900/50 border-b-2 border-theme-600 dark:border-theme-400 text-theme-900 dark:text-theme-100 font-bold' : 'border-b-2 border-transparent text-muted-foreground hover:bg-theme-50 dark:hover:bg-theme-900/20 hover:text-theme-900 dark:hover:text-theme-200'}`}>All Scholarships</button>
+                    <button onClick={() => setActiveTab('saved')} className={`flex items-center gap-2 py-2 px-4 text-sm font-medium transition-colors rounded-t-lg ${activeTab === 'saved' ? 'bg-theme-100 dark:bg-theme-900/50 border-b-2 border-theme-600 dark:border-theme-400 text-theme-900 dark:text-theme-100 font-bold' : 'border-b-2 border-transparent text-muted-foreground hover:bg-theme-50 dark:hover:bg-theme-900/20 hover:text-theme-900 dark:hover:text-theme-200'}`}>
                       <Bookmark className="h-4 w-4" /> Saved Scholarships
                     </button>
                   </div>
@@ -425,16 +425,16 @@ export default function DashboardPage() {
                 {activeTab === 'all' && (
                   <div className="flex flex-wrap gap-2">
                     <Button onClick={() => setActiveStatus('All')} variant={activeStatus === 'All' ? 'default' : 'outline'} size="sm">
-                      All <span className="ml-2 bg-primary-foreground text-theme-600 dark:text-theme-400 rounded-full px-2 py-0.5 text-[10px]">{filteredScholarships.length}</span>
+                      All <span className="ml-2 bg-theme-200 dark:bg-theme-800 text-theme-950 dark:text-theme-50 rounded-full px-2 py-0.5 text-[10px] font-bold">{filteredScholarships.length}</span>
                     </Button>
                     <Button onClick={() => setActiveStatus('Live')} variant={activeStatus === 'Live' ? 'default' : 'outline'} size="sm">
-                      Live <span className="ml-2 bg-primary-foreground text-theme-600 dark:text-theme-400 rounded-full px-2 py-0.5 text-[10px]">{liveCount}</span>
+                      Live <span className="ml-2 bg-theme-200 dark:bg-theme-800 text-theme-950 dark:text-theme-50 rounded-full px-2 py-0.5 text-[10px] font-bold">{liveCount}</span>
                     </Button>
                     <Button onClick={() => setActiveStatus('Upcoming')} variant={activeStatus === 'Upcoming' ? 'default' : 'outline'} size="sm">
-                      Upcoming <span className="ml-2 bg-primary-foreground text-theme-600 dark:text-theme-400 rounded-full px-2 py-0.5 text-[10px]">{upcomingCount}</span>
+                      Upcoming <span className="ml-2 bg-theme-200 dark:bg-theme-800 text-theme-950 dark:text-theme-50 rounded-full px-2 py-0.5 text-[10px] font-bold">{upcomingCount}</span>
                     </Button>
                     <Button onClick={() => setActiveStatus('Always Open')} variant={activeStatus === 'Always Open' ? 'default' : 'outline'} size="sm">
-                      Always Open <span className="ml-2 bg-primary-foreground text-theme-600 dark:text-theme-400 rounded-full px-2 py-0.5 text-[10px]">{alwaysOpenCount}</span>
+                      Always Open <span className="ml-2 bg-theme-200 dark:bg-theme-800 text-theme-950 dark:text-theme-50 rounded-full px-2 py-0.5 text-[10px] font-bold">{alwaysOpenCount}</span>
                     </Button>
                   </div>
                 )}
