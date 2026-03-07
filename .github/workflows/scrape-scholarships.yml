@@ -12,14 +12,27 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Trigger Sync API
+        env:
+          DOMAIN: ${{ secrets.PROD_DOMAIN }}
+          CRON_AUTH: ${{ secrets.CRON_SECRET }}
         run: |
-          # Requires PROD_DOMAIN and CRON_SECRET to be set in GitHub Repository Secrets
-          HTTP_STATUS=$(curl -s -o response.txt -w "%{http_code}" -X POST "https://${{ secrets.PROD_DOMAIN }}/api/scholarships/sync?secret=${{ secrets.CRON_SECRET }}" -H "Content-Type: application/json")
+          # Sanitize DOMAIN: Strip existing http:// or https:// prefixes and trailing slashes
+          # This prevents "https://https://fundforher.com" bugs (curl Exit Code 6)
+          CLEAN_DOMAIN=$(echo "$DOMAIN" | sed -e 's|^https*://||' -e 's|/$||')
+          
+          echo "Initiating sync trigger to domain: $CLEAN_DOMAIN"
+          
+          # Execute curl with robust error handling (-v for verbose, --fail-with-body)
+          HTTP_STATUS=$(curl -s -v --fail-with-body -o response.txt -w "%{http_code}" -X POST "https://${CLEAN_DOMAIN}/api/scholarships/sync?secret=${CRON_AUTH}" -H "Content-Type: application/json")
           
           echo "Response Status: $HTTP_STATUS"
-          cat response.txt
           
           if [ "$HTTP_STATUS" -ne 200 ]; then
             echo "::error::Sync API failed with status $HTTP_STATUS"
+            echo "--- API Response Body ---"
+            cat response.txt
             exit 1
+          else
+            echo "Sync API succeeded!"
+            cat response.txt
           fi
