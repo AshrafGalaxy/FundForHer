@@ -264,16 +264,16 @@ export default function LandingPage() {
                         className="w-full h-full object-cover"
                     />
 
-                    {/* Light Mode: Classic deep gradient — restored to original premium look */}
-                    <div className="absolute inset-0 bg-gradient-to-tr from-indigo-950/95 via-indigo-900/60 to-slate-900/20 dark:hidden" />
-                    <div className="absolute inset-0 bg-black/40 dark:hidden" />
+                    {/* Light Mode: Full coverage dark overlay for strong text legibility */}
+                    <div className="absolute inset-0 bg-gradient-to-b from-black/75 via-black/60 to-black/80 dark:hidden" />
+                    <div className="absolute inset-0 bg-gradient-to-r from-indigo-950/80 to-transparent dark:hidden" />
 
-                    {/* Dark Mode: Theme-consistent dark pink gradient, no heavy multiply */}
-                    <div className="hidden dark:block absolute inset-0 bg-gradient-to-r from-[#1A0E0C]/98 via-[#301A18]/85 to-transparent" />
+                    {/* Dark Mode: Deep theme-consistent warm dark gradient */}
+                    <div className="hidden dark:block absolute inset-0 bg-gradient-to-br from-[#0D0605]/98 via-[#1A0E0C]/90 to-[#231210]/70" />
 
-                    {/* Dark Mode Animated Aurora Blobs */}
-                    <div className="hidden dark:block absolute -top-[20%] -left-[10%] w-[50%] h-[70%] bg-[#FBA69B]/20 blur-[100px] rounded-full mix-blend-screen animate-pulse duration-[8000ms]" />
-                    <div className="hidden dark:block absolute top-[20%] left-[20%] w-[40%] h-[50%] bg-[#FDC8C0]/15 blur-[120px] rounded-full mix-blend-screen animate-pulse duration-[12000ms]" style={{ animationDelay: '2s' }} />
+                    {/* Dark Mode: Subtle Aurora Blobs */}
+                    <div className="hidden dark:block absolute -top-[20%] -left-[10%] w-[50%] h-[70%] bg-theme-500/10 blur-[120px] rounded-full animate-pulse" style={{ animationDuration: '8s' }} />
+                    <div className="hidden dark:block absolute top-[30%] left-[15%] w-[35%] h-[50%] bg-theme-400/8 blur-[140px] rounded-full animate-pulse" style={{ animationDuration: '12s', animationDelay: '3s' }} />
                 </div>
 
                 <div className="container mx-auto px-4 relative z-10">
@@ -340,69 +340,87 @@ export default function LandingPage() {
 
 
             {/* Premium Bento Box Features Section */}
-            <section className="py-24 relative overflow-hidden bg-gradient-to-b from-background to-theme-50/20 dark:to-theme-900/10">
-                <div className="absolute inset-0 z-0 opacity-30 dark:opacity-10 pointer-events-none bg-[radial-gradient(circle_at_inset,var(--theme-600)_0%,transparent_50%)]" />
-
-                <div className="container mx-auto px-4 relative z-10 max-w-6xl">
+            <section className="py-24 bg-background">
+                <div className="container mx-auto px-4 max-w-6xl">
                     <div className="text-center mb-16">
-                        <h2 className="text-4xl md:text-5xl font-headline font-extrabold mb-4 tracking-tight">
-                            Everything you need, <br className="hidden md:block" />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-theme-600 to-rose-400 dark:from-theme-400 dark:to-rose-300">beautifully simple.</span>
+                        <h2 className="text-4xl md:text-5xl font-headline font-extrabold mb-4 tracking-tight text-foreground">
+                            Everything you need,{' '}
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-theme-700 to-theme-500 dark:from-theme-400 dark:to-theme-200">
+                                beautifully simple.
+                            </span>
                         </h2>
-                        <p className="text-lg text-muted-foreground max-w-2xl mx-auto font-medium">
+                        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
                             We've completely reimagined the scholarship experience to be fast, secure, and exclusively tailored for you.
                         </p>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 auto-rows-[250px] md:auto-rows-[300px]">
-                        {/* Bento Tile 1 (Large 2-column span) */}
-                        <div className="md:col-span-2 relative group rounded-[2.5rem] p-8 md:p-10 overflow-hidden bg-theme-50 dark:bg-[#301A18]/50 border border-theme-200 dark:border-white/10 shadow-lg hover:shadow-2xl transition-all duration-500">
-                            <div className="absolute inset-0 bg-gradient-to-br from-theme-100/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5 auto-rows-[260px] md:auto-rows-[300px]">
+
+                        {/* Tile 1 — Large (Warm cream in light, deep warm dark) */}
+                        <div className="md:col-span-2 relative group rounded-3xl p-8 md:p-10 overflow-hidden
+                            bg-theme-50 border border-theme-200
+                            dark:bg-[#1E0E0C] dark:border-theme-900
+                            shadow-md hover:shadow-xl transition-all duration-500"
+                        >
+                            <div className="absolute inset-0 bg-gradient-to-br from-theme-100 to-transparent dark:from-theme-900/50 dark:to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                             <div className="h-full flex flex-col justify-end relative z-10">
-                                <Target className="w-12 h-12 text-theme-700 dark:text-theme-400 mb-6 group-hover:scale-110 transition-transform duration-500" />
-                                <h3 className="text-2xl md:text-3xl font-headline font-bold mb-3 tracking-tight text-theme-950 dark:text-foreground">The Central Hub</h3>
-                                <p className="text-theme-800 dark:text-muted-foreground text-lg font-medium max-w-md">
-                                    Discover hundreds of high-quality verified scholarships in one unified, clutter-free space. Stop hunting across the web.
+                                <Target className="w-12 h-12 text-theme-700 dark:text-theme-400 mb-5 group-hover:scale-110 transition-transform duration-500" />
+                                <h3 className="text-2xl md:text-3xl font-headline font-bold mb-2 text-theme-950 dark:text-theme-50">The Central Hub</h3>
+                                <p className="text-theme-700 dark:text-theme-400 text-base font-medium max-w-md">
+                                    Discover hundreds of verified scholarships in one unified, clutter-free space. Stop hunting across the web.
                                 </p>
                             </div>
                         </div>
 
-                        {/* Bento Tile 2 (Standard square) */}
-                        <div className="relative group rounded-[2.5rem] p-8 overflow-hidden bg-theme-600 text-white shadow-lg hover:shadow-2xl hover:bg-theme-700 transition-all duration-500 flex flex-col justify-between">
+                        {/* Tile 2 — Brand accent tile (solid theme-700) */}
+                        <div className="relative group rounded-3xl p-8 overflow-hidden
+                            bg-theme-700 dark:bg-theme-800
+                            shadow-md hover:shadow-xl hover:bg-theme-800 dark:hover:bg-theme-700 transition-all duration-500
+                            flex flex-col justify-between"
+                        >
                             <HeartHandshake className="w-10 h-10 text-theme-100 group-hover:-rotate-12 transition-transform duration-500" />
                             <div>
-                                <h3 className="text-2xl font-headline font-bold mb-2">Girls First</h3>
-                                <p className="text-theme-100 font-medium">
-                                    100% focused on opportunities exclusively available to female students.
+                                <h3 className="text-2xl font-headline font-bold mb-2 text-white">Girls First</h3>
+                                <p className="text-theme-100 font-medium text-sm">
+                                    100% focused on opportunities exclusively for female students across India.
                                 </p>
                             </div>
                         </div>
 
-                        {/* Bento Tile 3 (Standard square) */}
-                        <div className="relative group rounded-[2.5rem] p-8 overflow-hidden bg-theme-50 dark:bg-[#301A18]/50 border border-theme-200 dark:border-white/10 shadow-lg hover:shadow-2xl transition-all duration-500 flex flex-col justify-between">
-                            <div className="absolute inset-0 bg-gradient-to-tr from-rose-100/60 to-transparent dark:from-rose-900/10 dark:to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                        {/* Tile 3 — Warm rose accent (light) / deep dark tile */}
+                        <div className="relative group rounded-3xl p-8 overflow-hidden
+                            bg-rose-50 border border-rose-200
+                            dark:bg-[#200C0C] dark:border-rose-900/50
+                            shadow-md hover:shadow-xl transition-all duration-500
+                            flex flex-col justify-between"
+                        >
+                            <div className="absolute inset-0 bg-gradient-to-tr from-rose-100 to-transparent dark:from-rose-900/30 dark:to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                             <BookCheck className="w-10 h-10 text-rose-600 dark:text-rose-400 group-hover:-translate-y-2 transition-transform duration-500 relative z-10" />
                             <div className="relative z-10">
-                                <h3 className="text-2xl font-headline font-bold mb-2 text-theme-950 dark:text-foreground">Universal Apply</h3>
-                                <p className="text-theme-800 dark:text-muted-foreground font-medium">
-                                    One profile. One unified application format. Zero repetitive paperwork.
+                                <h3 className="text-2xl font-headline font-bold mb-2 text-rose-950 dark:text-rose-50">Universal Apply</h3>
+                                <p className="text-rose-800 dark:text-rose-300 font-medium text-sm">
+                                    One profile. One unified format. Zero repetitive paperwork.
                                 </p>
                             </div>
                         </div>
 
-                        {/* Bento Tile 4 (Large 2-column span) */}
-                        <div className="md:col-span-2 relative group rounded-[2.5rem] p-8 md:p-10 overflow-hidden bg-slate-900 text-white shadow-lg hover:shadow-2xl transition-all duration-500">
+                        {/* Tile 4 — Dark feature tile, deep warm black */}
+                        <div className="md:col-span-2 relative group rounded-3xl p-8 md:p-10 overflow-hidden
+                            bg-theme-950 dark:bg-[#120707]
+                            shadow-md hover:shadow-2xl transition-all duration-500"
+                        >
+                            <div className="absolute inset-0 bg-gradient-to-br from-theme-800/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
                             {/* Decorative glowing orb */}
-                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-theme-500/30 blur-[60px] rounded-full mix-blend-screen opacity-50 group-hover:opacity-100 transition-opacity duration-700" />
-
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 bg-theme-600/20 blur-[70px] rounded-full opacity-60 group-hover:opacity-100 transition-opacity duration-700" />
                             <div className="h-full flex flex-col justify-end relative z-10">
-                                <Sparkles className="w-12 h-12 text-theme-300 mb-6 group-hover:animate-spin-slow transition-transform duration-700" />
-                                <h3 className="text-2xl md:text-3xl font-headline font-bold mb-3 tracking-tight">AI-Powered Matches</h3>
-                                <p className="text-slate-300 text-lg font-medium max-w-md">
-                                    Our intelligent engine instantly analyzes your digital profile and highlights the exact scholarships you have the highest probability of winning.
+                                <Sparkles className="w-12 h-12 text-theme-300 mb-5" />
+                                <h3 className="text-2xl md:text-3xl font-headline font-bold mb-2 text-white">AI-Powered Matches</h3>
+                                <p className="text-theme-200 text-base font-medium max-w-md">
+                                    Our intelligent engine instantly analyzes your profile and highlights the exact scholarships you're most likely to win.
                                 </p>
                             </div>
                         </div>
+
                     </div>
                 </div>
             </section>

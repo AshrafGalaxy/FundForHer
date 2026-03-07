@@ -4,17 +4,15 @@ import React, { useEffect, useState, useCallback } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 import Autoplay from 'embla-carousel-autoplay';
 import { Scholarship } from '@/lib/types';
-import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, Trophy, Sparkles, MapPin, CalendarClock } from 'lucide-react';
+import { ArrowRight, Trophy, MapPin, CalendarClock } from 'lucide-react';
 import Link from 'next/link';
 
-interface SubtitleCarouselProps {
+interface FeaturedScholarshipCarouselProps {
     scholarships: Scholarship[];
 }
 
-export const FeaturedScholarshipCarousel = ({ scholarships }: SubtitleCarouselProps) => {
-    // Show only the 3 most premium/featured ones for the slider
+export const FeaturedScholarshipCarousel = ({ scholarships }: FeaturedScholarshipCarouselProps) => {
     const featured = scholarships.slice(0, 3);
 
     const [emblaRef, emblaApi] = useEmblaCarousel(
@@ -27,7 +25,7 @@ export const FeaturedScholarshipCarousel = ({ scholarships }: SubtitleCarouselPr
     const onSelect = useCallback(() => {
         if (!emblaApi) return;
         setSelectedIndex(emblaApi.selectedScrollSnap());
-    }, [emblaApi, setSelectedIndex]);
+    }, [emblaApi]);
 
     useEffect(() => {
         if (!emblaApi) return;
@@ -38,66 +36,97 @@ export const FeaturedScholarshipCarousel = ({ scholarships }: SubtitleCarouselPr
     if (featured.length === 0) return null;
 
     return (
-        <div className="w-full max-w-7xl mx-auto px-4 -mt-16 sm:-mt-24 relative z-20 mb-16">
-            <div className="overflow-hidden rounded-3xl shadow-2xl bg-background/50 backdrop-blur-3xl border border-white/20 dark:border-white/5" ref={emblaRef}>
-                <div className="flex touch-pan-y">
-                    {featured.map((scholarship, index) => (
-                        <div key={scholarship.id} className="flex-[0_0_100%] min-w-0 md:flex-[0_0_85%] lg:flex-[0_0_70%] pl-4 pr-4 py-8">
-                            <Card className={`relative overflow-hidden h-[320px] md:h-[380px] rounded-[2rem] border-none transition-all duration-700 ease-out transform ${index === selectedIndex ? 'scale-100 opacity-100 shadow-2xl shadow-theme-900/40 dark:shadow-none bg-gradient-to-br from-theme-50 to-theme-100 dark:from-[#301A18] dark:to-[#47221E]' : 'scale-90 opacity-40 grayscale-[50%] bg-muted/50'}`}>
+        <div className="w-full bg-background py-12 border-b border-border">
+            <div className="container mx-auto px-4 mb-8">
+                <div className="flex items-center gap-3">
+                    <div className="h-1 w-8 rounded-full bg-theme-600" />
+                    <p className="text-sm font-bold tracking-widest text-theme-700 dark:text-theme-400 uppercase">
+                        Featured Opportunities
+                    </p>
+                </div>
+            </div>
 
-                                {/* Decorative elements */}
-                                <div className="absolute top-0 right-0 w-64 h-64 bg-theme-200/50 dark:bg-theme-900/30 rounded-full blur-[80px] -mr-32 -mt-32 pointer-events-none transition-all duration-1000 group-hover:bg-theme-300/50" />
-                                <div className="absolute bottom-0 left-0 w-48 h-48 bg-theme-300/30 dark:bg-rose-900/20 rounded-full blur-[60px] -ml-24 -mb-24 pointer-events-none" />
+            <div className="overflow-hidden" ref={emblaRef}>
+                <div className="flex touch-pan-y gap-4 px-4">
+                    {featured.map((scholarship, index) => {
+                        const isActive = index === selectedIndex;
+                        return (
+                            <div
+                                key={scholarship.id}
+                                className="flex-[0_0_92%] sm:flex-[0_0_80%] md:flex-[0_0_65%] lg:flex-[0_0_55%] min-w-0"
+                            >
+                                <div
+                                    className={`relative overflow-hidden h-[280px] md:h-[340px] rounded-3xl transition-all duration-500 ease-out
+                                        ${isActive
+                                            ? 'opacity-100 scale-100 shadow-2xl shadow-theme-900/20 dark:shadow-theme-900/40'
+                                            : 'opacity-40 scale-95 blur-[1px]'
+                                        }
+                                        bg-theme-50 dark:bg-[#231210]
+                                        border border-theme-200 dark:border-theme-900
+                                    `}
+                                >
+                                    {/* Decorative warm glow top-right */}
+                                    <div className="absolute -top-16 -right-16 w-48 h-48 bg-theme-300/40 dark:bg-theme-800/40 rounded-full blur-3xl pointer-events-none" />
+                                    {/* Bottom-left accent */}
+                                    <div className="absolute -bottom-10 -left-10 w-36 h-36 bg-theme-200/30 dark:bg-theme-900/30 rounded-full blur-2xl pointer-events-none" />
 
-                                <CardContent className="p-8 md:p-12 h-full flex flex-col justify-between relative z-10">
-                                    <div className="space-y-4">
-                                        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-theme-900 text-theme-50 dark:bg-theme-200 dark:text-theme-950 text-xs font-bold tracking-wide uppercase shadow-sm">
-                                            <Trophy className="w-3.5 h-3.5" />
-                                            Featured Opportunity
+                                    <div className="p-7 md:p-10 h-full flex flex-col justify-between relative z-10">
+                                        {/* Top: Badge + Title + Provider */}
+                                        <div className="space-y-3">
+                                            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-theme-700 dark:bg-theme-800 text-white text-xs font-bold tracking-widest uppercase shadow-sm">
+                                                <Trophy className="w-3 h-3" />
+                                                Featured
+                                            </div>
+
+                                            <h3 className="text-xl md:text-3xl font-headline font-extrabold text-theme-950 dark:text-theme-50 leading-tight line-clamp-2">
+                                                {scholarship.title}
+                                            </h3>
+
+                                            <p className="text-theme-700 dark:text-theme-400 font-medium flex items-center gap-2 line-clamp-1 text-sm">
+                                                <MapPin className="w-4 h-4 flex-shrink-0" />
+                                                {scholarship.provider}
+                                            </p>
                                         </div>
 
-                                        <h3 className="text-2xl md:text-4xl font-headline font-extrabold text-foreground leading-tight line-clamp-2">
-                                            {scholarship.title}
-                                        </h3>
-
-                                        <p className="text-muted-foreground font-medium flex items-center gap-2 line-clamp-1 text-sm md:text-base">
-                                            <MapPin className="w-4 h-4 text-theme-600 dark:text-theme-400" />
-                                            {scholarship.provider}
-                                        </p>
-                                    </div>
-
-                                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 pt-6 border-t border-theme-200/50 dark:border-theme-800/50 mt-auto">
-                                        <div className="flex items-center gap-6">
-                                            {scholarship.amount && (
+                                        {/* Bottom: Meta + CTA */}
+                                        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-5 border-t border-theme-200 dark:border-theme-800">
+                                            <div className="flex items-center gap-6">
+                                                {scholarship.amount && (
+                                                    <div>
+                                                        <p className="text-xs text-theme-600 dark:text-theme-500 font-semibold uppercase tracking-wider mb-0.5">Funding</p>
+                                                        <p className="text-lg md:text-xl font-bold text-green-700 dark:text-green-400">
+                                                            <span style={{ fontFamily: 'sans-serif' }}>₹</span>
+                                                            {scholarship.amount.toLocaleString('en-IN')}
+                                                        </p>
+                                                    </div>
+                                                )}
                                                 <div>
-                                                    <p className="text-xs text-muted-foreground font-semibold mb-1 uppercase tracking-wider">Funding</p>
-                                                    <p className="text-xl md:text-2xl font-bold text-green-600 dark:text-green-400">
-                                                        <span style={{ fontFamily: 'sans-serif' }}>₹</span>{scholarship.amount.toLocaleString('en-IN')}
+                                                    <p className="text-xs text-theme-600 dark:text-theme-500 font-semibold uppercase tracking-wider mb-0.5">Deadline</p>
+                                                    <p className="text-sm font-medium flex items-center gap-1.5 text-theme-800 dark:text-theme-300">
+                                                        <CalendarClock className="w-4 h-4 flex-shrink-0" />
+                                                        {scholarship.deadline
+                                                            ? (scholarship.deadline instanceof Date ? scholarship.deadline : new Date(scholarship.deadline)).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+                                                            : 'Varies'}
                                                     </p>
                                                 </div>
-                                            )}
-                                            <div>
-                                                <p className="text-xs text-muted-foreground font-semibold mb-1 uppercase tracking-wider">Deadline</p>
-                                                <p className="text-sm md:text-base font-medium flex items-center gap-1.5 text-foreground">
-                                                    <CalendarClock className="w-4 h-4 text-theme-600 dark:text-theme-400" />
-                                                    {scholarship.deadline
-                                                        ? (scholarship.deadline instanceof Date ? scholarship.deadline : new Date(scholarship.deadline)).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
-                                                        : 'Varies by applicant'}
-                                                </p>
                                             </div>
-                                        </div>
 
-                                        <Button asChild size="lg" className="rounded-full shadow-lg bg-foreground text-background hover:bg-theme-600 hover:text-white dark:bg-theme-100 dark:text-theme-900 border-none transition-all duration-300 hover:scale-105 group font-bold px-8">
-                                            <Link href="/register">
-                                                Apply Now
-                                                <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                                            </Link>
-                                        </Button>
+                                            <Button
+                                                asChild
+                                                size="sm"
+                                                className="rounded-full bg-theme-700 hover:bg-theme-800 text-white dark:bg-theme-600 dark:hover:bg-theme-500 border-none font-bold px-6 shadow-md group flex-shrink-0"
+                                            >
+                                                <Link href="/register">
+                                                    Apply Now
+                                                    <ArrowRight className="w-4 h-4 ml-1.5 group-hover:translate-x-0.5 transition-transform" />
+                                                </Link>
+                                            </Button>
+                                        </div>
                                     </div>
-                                </CardContent>
-                            </Card>
-                        </div>
-                    ))}
+                                </div>
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
 
@@ -106,7 +135,10 @@ export const FeaturedScholarshipCarousel = ({ scholarships }: SubtitleCarouselPr
                 {featured.map((_, i) => (
                     <button
                         key={i}
-                        className={`w-2.5 h-2.5 rounded-full transition-all duration-300 ${i === selectedIndex ? 'bg-theme-600 dark:bg-theme-400 w-8' : 'bg-muted-foreground/30 hover:bg-muted-foreground/50'}`}
+                        className={`h-2 rounded-full transition-all duration-300 ${i === selectedIndex
+                                ? 'bg-theme-700 dark:bg-theme-400 w-8'
+                                : 'bg-theme-300/60 dark:bg-theme-700/60 w-2 hover:bg-theme-400/80'
+                            }`}
                         onClick={() => emblaApi?.scrollTo(i)}
                         aria-label={`Go to slide ${i + 1}`}
                     />
