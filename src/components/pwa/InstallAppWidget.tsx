@@ -103,60 +103,55 @@ export const InstallAppWidget = () => {
     const config = getButtonConfig();
 
     return (
-        <div className="w-full flex justify-center my-6">
-            <div className="relative">
-                <Button
-                    onClick={handleInstallClick}
-                    size="lg"
-                    className="font-semibold text-theme-950 dark:text-theme-100 bg-theme-200 hover:bg-theme-300 dark:bg-theme-800 dark:hover:bg-theme-700 shadow-md transition-all duration-300 transform hover:scale-105"
-                >
-                    {config.icon}
-                    {config.text}
-                </Button>
+        <div className="w-full flex flex-col items-center my-6 gap-4">
+            <Button
+                onClick={handleInstallClick}
+                size="lg"
+                className="font-semibold text-theme-950 dark:text-theme-100 bg-theme-200 hover:bg-theme-300 dark:bg-theme-800 dark:hover:bg-theme-700 shadow-md transition-all duration-300 transform hover:scale-105"
+            >
+                {config.icon}
+                {config.text}
+            </Button>
 
-                {/* Fallback / iOS Instruction Modal */}
-                {showIOSModal && (
-                    <div className="absolute top-full left-1/2 transform -translate-x-1/2 mt-4 w-72 bg-card border border-border rounded-xl shadow-2xl z-50 p-4 animate-in fade-in slide-in-from-top-4 duration-300">
-                        <div className="flex justify-between items-start mb-2">
-                            <h4 className="font-headline font-semibold text-card-foreground flex items-center">
-                                <Info className="w-4 h-4 mr-2 text-theme-600 dark:text-theme-400" />
-                                Install App
-                            </h4>
-                            <button onClick={() => setShowIOSModal(false)} className="text-muted-foreground hover:text-foreground">
-                                <X className="w-4 h-4" />
-                            </button>
-                        </div>
-
-                        <div className="text-sm text-muted-foreground space-y-3 mt-3">
-                            {(os === 'ios' || os === 'macos') ? (
-                                <>
-                                    <p>To install <strong>Fund Her Future</strong> on your Apple device:</p>
-                                    <ol className="list-decimal pl-5 space-y-2">
-                                        <li>Tap the <strong>Share</strong> button <Share className="inline w-4 h-4 mx-1" /> at the {os === 'ios' ? 'bottom' : 'top'} of Safari.</li>
-                                        <li>Scroll down and select <strong>Add to Home Screen</strong>.</li>
-                                    </ol>
-                                </>
-                            ) : (
-                                <p>
-                                    Automatic installation is currently unavailable in this browser. To install the app, look for the "Install" or "Add to Home Screen" option in your browser menu.
-                                </p>
-                            )}
-                        </div>
-
-                        <Button
-                            size="sm"
-                            variant="outline"
-                            className="w-full mt-4"
-                            onClick={() => setShowIOSModal(false)}
-                        >
-                            Got it
-                        </Button>
-
-                        {/* Arrow pointer matching standard tooltip design */}
-                        <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 w-4 h-4 bg-card border-t border-l border-border rotate-45" />
+            {/* Fallback / iOS Instruction Modal */}
+            {showIOSModal && (
+                <div className="w-72 bg-card border border-border rounded-xl shadow-lg p-4 animate-in fade-in slide-in-from-top-2 duration-300 text-left relative z-10 transition-all">
+                    <div className="flex justify-between items-start mb-2">
+                        <h4 className="font-headline font-semibold text-card-foreground flex items-center">
+                            <Info className="w-4 h-4 mr-2 text-theme-600 dark:text-theme-400" />
+                            Install App
+                        </h4>
+                        <button onClick={() => setShowIOSModal(false)} className="text-muted-foreground hover:text-foreground">
+                            <X className="w-4 h-4" />
+                        </button>
                     </div>
-                )}
-            </div>
+
+                    <div className="text-sm text-muted-foreground space-y-3 mt-3">
+                        {(os === 'ios' || os === 'macos') ? (
+                            <>
+                                <p>To install <strong>Fund Her Future</strong> on your Apple device:</p>
+                                <ol className="list-decimal pl-5 space-y-2">
+                                    <li>Tap the <strong>Share</strong> button <Share className="inline w-4 h-4 mx-1" /> at the {os === 'ios' ? 'bottom' : 'top'} of Safari.</li>
+                                    <li>Scroll down and select <strong>Add to Home Screen</strong>.</li>
+                                </ol>
+                            </>
+                        ) : (
+                            <p>
+                                To install the app smoothly, tap your browser's menu button and select <strong>"Install App"</strong> or <strong>"Add to Home Screen"</strong>.
+                            </p>
+                        )}
+                    </div>
+
+                    <Button
+                        size="sm"
+                        variant="default"
+                        className="w-full mt-4 bg-theme-600 hover:bg-theme-700 text-white"
+                        onClick={() => setShowIOSModal(false)}
+                    >
+                        Got it
+                    </Button>
+                </div>
+            )}
         </div>
     );
 };
