@@ -444,10 +444,10 @@ export default function LandingPage() {
                                     <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 text-sm font-semibold mb-2 border border-green-200 dark:border-green-800/50 shadow-sm">
                                         <CheckCircle2 className="w-4 h-4" /> App Installed
                                     </div>
-                                    <h2 className="text-3xl md:text-5xl font-headline font-bold text-theme-950 dark:text-theme-50">
-                                        You're all <span className="text-theme-600 dark:text-theme-400">set!</span>
+                                    <h2 className="text-3xl md:text-5xl font-headline font-bold text-[hsl(19,80%,12%)] dark:text-[hsl(20,100%,97%)]">
+                                        You're all <span className="text-[hsl(19,85%,45%)] dark:text-[hsl(19,94%,60%)]">set!</span>
                                     </h2>
-                                    <p className="text-lg text-theme-950 dark:text-theme-200 max-w-lg mx-auto md:mx-0 font-medium">
+                                    <p className="text-lg text-[hsl(19,80%,12%)] dark:text-[hsl(19,96%,86%)] max-w-lg mx-auto md:mx-0 font-medium">
                                         Fund Her Future is successfully installed on your device. Enjoy the fastest, offline-ready experience right from your home screen.
                                     </p>
                                 </div>
@@ -456,10 +456,10 @@ export default function LandingPage() {
                                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-theme-100 dark:bg-theme-900 text-theme-800 dark:text-theme-200 text-sm font-semibold mb-2">
                                         <Smartphone className="w-4 h-4" /> Install from Browser
                                     </div>
-                                    <h2 className="text-3xl md:text-5xl font-headline font-bold text-theme-950 dark:text-theme-50">
-                                        Take Fund Her Future <span className="text-theme-600 dark:text-theme-400">Anywhere.</span>
+                                    <h2 className="text-3xl md:text-5xl font-headline font-bold text-[hsl(19,80%,12%)] dark:text-[hsl(20,100%,97%)]">
+                                        Take Fund Her Future <span className="text-[hsl(19,85%,45%)] dark:text-[hsl(19,94%,60%)]">Anywhere.</span>
                                     </h2>
-                                    <p className="text-lg text-theme-950 dark:text-theme-200 max-w-lg mx-auto md:mx-0 font-medium">
+                                    <p className="text-lg text-[hsl(19,80%,12%)] dark:text-[hsl(19,96%,86%)] max-w-lg mx-auto md:mx-0 font-medium">
                                         Install our fast, lightweight web app directly to your device. No app store required. Works perfectly across all your favorite platforms.
                                     </p>
 
