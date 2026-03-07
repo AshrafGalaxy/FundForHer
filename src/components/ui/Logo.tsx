@@ -29,24 +29,40 @@ export const Logo: React.FC<LogoProps> = ({
       className={className}
       {...props}
     >
-      {/* Education Base: Open Book */}
+      {/* 1. Education Base: Open Book with Page Definition */}
       <path
-        d="M16 28C16 28 9 23 3 23V15C9 15 16 20 16 20C16 20 23 15 29 15V23C23 23 16 28 16 28Z"
+        d="M16 29C16 29 8 24 2 24V16C8 16 16 21 16 21C16 21 24 16 30 16V24C24 24 16 29 16 29Z"
         fill={darkColor}
         className="transition-colors duration-300"
       />
+      {/* Subtle Book Page Lines */}
+      <path d="M4 22.5C9 22.5 14.5 26.5 14.5 26.5M28 22.5C23 22.5 17.5 26.5 17.5 26.5" stroke="#FFFFFF" strokeWidth="1" strokeLinecap="round" opacity="0.3" />
+      <path d="M5 20.5C9.5 20.5 14.5 24 14.5 24M27 20.5C22.5 20.5 17.5 24 17.5 24" stroke="#FFFFFF" strokeWidth="1" strokeLinecap="round" opacity="0.2" />
 
-      {/* Female Figure: Head & Dress/Torso */}
-      <circle cx="16" cy="9" r="3" fill={lightColor} className="transition-colors duration-300" />
+      {/* 2. Empowerment: Magical Sparks floating in the background */}
+      <path d="M6 9 L6.5 11 L8.5 11.5 L6.5 12 L6 14 L5.5 12 L3.5 11.5 L5.5 11 Z" fill={lightColor} opacity="0.6" className="transform origin-center hover:scale-110 transition-transform duration-500" />
+      <path d="M26 12 L26.5 13.5 L28 14 L26.5 14.5 L26 16 L25.5 14.5 L24 14 L25.5 13.5 Z" fill={darkColor} opacity="0.7" className="transform origin-center hover:scale-110 transition-transform duration-500 delay-150" />
+
+      {/* 3. Female Figure: Graceful Head & Dress Silhouette */}
+      <circle cx="16" cy="11" r="3.5" fill={lightColor} className="transition-colors duration-300" />
       <path
-        d="M16 13.5C11.5 13.5 9.5 18 9.5 22C9.5 23.5 16 26 16 26C16 26 22.5 23.5 22.5 22C22.5 18 20.5 13.5 16 13.5Z"
+        d="M16 15C11 15 9 19.5 9 24C9 26 16 28.5 16 28.5C16 28.5 23 26 23 24C23 19.5 21 15 16 15Z"
         fill={lightColor}
         className="transition-colors duration-300"
       />
+      {/* Dress detail: Subtle Sash / Form Definition */}
+      <path d="M16 15 C13 18 13 22 16 24 C19 22 19 18 16 15Z" fill="#FFFFFF" opacity="0.15" />
 
-      {/* Graduation Cap */}
-      <polygon points="16,3 10,5.5 16,8 22,5.5" fill={darkColor} className="transition-colors duration-300" />
-      <path d="M22 5.5V9" stroke={darkColor} strokeWidth="1.5" className="transition-colors duration-300" />
+      {/* 4. Future/Success: Detailed Graduation Cap & Tassel */}
+      <polygon points="16,3 7,7 16,11 25,7" fill={darkColor} className="transition-colors duration-300" />
+      {/* Cap 3D Depth Flap shadow */}
+      <polygon points="7,7 16,11 25,7 16,9" fill="#000000" opacity="0.15" />
+      {/* Cap Center Button */}
+      <ellipse cx="16" cy="7" rx="1.5" ry="1" fill="#FFFFFF" opacity="0.4" />
+      {/* Tassel String draped over the side */}
+      <path d="M16 7 Q24 7 24.5 10 V14" stroke={darkColor} strokeWidth="1" fill="none" strokeLinecap="round" />
+      {/* Tassel Fringe end */}
+      <polygon points="24,14 25,14 25.5,16.5 23.5,16.5" fill={darkColor} />
     </svg>
   );
 };
