@@ -429,56 +429,68 @@ export default function LandingPage() {
             {/* About Us Section */}
             <AboutSection />
 
-            {/* App Download / PWA Section */}
-            <section className="py-20 md:py-28 bg-gradient-to-br from-theme-50 to-background border-y border-theme-100 dark:from-theme-950/40 dark:to-background dark:border-theme-900/50 relative overflow-hidden">
-                {/* Decorative background circles */}
-                <div className="absolute top-0 right-0 -mr-20 -mt-20 w-72 h-72 rounded-full bg-theme-200/20 dark:bg-theme-800/20 blur-3xl pointer-events-none" />
-                <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-primary/10 dark:bg-primary/5 blur-3xl pointer-events-none" />
+            {/* App Download / PWA Section (Premium Dark Banner) */}
+            <section className="py-20 md:py-28 bg-[#361106] relative overflow-hidden border-y border-[#591C0C]">
+                {/* Decorative background glows */}
+                <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 rounded-full bg-[#D43A08]/20 blur-3xl pointer-events-none" />
+                <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-96 h-96 rounded-full bg-[#D43A08]/10 blur-3xl pointer-events-none" />
 
                 <div className="container mx-auto px-4 relative z-10">
-                    <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-12 bg-card dark:bg-card/50 backdrop-blur-sm p-8 md:p-12 rounded-3xl shadow-xl shadow-theme-200/20 dark:shadow-none border border-theme-100 dark:border-theme-800/50">
+                    <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-12 p-4 md:p-8">
 
                         <div className="flex-1 text-center md:text-left space-y-6">
                             {isPwaInstalled ? (
                                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 text-sm font-semibold mb-2 border border-green-200 dark:border-green-800/50 shadow-sm">
+                                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#591C0C] text-[#F9A482] text-sm font-semibold mb-2 border border-[#7D250C] shadow-sm">
                                         <CheckCircle2 className="w-4 h-4" /> App Installed
                                     </div>
-                                    <h2 className="text-3xl md:text-5xl font-headline font-bold text-[#361106] dark:text-[#FFF0E6]">
-                                        You're all <span className="text-[#D43A08] dark:text-[#F47238]">set!</span>
+                                    <h2 className="text-3xl md:text-5xl font-headline font-bold text-[#FFF0E6]">
+                                        You're all <span className="text-[#F47238]">set!</span>
                                     </h2>
-                                    <p className="text-lg text-[#361106] dark:text-[#FDCDBB] max-w-lg mx-auto md:mx-0 font-medium">
+                                    <p className="text-lg text-[#FDCDBB] max-w-lg mx-auto md:mx-0 font-medium">
                                         Fund Her Future is successfully installed on your device. Enjoy the fastest, offline-ready experience right from your home screen.
                                     </p>
                                 </div>
                             ) : (
                                 <div className="space-y-6">
-                                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-theme-100 dark:bg-theme-900 text-theme-800 dark:text-theme-200 text-sm font-semibold mb-2">
+                                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#591C0C] text-[#FFF0E6] text-sm font-semibold mb-2 border border-[#7D250C]">
                                         <Smartphone className="w-4 h-4" /> Install from Browser
                                     </div>
-                                    <h2 className="text-3xl md:text-5xl font-headline font-bold text-[#361106] dark:text-[#FFF0E6]">
-                                        Take Fund Her Future <span className="text-[#D43A08] dark:text-[#F47238]">Anywhere.</span>
+                                    <h2 className="text-3xl md:text-5xl font-headline font-bold text-[#FFF0E6]">
+                                        Take Fund Her Future <span className="text-[#F47238]">Anywhere.</span>
                                     </h2>
-                                    <p className="text-lg text-[#361106] dark:text-[#FDCDBB] max-w-lg mx-auto md:mx-0 font-medium">
+                                    <p className="text-lg text-[#FDCDBB] max-w-lg mx-auto md:mx-0 font-medium">
                                         Install our fast, lightweight web app directly to your device. No app store required. Works perfectly across all your favorite platforms.
                                     </p>
 
-                                    <div className="flex items-center justify-center md:justify-start gap-6 pt-4 text-theme-700 dark:text-theme-300">
-                                        <div className="flex flex-col items-center gap-2">
-                                            <Smartphone className="w-8 h-8 text-theme-500" />
-                                            <span className="text-xs font-semibold">Android</span>
+                                    <div className="flex items-center justify-center md:justify-start gap-8 pt-6 text-[#F9A482]">
+                                        <div className="flex flex-col items-center gap-3">
+                                            <Smartphone className="w-8 h-8 text-[#F47238]" />
+                                            <span className="text-xs font-semibold tracking-wide">ANDROID</span>
                                         </div>
-                                        <div className="flex flex-col items-center gap-2">
-                                            <Tablet className="w-8 h-8 text-theme-500" />
-                                            <span className="text-xs font-semibold">iOS / iPadOS</span>
+                                        <div className="flex flex-col items-center gap-3">
+                                            <Tablet className="w-8 h-8 text-[#F47238]" />
+                                            <span className="text-xs font-semibold tracking-wide">iOS & iPAD</span>
                                         </div>
-                                        <div className="flex flex-col items-center gap-2">
-                                            <Laptop className="w-8 h-8 text-theme-500" />
-                                            <span className="text-xs font-semibold">Windows & Mac</span>
+                                        <div className="flex flex-col items-center gap-3">
+                                            <Laptop className="w-8 h-8 text-[#F47238]" />
+                                            <span className="text-xs font-semibold tracking-wide">PC & MAC</span>
                                         </div>
                                     </div>
                                 </div>
                             )}
+                        </div>
+
+                        {/* Right side illustration or spacing */}
+                        <div className="hidden md:flex flex-1 justify-center relative">
+                            <div className="w-64 h-64 bg-[#591C0C]/50 rounded-full blur-3xl absolute -z-10" />
+                            <div className="w-48 h-64 bg-gradient-to-tr from-[#7D250C] to-[#D43A08] rounded-[2rem] shadow-2xl border border-[#F47238]/30 flex items-center justify-center -rotate-6 transform hover:rotate-0 transition-all duration-500">
+                                <div className="w-40 h-56 bg-[#361106] rounded-[1.5rem] border border-[#591C0C] flex flex-col items-center justify-center p-4">
+                                    <Image src="/icon-192x192.svg" alt="App Icon" width={64} height={64} className="mb-4" />
+                                    <div className="w-20 h-2 bg-[#591C0C] rounded-full mb-2" />
+                                    <div className="w-16 h-2 bg-[#591C0C] rounded-full" />
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
