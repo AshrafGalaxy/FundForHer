@@ -427,7 +427,7 @@ export default function LandingPage() {
                             <h2 className="text-3xl md:text-5xl font-headline font-bold text-theme-950 dark:text-theme-50">
                                 Take Fund Her Future <span className="text-theme-600 dark:text-theme-400">Anywhere.</span>
                             </h2>
-                            <p className="text-lg text-slate-800 dark:text-slate-200 max-w-lg mx-auto md:mx-0 font-medium">
+                            <p className="text-lg text-theme-950 dark:text-theme-200 max-w-lg mx-auto md:mx-0 font-medium">
                                 Install our fast, lightweight web app directly to your device. No app store required. Works perfectly across all your favorite platforms.
                             </p>
 
@@ -449,7 +449,7 @@ export default function LandingPage() {
 
                         <div className="flex-shrink-0 w-full md:w-auto flex flex-col items-center p-8 bg-theme-50 dark:bg-theme-900 rounded-2xl border border-theme-200 dark:border-theme-800 shadow-sm">
                             <h3 className="text-xl font-headline font-bold mb-2 text-theme-950 dark:text-theme-50">Get the App Now</h3>
-                            <p className="text-sm text-center text-slate-800 dark:text-slate-200 mb-6 max-w-[200px] font-medium">
+                            <p className="text-sm text-center text-theme-950 dark:text-theme-200 mb-6 max-w-[200px] font-medium">
                                 One tap to add it to your home screen or desktop.
                             </p>
                             <InstallAppWidget />
