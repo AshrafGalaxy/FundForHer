@@ -264,22 +264,8 @@ export default function LandingPage() {
                         className="w-full h-full object-cover"
                     />
 
-                    {/* Light Mode: Premium edge-only dark fades, keeping the center clear */}
-                    <div className="absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-black/80 to-transparent dark:hidden" />
-                    <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-background via-background/80 to-transparent dark:hidden" />
-                    <div className="absolute inset-y-0 left-0 w-1/3 bg-gradient-to-r from-black/50 to-transparent dark:hidden" />
-                    <div className="absolute inset-y-0 right-0 w-1/3 bg-gradient-to-l from-black/50 to-transparent dark:hidden" />
-                    <div className="absolute inset-0 bg-black/10 dark:hidden" />
-
-                    {/* Dark Mode: Edge-only deep warm dark gradient */}
-                    <div className="hidden dark:block absolute inset-x-0 top-0 h-1/3 bg-gradient-to-b from-[#0D0605] to-transparent" />
-                    <div className="hidden dark:block absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-background via-[#1A0E0C]/90 to-transparent" />
-                    <div className="hidden dark:block absolute inset-y-0 left-0 w-1/2 bg-gradient-to-r from-[#0D0605]/90 to-transparent" />
-                    <div className="hidden dark:block absolute inset-y-0 right-0 w-1/2 bg-gradient-to-l from-[#0D0605]/90 to-transparent" />
-
-                    {/* Subtle Aurora Blobs */}
-                    <div className="hidden dark:block absolute -top-[20%] -left-[10%] w-[50%] h-[70%] bg-theme-500/10 blur-[120px] rounded-full animate-pulse" style={{ animationDuration: '8s' }} />
-                    <div className="hidden dark:block absolute top-[30%] left-[15%] w-[35%] h-[50%] bg-theme-400/8 blur-[140px] rounded-full animate-pulse" style={{ animationDuration: '12s', animationDelay: '3s' }} />
+                    <div className="absolute inset-0 bg-gradient-to-tr from-indigo-950/90 via-background/80 to-transparent mix-blend-multiply" />
+                    <div className="absolute inset-0 bg-black/40" />
                 </div>
 
                 <div className="container mx-auto px-4 relative z-10">
