@@ -103,26 +103,26 @@ export const InstallAppWidget = () => {
         <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-8 md:bottom-8 md:w-[400px] z-[100] animate-in slide-in-from-bottom-5 fade-in duration-500">
             {showFallback ? (
                 // Premium Visual Fallback UI
-                <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-6 relative overflow-hidden">
+                <div className="bg-white dark:bg-[#361106] border border-[#FFE4D6] dark:border-[#7D250C] rounded-2xl shadow-2xl p-6 relative overflow-hidden">
                     <button
                         onClick={() => setShowFallback(false)}
-                        className="absolute top-3 right-3 text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 p-1.5 rounded-full transition-colors z-10"
+                        className="absolute top-3 right-3 text-[#A12B08] hover:text-[#361106] dark:text-[#F47238] dark:hover:text-[#FFF0E6] bg-[#FFF0E6] dark:bg-[#591C0C] hover:bg-[#FFE4D6] dark:hover:bg-[#7D250C] p-1.5 rounded-full transition-colors z-10"
                     >
                         <X className="w-5 h-5" />
                     </button>
 
                     <div className="flex flex-col items-center text-center space-y-4">
-                        <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center justify-center border border-slate-200 dark:border-slate-700 shadow-inner">
+                        <div className="w-16 h-16 bg-[#FFF0E6] dark:bg-[#591C0C] rounded-2xl flex items-center justify-center border border-[#FFE4D6] dark:border-[#7D250C] shadow-inner">
                             <Image src="/icon-192x192.svg" alt="App Icon" width={40} height={40} className="w-10 h-10" />
                         </div>
 
                         <div>
-                            <h4 className="font-headline font-bold text-lg text-slate-900 dark:text-white">Add to Home Screen</h4>
-                            <p className="text-sm text-slate-700 dark:text-slate-300 mt-2">
+                            <h4 className="font-headline font-bold text-lg text-[#361106] dark:text-[#FFF0E6]">Add to Home Screen</h4>
+                            <p className="text-sm text-[#7D250C] dark:text-[#F9A482] mt-2">
                                 {(os === 'ios' || os === 'macos') ? (
-                                    <>Tap the <Share className="inline w-4 h-4 mx-1 text-theme-600 dark:text-theme-400" /> <strong>Share</strong> button below and select <br /><strong>Add to Home Screen</strong>.</>
+                                    <>Tap the <Share className="inline w-4 h-4 mx-1 text-[#D43A08] dark:text-[#F47238]" /> <strong>Share</strong> button below and select <br /><strong>Add to Home Screen</strong>.</>
                                 ) : (
-                                    <>Tap the browser menu <MoreVertical className="inline w-4 h-4 mx-0.5 text-theme-600 dark:text-theme-400" /> at the top right and select <strong>Install app</strong> or Add to Home Screen.</>
+                                    <>Tap the browser menu <MoreVertical className="inline w-4 h-4 mx-0.5 text-[#D43A08] dark:text-[#F47238]" /> at the top right and select <strong>Install app</strong> or Add to Home Screen.</>
                                 )}
                             </p>
                         </div>
@@ -137,14 +137,14 @@ export const InstallAppWidget = () => {
                 </div>
             ) : (
                 // Standard Sticky Banner
-                <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl p-4 flex items-center gap-4">
-                    <div className="flex-shrink-0 w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-xl flex items-center justify-center shadow-sm p-2">
+                <div className="bg-white/95 dark:bg-[#361106]/95 backdrop-blur-md border border-[#FFE4D6] dark:border-[#7D250C] rounded-2xl shadow-2xl p-4 flex items-center gap-4">
+                    <div className="flex-shrink-0 w-12 h-12 bg-[#FFF0E6] dark:bg-[#591C0C] rounded-xl flex items-center justify-center shadow-sm p-2">
                         <Image src="/icon-192x192.svg" alt="App Icon" width={28} height={28} className="w-full h-full object-contain" />
                     </div>
 
                     <div className="flex-1 min-w-0">
-                        <h4 className="font-headline font-bold text-sm truncate text-slate-900 dark:text-white">Fund Her Future Web App</h4>
-                        <p className="text-xs text-slate-600 dark:text-slate-400 truncate">Fast, secure, offline-ready</p>
+                        <h4 className="font-headline font-bold text-sm truncate text-[#361106] dark:text-[#FFF0E6]">Fund Her Future Web App</h4>
+                        <p className="text-xs text-[#7D250C] dark:text-[#FDCDBB] truncate">Fast, secure, offline-ready</p>
                     </div>
 
                     <div className="flex flex-col sm:flex-row gap-2 flex-shrink-0">
@@ -158,7 +158,7 @@ export const InstallAppWidget = () => {
                         </Button>
                         <button
                             onClick={() => setIsDismissed(true)}
-                            className="text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white p-2 rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                            className="text-[#A12B08] hover:text-[#361106] dark:text-[#F47238] dark:hover:text-[#FFF0E6] p-2 rounded-lg bg-[#FFE4D6] dark:bg-[#591C0C] hover:bg-[#FDCDBB] dark:hover:bg-[#7D250C] transition-colors"
                         >
                             <X className="w-4 h-4" />
                         </button>
