@@ -1,0 +1,18 @@
+﻿branch 'main' set up to track 'origin/main'.
+git : To https://github.com/AshrafG
+alaxy/FundForHer.git
+At line:1 char:184
++ ... 
+com/AshrafGalaxy/FundForHer.git; 
+git push -u origin main 2>&1 | 
+Out-F ...
++                                  
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotS 
+   pecified: (To https://gith.../  
+  FundForHer.git:String) [], Rem   
+ oteException
+    + FullyQualifiedErrorId : Nati 
+   veCommandError
+ 
+ * [new branch]      main -> main
