@@ -171,6 +171,18 @@ export default function ProfilePage() {
   const isGoogleLinked = !!googleProvider;
   const linkedGoogleEmail = googleProvider?.email || null;
 
+  const calculateAge = (dob: any) => {
+    if (!dob) return null;
+    const birthDate = new Date(dob instanceof Date ? dob : (dob.toDate ? dob.toDate() : new Date(dob as string | number)));
+    const today = new Date();
+    let computedAge = today.getFullYear() - birthDate.getFullYear();
+    const m = today.getMonth() - birthDate.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birthDate.getDate())) {
+      computedAge--;
+    }
+    return computedAge;
+  };
+
   const calculateCompletion = (profile: UserProfile): number => {
     const coreFields = [
       profile.fullName,
@@ -309,7 +321,7 @@ export default function ProfilePage() {
                 <InfoField icon={<Mail />} label="Email Address" value={userProfile.email} placeholder="Not set" />
                 <InfoField icon={<Phone />} label="Phone Number" value={userProfile.phone} placeholder="e.g., 9876543210" />
                 <InfoField icon={<Cake />} label="Date of Birth" value={userProfile.dob ? format(userProfile.dob instanceof Date ? userProfile.dob : ((userProfile.dob as any).toDate ? (userProfile.dob as any).toDate() : new Date((userProfile.dob as unknown) as string | number)), 'PPP') : null} placeholder="Not set" />
-                <InfoField icon={<UserIcon />} label="Age" value={userProfile.age} placeholder="Not set" />
+                <InfoField icon={<UserIcon />} label="Age" value={calculateAge(userProfile.dob) || userProfile.age} placeholder="Not set" />
                 <InfoField icon={<UserIcon />} label="Address" value={userProfile.address} placeholder="e.g., 123, Main St, Mumbai, India" />
               </CardContent>
             </Card>
