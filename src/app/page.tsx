@@ -350,14 +350,14 @@ export default function LandingPage() {
 
                         {/* Tile 1 — The Central Hub */}
                         <div className="md:col-span-2 relative group rounded-[2rem] p-8 md:p-10 overflow-hidden
-                            bg-white/90 border border-orange-100/60
-                            dark:bg-[#1D1412]/90 dark:border-white/5 backdrop-blur-xl
-                            shadow-lg shadow-orange-900/5 dark:shadow-none hover:shadow-2xl hover:shadow-orange-900/10 transition-all duration-700 hover:-translate-y-1"
+                            bg-white/90 border border-rose-100/60
+                            dark:bg-[#1D1414]/90 dark:border-white/5 backdrop-blur-xl
+                            shadow-lg shadow-rose-900/5 dark:shadow-none hover:shadow-2xl hover:shadow-rose-900/10 transition-all duration-700 hover:-translate-y-1"
                         >
                             <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white to-transparent opacity-60 dark:opacity-10 pointer-events-none" />
-                            <div className="absolute inset-0 bg-gradient-to-br from-orange-50/40 to-transparent dark:from-indigo-900/10 dark:to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                            <div className="absolute inset-0 bg-gradient-to-br from-rose-50/40 to-transparent dark:from-rose-900/10 dark:to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
                             <div className="h-full flex flex-col justify-end relative z-10 transition-transform duration-700">
-                                <Target className="w-12 h-12 text-orange-500 mb-5 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-700" />
+                                <Target className="w-12 h-12 text-rose-500 mb-5 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-700" />
                                 <h3 className="text-2xl md:text-3xl font-headline font-bold mb-2 text-slate-900 dark:text-slate-50">The Central Hub</h3>
                                 <p className="text-slate-600 dark:text-slate-400 text-base font-medium max-w-md">
                                     Discover hundreds of verified scholarships in one unified, clutter-free space. Stop hunting across the web.
@@ -367,14 +367,14 @@ export default function LandingPage() {
 
                         {/* Tile 2 — Girls First */}
                         <div className="relative group rounded-[2rem] p-8 overflow-hidden
-                            bg-orange-50/50 border border-orange-200/50
-                            dark:bg-[#1D1412]/90 dark:border-white/5 backdrop-blur-xl
-                            shadow-lg shadow-orange-900/5 dark:shadow-none hover:shadow-xl hover:shadow-orange-900/10 transition-all duration-700 hover:-translate-y-1
+                            bg-rose-50/50 border border-rose-200/50
+                            dark:bg-[#1D1414]/90 dark:border-white/5 backdrop-blur-xl
+                            shadow-lg shadow-rose-900/5 dark:shadow-none hover:shadow-xl hover:shadow-rose-900/10 transition-all duration-700 hover:-translate-y-1
                             flex flex-col justify-between"
                         >
                             <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white to-transparent opacity-60 dark:opacity-10 pointer-events-none" />
-                            <div className="absolute inset-0 bg-gradient-to-tr from-orange-100/50 to-transparent dark:from-orange-500/5 dark:to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-                            <HeartHandshake className="w-10 h-10 text-orange-500 group-hover:-rotate-12 group-hover:scale-110 transition-transform duration-700 relative z-10" />
+                            <div className="absolute inset-0 bg-gradient-to-tr from-rose-100/50 to-transparent dark:from-rose-500/5 dark:to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                            <HeartHandshake className="w-10 h-10 text-rose-500 group-hover:-rotate-12 group-hover:scale-110 transition-transform duration-700 relative z-10" />
                             <div className="relative z-10">
                                 <h3 className="text-2xl font-headline font-bold mb-2 text-slate-900 dark:text-slate-50">Girls First</h3>
                                 <p className="text-slate-700 dark:text-slate-400 font-medium text-sm">
@@ -385,14 +385,14 @@ export default function LandingPage() {
 
                         {/* Tile 3 — Universal Apply */}
                         <div className="relative group rounded-[2rem] p-8 overflow-hidden
-                            bg-white/90 border border-orange-100/60
-                            dark:bg-[#1D1412]/90 dark:border-white/5 backdrop-blur-xl
-                            shadow-lg shadow-orange-900/5 dark:shadow-none hover:shadow-xl hover:shadow-orange-900/10 transition-all duration-700 hover:-translate-y-1
+                            bg-white/90 border border-rose-100/60
+                            dark:bg-[#1D1414]/90 dark:border-white/5 backdrop-blur-xl
+                            shadow-lg shadow-rose-900/5 dark:shadow-none hover:shadow-xl hover:shadow-rose-900/10 transition-all duration-700 hover:-translate-y-1
                             flex flex-col justify-between"
                         >
                             <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white to-transparent opacity-60 dark:opacity-10 pointer-events-none" />
-                            <div className="absolute inset-0 bg-gradient-to-tr from-rose-50/80 to-transparent dark:from-rose-900/10 dark:to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-                            <BookCheck className="w-10 h-10 text-rose-500 dark:text-rose-400 group-hover:-translate-y-2 group-hover:scale-110 transition-transform duration-700 relative z-10" />
+                            <div className="absolute inset-0 bg-gradient-to-tr from-pink-50/80 to-transparent dark:from-pink-900/10 dark:to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                            <BookCheck className="w-10 h-10 text-pink-500 dark:text-pink-400 group-hover:-translate-y-2 group-hover:scale-110 transition-transform duration-700 relative z-10" />
                             <div className="relative z-10">
                                 <h3 className="text-2xl font-headline font-bold mb-2 text-slate-900 dark:text-slate-50">Universal Apply</h3>
                                 <p className="text-slate-600 dark:text-slate-400 font-medium text-sm">
@@ -403,18 +403,18 @@ export default function LandingPage() {
 
                         {/* Tile 4 — AI-Powered Matches */}
                         <div className="md:col-span-2 relative group rounded-[2rem] p-8 md:p-10 overflow-hidden
-                            bg-white/90 border border-orange-100/60
-                            dark:bg-[#1D1412]/90 dark:border-white/5 backdrop-blur-xl
-                            shadow-lg shadow-orange-900/5 dark:shadow-none hover:shadow-2xl hover:shadow-orange-900/10 transition-all duration-700 hover:-translate-y-1"
+                            bg-white/90 border border-rose-100/60
+                            dark:bg-[#1D1414]/90 dark:border-white/5 backdrop-blur-xl
+                            shadow-lg shadow-rose-900/5 dark:shadow-none hover:shadow-2xl hover:shadow-rose-900/10 transition-all duration-700 hover:-translate-y-1"
                         >
                             <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white to-transparent opacity-60 dark:opacity-10 pointer-events-none" />
-                            <div className="absolute inset-0 bg-gradient-to-br from-indigo-50/50 to-transparent dark:from-indigo-900/20 dark:to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                            <div className="absolute inset-0 bg-gradient-to-br from-rose-50/50 to-transparent dark:from-rose-900/20 dark:to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
 
                             {/* Decorative glowing orb */}
-                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-56 h-56 bg-orange-400/10 dark:bg-orange-500/10 blur-[60px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-56 h-56 bg-rose-400/10 dark:bg-rose-500/10 blur-[60px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
 
                             <div className="h-full flex flex-col justify-end relative z-10 transition-transform duration-700">
-                                <Sparkles className="w-12 h-12 text-orange-500 mb-5 group-hover:animate-pulse" />
+                                <Sparkles className="w-12 h-12 text-rose-500 mb-5 group-hover:animate-pulse" />
                                 <h3 className="text-2xl md:text-3xl font-headline font-bold mb-2 text-slate-900 dark:text-slate-50">AI-Powered Matches</h3>
                                 <p className="text-slate-600 dark:text-slate-400 text-base font-medium max-w-md">
                                     Our intelligent engine instantly analyzes your profile and highlights the exact scholarships you're most likely to win.
