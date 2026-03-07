@@ -337,7 +337,7 @@ export default function LandingPage() {
                                                 </span>
                                                 {scholarship.amount && (
                                                     <span className="text-sm font-bold text-green-600 bg-green-50 px-2 py-1 rounded">
-                                                        ₹{scholarship.amount.toLocaleString('en-IN')}
+                                                        <span style={{ fontFamily: 'sans-serif' }}>₹</span>{scholarship.amount.toLocaleString('en-IN')}
                                                     </span>
                                                 )}
                                             </div>
