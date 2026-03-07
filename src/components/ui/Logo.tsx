@@ -2,21 +2,23 @@ import React from 'react';
 
 interface LogoProps extends React.SVGProps<SVGSVGElement> {
   className?: string;
-  indigoColor?: string;
-  coralColor?: string;
+  darkColor?: string;
+  lightColor?: string;
 }
 
 /**
  * Fund Her Future - Brand Logo
  * 
- * A minimalist SVG component integrating two core concepts:
- * 1. An open book (symbolizing education and knowledge)
- * 2. A central spark/star (symbolizing growth, future, and empowerment)
+ * A female-oriented SVG logo integrating:
+ * 1. An open book base (education/scholarship)
+ * 2. A central female figure (empowerment)
+ * 3. A graduation cap (future/success)
+ * Colors focus exclusively on the brand's peach and pink theme.
  */
 export const Logo: React.FC<LogoProps> = ({
   className = "w-8 h-8",
-  indigoColor = "#1E3A8A", // Deep Indigo/Navy 
-  coralColor = "#FF9F89",  // Theme-matching Peach/Pink (soft coral-pink)
+  darkColor = "#FF6B8B", // Vibrant Pink
+  lightColor = "#FFA089", // Peach Pink
   ...props
 }) => {
   return (
@@ -27,26 +29,24 @@ export const Logo: React.FC<LogoProps> = ({
       className={className}
       {...props}
     >
-      {/* 
-        Education Base: Open Book / Subtle Cap 
-        Sleek, curving paths represent pages opening into the future.
-      */}
+      {/* Education Base: Open Book */}
       <path
-        d="M16 26C16 26 9.5 21 2.5 21V7.5C9.5 7.5 16 12 16 12C16 12 22.5 7.5 29.5 7.5V21C22.5 21 16 26 16 26Z"
-        fill={indigoColor}
+        d="M16 28C16 28 9 23 3 23V15C9 15 16 20 16 20C16 20 23 15 29 15V23C23 23 16 28 16 28Z"
+        fill={darkColor}
         className="transition-colors duration-300"
       />
 
-      {/* 
-        Empowerment Spark: Rising from the book 
-        A clean, geometric 4-point star representing a bright future.
-        Positioned to rest perfectly in the center fold of the book.
-      */}
+      {/* Female Figure: Head & Dress/Torso */}
+      <circle cx="16" cy="9" r="3" fill={lightColor} className="transition-colors duration-300" />
       <path
-        d="M16 2C16 6.5 18 8.5 22.5 8.5C18 8.5 16 10.5 16 15C16 10.5 14 8.5 9.5 8.5C14 8.5 16 6.5 16 2Z"
-        fill={coralColor}
-        className="transition-colors duration-300 drop-shadow-sm"
+        d="M16 13.5C11.5 13.5 9.5 18 9.5 22C9.5 23.5 16 26 16 26C16 26 22.5 23.5 22.5 22C22.5 18 20.5 13.5 16 13.5Z"
+        fill={lightColor}
+        className="transition-colors duration-300"
       />
+
+      {/* Graduation Cap */}
+      <polygon points="16,3 10,5.5 16,8 22,5.5" fill={darkColor} className="transition-colors duration-300" />
+      <path d="M22 5.5V9" stroke={darkColor} strokeWidth="1.5" className="transition-colors duration-300" />
     </svg>
   );
 };
