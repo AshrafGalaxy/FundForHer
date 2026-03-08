@@ -11,6 +11,8 @@ import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { TimelineStatus, ApplicationStatus } from '@/components/applications/TimelineStatus';
 import { PivotRecommendations } from '@/components/applications/PivotRecommendations';
+import { BankDetailsForm } from '@/components/applications/BankDetailsForm';
+import { DisbursementTracker, DisbursementStatus } from '@/components/applications/DisbursementTracker';
 import { formatDistanceToNow } from 'date-fns';
 
 type JoinedApplication = {
@@ -25,11 +27,13 @@ type JoinedApplication = {
     amount: number;
     matchScore: number; // Mocked or calculated benchmarking
     originalFieldOfStudy: string;
+    disbursementStatus?: DisbursementStatus;
 };
 
 export default function ApplicationsTrackerPage() {
     const [applications, setApplications] = useState<JoinedApplication[]>([]);
     const [loading, setLoading] = useState(true);
+    const [refreshKey, setRefreshKey] = useState(0);
     const auth = useAuth();
     const db = useFirestore();
 
@@ -63,6 +67,18 @@ export default function ApplicationsTrackerPage() {
                         }
                     } catch (e) { console.error("Could not fetch sch data", e); }
 
+                    let disbursementStatus: DisbursementStatus | undefined;
+                    if (appData.status === 'Awarded') {
+                        disbursementStatus = 'Awaiting Details';
+                        try {
+                            const disRef = doc(db, 'disbursements', appDoc.id);
+                            const disSnap = await getDoc(disRef);
+                            if (disSnap.exists()) {
+                                disbursementStatus = disSnap.data().status as DisbursementStatus;
+                            }
+                        } catch (e) { console.error("Could not fetch disbursement status", e); }
+                    }
+
                     joinedResult.push({
                         id: appDoc.id,
                         scholarshipId: appData.scholarshipId,
@@ -73,7 +89,8 @@ export default function ApplicationsTrackerPage() {
                         provider,
                         amount,
                         matchScore,
-                        originalFieldOfStudy: appData.major || 'Unknown Major'
+                        originalFieldOfStudy: appData.major || 'Unknown Major',
+                        disbursementStatus
                     });
                 }
 
@@ -92,7 +109,7 @@ export default function ApplicationsTrackerPage() {
         };
 
         fetchApplications();
-    }, [auth?.currentUser, db]);
+    }, [auth?.currentUser, db, refreshKey]);
 
     if (loading) {
         return (
@@ -192,6 +209,16 @@ export default function ApplicationsTrackerPage() {
 
                                             {app.status === 'Rejected' && (
                                                 <PivotRecommendations originalFieldOfStudy={app.originalFieldOfStudy} />
+                                            )}
+
+                                            {app.status === 'Awarded' && (
+                                                <div className="mt-4 pt-4 border-t border-border/50">
+                                                    {app.disbursementStatus === 'Awaiting Details' ? (
+                                                        <BankDetailsForm applicationId={app.id} onSubmitted={() => setRefreshKey(prev => prev + 1)} />
+                                                    ) : (
+                                                        <DisbursementTracker currentStatus={app.disbursementStatus as DisbursementStatus} amount={app.amount} />
+                                                    )}
+                                                </div>
                                             )}
                                         </div>
 
