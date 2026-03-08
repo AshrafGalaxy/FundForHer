@@ -99,19 +99,10 @@ export function RegisterForm() {
     setIsGoogleLoading(true);
     try {
       const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(auth, provider);
+      await signInWithPopup(auth, provider);
 
-      // We pass some default/dummy data for the fields Google doesn't provide
-      // The user can edit these later in their profile.
-      await createInitialUserProfile(db, result.user.uid, {
-        fullName: result.user.displayName || 'New User',
-        email: result.user.email || '',
-        phone: result.user.phoneNumber || '',
-        dob: new Date('2000-01-01'), // Dummy fallback
-        qualification: 'Other',
-      });
-
-      router.push('/authenticated/profile');
+      // Send the new 1-click user straight to the conversational onboarding
+      router.push('/onboarding');
     } catch (error: any) {
       let description = 'An unexpected error occurred during Google sign-up.';
       if (error instanceof FirebaseError) {

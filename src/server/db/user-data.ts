@@ -29,6 +29,8 @@ export interface ProviderProfile {
   companyPhone: string;
   registrationNumber: string;
   gstNumber: string;
+  kycStatus: 'pending' | 'verified' | 'rejected' | 'require_more_info';
+  kycDocumentUrl: string | null;
   createdAt: any;
   updatedAt: any;
 }
@@ -73,6 +75,8 @@ export const createInitialProviderProfile = async (db: Firestore, uid: string, d
   const newProfile = {
     ...data,
     uid: uid,
+    kycStatus: data.kycStatus || 'pending',
+    kycDocumentUrl: data.kycDocumentUrl || null,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   };
@@ -130,3 +134,14 @@ export const deleteUserProfile = async (db: Firestore, uid: string) => {
   const userRef = doc(db, 'users', uid);
   await deleteDoc(userRef);
 }
+
+/**
+ * Updates a provider's profile in Firestore (e.g., for setting KYC URL).
+ */
+export const updateProviderProfile = async (db: Firestore, uid: string, data: Partial<Omit<ProviderProfile, 'uid'>>) => {
+  const providerRef = doc(db, 'providers', uid);
+  await updateDoc(providerRef, {
+    ...data,
+    updatedAt: serverTimestamp(),
+  });
+};

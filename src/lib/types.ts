@@ -21,3 +21,21 @@ export type Scholarship = {
   officialLink?: string;
   providerLogo?: string;
 };
+
+export type ApplicationStatus = 'new' | 'reviewing' | 'shortlisted' | 'accepted' | 'rejected';
+
+export type Application = {
+  id: string;
+  studentId: string;
+  scholarshipId: string;
+  status: ApplicationStatus;
+  matchScore: number;
+  appliedAt: any;
+  resumeSnapshot: {
+    fullName: string;
+    email: string;
+    phone: string;
+    qualification: string;
+    college: string | null;
+  };
+};

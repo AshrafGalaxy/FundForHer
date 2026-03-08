@@ -1,8 +1,6 @@
-
-'use client';
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { PlusCircle, Edit, Trash2 } from "lucide-react";
+import { PlusCircle, Edit, Trash2, ShieldCheck, Users } from "lucide-react";
 import type { Scholarship } from "@/lib/types";
 import { useState, useEffect, useMemo } from "react";
 import { useAuth } from "@/app/auth-provider";
@@ -10,6 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type { ProviderProfile } from "@/server/db/user-data";
 import { useFirestore } from "@/firebase";
 import { getProviderProfile } from "@/server/db/user-data";
+import Link from "next/link";
 
 
 function ProviderDashboard() {
@@ -86,6 +85,22 @@ function ProviderDashboard() {
         )
     }
 
+    if (providerProfile.kycStatus !== 'verified') {
+        return (
+            <div className="container mx-auto px-4 py-16 flex justify-center">
+                <Card className="text-center p-8 border-primary/20 bg-primary/5 shadow-xl max-w-xl">
+                    <div className="mx-auto w-24 h-24 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center mb-6 shadow-sm border border-orange-200">
+                        <ShieldCheck className="w-12 h-12" />
+                    </div>
+                    <CardTitle className="font-headline text-3xl">Verification in Progress</CardTitle>
+                    <CardDescription className="text-lg mt-4 px-4 text-muted-foreground">
+                        Your account is currently under review by our administration team. Once your <strong>Verified Blue Tick</strong> is approved, your dashboard will unlock here.
+                    </CardDescription>
+                </Card>
+            </div>
+        )
+    }
+
     return (
         <div className="container mx-auto px-4 py-8">
             <header className="mb-8">
@@ -95,21 +110,28 @@ function ProviderDashboard() {
 
             <div className="flex justify-between items-center mb-6">
                 <h2 className="text-2xl font-headline font-semibold">Your Scholarship Listings</h2>
-                <Button>
-                    <PlusCircle className="mr-2 h-4 w-4" />
-                    Add New Scholarship
+                <Button asChild>
+                    <Link href="/provider/dashboard/create">
+                        <PlusCircle className="mr-2 h-4 w-4" />
+                        Add New Scholarship
+                    </Link>
                 </Button>
             </div>
 
             {myScholarships.length > 0 ? (
                 <div className="space-y-4">
                     {myScholarships.map(scholarship => (
-                        <Card key={scholarship.id} className="flex flex-col md:flex-row items-start justify-between p-4">
+                        <Card key={scholarship.id} className="flex flex-col md:flex-row items-center justify-between p-4 bg-card/60 hover:bg-card transition-colors">
                             <div className="mb-4 md:mb-0">
-                                <CardTitle className="text-xl">{scholarship.title}</CardTitle>
+                                <CardTitle className="text-xl mb-1">{scholarship.title}</CardTitle>
                                 <CardDescription>Amount: <span style={{ fontFamily: 'sans-serif' }}>₹</span>{new Intl.NumberFormat('en-IN').format(scholarship.amount)} | Deadline: {scholarship.deadline ? scholarship.deadline.toLocaleDateString() : '...'}</CardDescription>
                             </div>
-                            <div className="flex gap-2 flex-shrink-0">
+                            <div className="flex gap-2 flex-shrink-0 flex-wrap justify-end">
+                                <Button asChild variant="default" size="sm" className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                                    <Link href={`/provider/dashboard/${scholarship.id}`}>
+                                        <Users className="mr-2 h-4 w-4" /> Manage Applicants
+                                    </Link>
+                                </Button>
                                 <Button variant="outline" size="sm"><Edit className="mr-2 h-4 w-4" />Edit</Button>
                                 <Button variant="destructive" size="sm"><Trash2 className="mr-2 h-4 w-4" />Delete</Button>
                             </div>

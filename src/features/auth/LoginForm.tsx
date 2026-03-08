@@ -161,24 +161,23 @@ export function LoginForm({ isProviderLogin }: LoginFormProps) {
       if (isProviderLogin) {
         const profile = await getProviderProfile(db, result.user.uid);
         if (!profile) {
+          // Providers without a profile must register properly first.
           await result.user.delete();
-          throw new Error('profile-not-found');
+          toast({ variant: 'destructive', title: 'Provider Account Not Found', description: 'Please register your company first.' });
+          return;
         }
       } else {
         const profile = await getUserProfile(db, result.user.uid);
         if (!profile) {
-          await result.user.delete();
-          throw new Error('profile-not-found');
+          // A student logged in with Google but hasn't completed onboarding. Route them!
+          router.push('/onboarding');
+          return;
         }
       }
 
       redirectAfterLogin();
     } catch (error: any) {
-      if (error.message === 'profile-not-found') {
-        handleFirebaseError(error, 'No profile found for this Google account. Please sign up first.');
-      } else {
-        handleFirebaseError(error, 'An unexpected error occurred during Google sign-in.');
-      }
+      handleFirebaseError(error, 'An unexpected error occurred during Google sign-in.');
     } finally {
       setIsGoogleLoading(false);
     }

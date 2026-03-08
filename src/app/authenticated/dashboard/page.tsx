@@ -9,8 +9,9 @@ import type { Scholarship } from '@/lib/types';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Search, Loader2, Bookmark, Sun, Moon, Monitor, SearchX, Telescope } from 'lucide-react';
+import { Search, Loader2, Bookmark, Sun, Moon, Monitor, SearchX, Telescope, IndianRupee, Calendar, Target, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { useTheme } from 'next-themes';
+import { Badge } from '@/components/ui/badge';
 import Logo from '@/components/ui/Logo';
 import { SidebarProvider, Sidebar, SidebarTrigger } from '@/components/ui/sidebar';
 import { useUser } from '@/firebase/auth/use-user';
@@ -84,6 +85,8 @@ export default function DashboardPage() {
   const [activeStatus, setActiveStatus] = useState<ScholarshipStatus>('All');
   const [sortBy, setSortBy] = useState<'posted' | 'deadline'>('posted');
   const [activeTab, setActiveTab] = useState<ActiveTab>('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 10;
 
   const authUser = useAuth();
   const user = useUser();
@@ -100,6 +103,11 @@ export default function DashboardPage() {
     religion: 'all',
     location: 'all',
   });
+
+  // Reset pagination when filters, tabs, or sorting changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filters, activeTab, activeStatus, sortBy]);
 
 
   useEffect(() => {
@@ -214,7 +222,7 @@ export default function DashboardPage() {
     return filteredScholarships.filter(s => s.status === 'Always Open').length;
   }, [filteredScholarships]);
 
-  const displayedScholarships = useMemo(() => {
+  const fullySortedList = useMemo(() => {
     let baseList = activeTab === 'saved'
       ? scholarships.filter(s => bookmarkedIds.has(s.id))
       : filteredScholarships;
@@ -245,6 +253,25 @@ export default function DashboardPage() {
 
     return results;
   }, [filteredScholarships, activeStatus, sortBy, activeTab, scholarships, bookmarkedIds]);
+
+  const totalPages = Math.ceil(fullySortedList.length / ITEMS_PER_PAGE) || 1;
+  const displayedScholarships = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return fullySortedList.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [fullySortedList, currentPage]);
+
+  // Insights Data
+  const savedFunding = useMemo(() => {
+    return scholarships
+      .filter(s => bookmarkedIds.has(s.id))
+      .reduce((sum, s) => sum + (Number(s.amount) || 0), 0);
+  }, [scholarships, bookmarkedIds]);
+
+  const urgentDeadlines = useMemo(() => {
+    const now = new Date();
+    const next7Days = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+    return scholarships.filter(s => bookmarkedIds.has(s.id) && s.deadline && s.deadline > now && s.deadline <= next7Days).length;
+  }, [scholarships, bookmarkedIds]);
 
   if (loading) {
     return (
@@ -413,12 +440,25 @@ export default function DashboardPage() {
           </div>
 
           {/* Scrollable Grid Content */}
-          <main className="flex-1 overflow-x-hidden pt-6">
-            <div className="container mx-auto px-4 sm:px-6 pb-12 md:p-8 space-y-6 max-w-[1600px] mx-auto">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <main className="flex-1 overflow-x-hidden pt-6 relative">
+            {/* Subtle Animated Background for Premium feel */}
+            <div className="absolute top-0 left-0 right-0 h-96 bg-gradient-to-b from-primary/10 via-background to-background -z-10" />
+
+            <div className="container mx-auto px-4 sm:px-6 pb-12 md:p-8 space-y-8 max-w-[1600px] mx-auto">
+
+              {/* Premium Hero Banner */}
+              <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 pb-2">
                 <div>
-                  <h1 className="text-2xl md:text-3xl font-headline font-bold">Find Your Scholarship</h1>
-                  <p className="text-muted-foreground text-sm">Empowering girls across India through education</p>
+                  <h1 className="text-3xl md:text-4xl font-headline font-bold mb-2">
+                    {user?.displayName ? (
+                      <>Good {new Date().getHours() < 12 ? 'Morning' : new Date().getHours() < 18 ? 'Afternoon' : 'Evening'}, <span className="text-primary">{user.displayName.split(' ')[0]}</span> ✨</>
+                    ) : (
+                      <>Find Your <span className="text-primary italic">Funding.</span></>
+                    )}
+                  </h1>
+                  <p className="text-muted-foreground text-lg">
+                    We found <strong className="text-foreground">{fullySortedList.length}</strong> active opportunities matching your profile.
+                  </p>
                 </div>
                 <div className="flex justify-end gap-2 shrink-0">
                   <Button onClick={() => setSortBy('posted')} variant={sortBy === 'posted' ? 'secondary' : 'ghost'} size="sm">Recently Posted</Button>
@@ -426,7 +466,79 @@ export default function DashboardPage() {
                 </div>
               </div>
 
+              {/* KPI Insight Cards */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                <div className="bg-card/60 backdrop-blur-md rounded-2xl p-5 border shadow-sm transition-transform hover:-translate-y-1 duration-300">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="bg-primary/20 p-2 rounded-lg text-primary"><IndianRupee className="w-5 h-5" /></div>
+                    <h3 className="font-semibold text-sm text-muted-foreground">Total Funding Saved</h3>
+                  </div>
+                  <p className="text-3xl font-headline font-bold text-foreground tabular-nums tracking-tight">₹{savedFunding.toLocaleString('en-IN')}</p>
+                </div>
+
+                <div className="bg-card/60 backdrop-blur-md rounded-2xl p-5 border shadow-sm transition-transform hover:-translate-y-1 duration-300">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="bg-orange-500/20 p-2 rounded-lg text-orange-500"><Calendar className="w-5 h-5" /></div>
+                    <h3 className="font-semibold text-sm text-muted-foreground">Urgent Deadlines</h3>
+                  </div>
+                  <p className="text-3xl font-headline font-bold text-foreground tabular-nums tracking-tight">{urgentDeadlines}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Expiring within 7 days</p>
+                </div>
+
+                <div className="bg-card/60 backdrop-blur-md rounded-2xl p-5 border shadow-sm transition-transform hover:-translate-y-1 duration-300">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="bg-blue-500/20 p-2 rounded-lg text-blue-500"><Target className="w-5 h-5" /></div>
+                    <h3 className="font-semibold text-sm text-muted-foreground">Current Match View</h3>
+                  </div>
+                  <p className="text-3xl font-headline font-bold text-foreground tabular-nums tracking-tight">{fullySortedList.length}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Funds currently displayed</p>
+                </div>
+              </div>
+
               <div className="flex flex-col gap-6">
+                {/* Active Filter Chips */}
+                {(filters.search || filters.fieldOfStudy.length > 0 || filters.eligibilityLevel.length > 0 || filters.scholarshipType.length > 0 || filters.gender !== 'female' && filters.gender !== 'all' || filters.religion !== 'all' || filters.location !== 'all') && (
+                  <div className="flex flex-wrap items-center gap-2 mb-[-10px]">
+                    <span className="text-sm font-medium text-muted-foreground mr-1">Active Filters:</span>
+
+                    {filters.search && (
+                      <Badge variant="secondary" className="flex items-center gap-1.5 px-3 py-1 bg-primary/10 hover:bg-primary/20 text-primary hover:text-primary border-primary/20 transition-colors cursor-pointer font-medium" onClick={() => setFilters(prev => ({ ...prev, search: '' }))}>
+                        Search: {filters.search} <X className="w-3 h-3" />
+                      </Badge>
+                    )}
+                    {filters.gender !== 'female' && filters.gender !== 'all' && (
+                      <Badge variant="secondary" className="flex items-center gap-1.5 px-3 py-1 bg-primary/10 hover:bg-primary/20 text-primary hover:text-primary border-primary/20 transition-colors cursor-pointer font-medium" onClick={() => setFilters(prev => ({ ...prev, gender: 'female' }))}>
+                        Gender: {filters.gender} <X className="w-3 h-3" />
+                      </Badge>
+                    )}
+                    {filters.religion !== 'all' && (
+                      <Badge variant="secondary" className="flex items-center gap-1.5 px-3 py-1 bg-primary/10 hover:bg-primary/20 text-primary hover:text-primary border-primary/20 transition-colors cursor-pointer font-medium" onClick={() => setFilters(prev => ({ ...prev, religion: 'all' }))}>
+                        Religion: {filters.religion} <X className="w-3 h-3" />
+                      </Badge>
+                    )}
+                    {filters.location !== 'all' && (
+                      <Badge variant="secondary" className="flex items-center gap-1.5 px-3 py-1 bg-primary/10 hover:bg-primary/20 text-primary hover:text-primary border-primary/20 transition-colors cursor-pointer font-medium" onClick={() => setFilters(prev => ({ ...prev, location: 'all' }))}>
+                        Location: {filters.location} <X className="w-3 h-3" />
+                      </Badge>
+                    )}
+                    {filters.fieldOfStudy.map(field => (
+                      <Badge key={field} variant="secondary" className="flex items-center gap-1.5 px-3 py-1 bg-primary/10 hover:bg-primary/20 text-primary hover:text-primary border-primary/20 transition-colors cursor-pointer font-medium" onClick={() => setFilters(prev => ({ ...prev, fieldOfStudy: prev.fieldOfStudy.filter(f => f !== field) }))}>
+                        {field} <X className="w-3 h-3" />
+                      </Badge>
+                    ))}
+                    {filters.eligibilityLevel.map(level => (
+                      <Badge key={level} variant="secondary" className="flex items-center gap-1.5 px-3 py-1 bg-primary/10 hover:bg-primary/20 text-primary hover:text-primary border-primary/20 transition-colors cursor-pointer font-medium" onClick={() => setFilters(prev => ({ ...prev, eligibilityLevel: prev.eligibilityLevel.filter(l => l !== level) }))}>
+                        {level} <X className="w-3 h-3" />
+                      </Badge>
+                    ))}
+                    {filters.scholarshipType.map(type => (
+                      <Badge key={type} variant="secondary" className="flex items-center gap-1.5 px-3 py-1 bg-primary/10 hover:bg-primary/20 text-primary hover:text-primary border-primary/20 transition-colors cursor-pointer font-medium" onClick={() => setFilters(prev => ({ ...prev, scholarshipType: prev.scholarshipType.filter(t => t !== type) }))}>
+                        {type} <X className="w-3 h-3" />
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+
                 <div className="border-b">
                   <div className="flex gap-4">
                     <button onClick={() => setActiveTab('all')} className={`py-2 px-4 text-sm font-medium transition-colors rounded-t-lg ${activeTab === 'all' ? 'bg-theme-100 dark:bg-theme-900/50 border-b-2 border-theme-600 dark:border-theme-400 text-theme-900 dark:text-theme-100 font-bold' : 'border-b-2 border-transparent text-muted-foreground hover:bg-theme-50 dark:hover:bg-theme-900/20 hover:text-theme-900 dark:hover:text-theme-200'}`}>All Scholarships</button>
@@ -456,16 +568,49 @@ export default function DashboardPage() {
 
               {scholarships.length > 0 ? (
                 displayedScholarships.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
-                    {displayedScholarships.map(scholarship => (
-                      <ScholarshipCard
-                        key={scholarship.id}
-                        scholarship={scholarship}
-                        isBookmarked={bookmarkedIds.has(scholarship.id)}
-                        onToggleBookmark={() => handleToggleBookmark(scholarship)}
-                      />
-                    ))}
-                  </div>
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
+                      {displayedScholarships.map(scholarship => (
+                        <ScholarshipCard
+                          key={scholarship.id}
+                          scholarship={scholarship}
+                          isBookmarked={bookmarkedIds.has(scholarship.id)}
+                          onToggleBookmark={() => handleToggleBookmark(scholarship)}
+                        />
+                      ))}
+                    </div>
+                    {/* Premium Pagination Control Bar */}
+                    {totalPages > 1 && (
+                      <div className="flex flex-col sm:flex-row items-center justify-between mt-10 border-t pt-6 text-sm text-muted-foreground gap-4">
+                        <div className="font-medium bg-secondary/50 px-4 py-2 rounded-lg">
+                          Showing <strong className="text-foreground">{Math.min((currentPage - 1) * ITEMS_PER_PAGE + 1, fullySortedList.length)}</strong> to <strong className="text-foreground">{Math.min(currentPage * ITEMS_PER_PAGE, fullySortedList.length)}</strong> of <strong className="text-foreground">{fullySortedList.length}</strong> Funds
+                        </div>
+                        <div className="flex items-center gap-2 bg-card border rounded-lg p-1 shadow-sm">
+                          <Button variant="ghost" size="sm" onClick={() => { setCurrentPage(prev => Math.max(1, prev - 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }} disabled={currentPage === 1} className="h-8 px-2">
+                            <ChevronLeft className="w-4 h-4 mr-1" /> Prev
+                          </Button>
+                          <div className="flex items-center font-medium px-1">
+                            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => {
+                              // Show first, last, current, and +/- 1 pages
+                              if (page === 1 || page === totalPages || (page >= currentPage - 1 && page <= currentPage + 1)) {
+                                return (
+                                  <button key={page} onClick={() => { setCurrentPage(page); window.scrollTo({ top: 0, behavior: 'smooth' }); }} className={`w-8 h-8 rounded-md flex items-center justify-center transition-all ${currentPage === page ? 'bg-primary text-primary-foreground shadow-sm' : 'hover:bg-muted text-muted-foreground'}`}>
+                                    {page}
+                                  </button>
+                                );
+                              } else if (page === currentPage - 2 || page === currentPage + 2) {
+                                return <span key={page} className="w-8 h-8 flex items-center justify-center text-muted-foreground/50">...</span>;
+                              }
+                              return null;
+                            })}
+                          </div>
+                          <Button variant="ghost" size="sm" onClick={() => { setCurrentPage(prev => Math.min(totalPages, prev + 1)); window.scrollTo({ top: 0, behavior: 'smooth' }); }} disabled={currentPage === totalPages} className="h-8 px-2">
+                            Next <ChevronRight className="w-4 h-4 ml-1" />
+                          </Button>
+                        </div>
+                      </div>
+                    )}
+                  </>
                 ) : (
                   <div className="flex flex-col items-center justify-center py-20 px-4 text-center bg-card/40 backdrop-blur-sm rounded-2xl border border-dashed border-theme-200 dark:border-theme-800 animate-in fade-in duration-700">
                     <div className="w-20 h-20 bg-theme-100 dark:bg-theme-900/50 rounded-full flex items-center justify-center mb-6 shadow-inner">
