@@ -332,16 +332,16 @@ export default function LandingPage() {
 
 
             {/* Premium Bento Box Features Section */}
-            <section className="py-24 bg-background">
+            <section className="py-24 bg-white dark:bg-[#301A18] transition-colors">
                 <div className="container mx-auto px-4 max-w-6xl">
                     <div className="text-center mb-16">
-                        <h2 className="text-4xl md:text-5xl font-headline font-extrabold mb-4 tracking-tight text-foreground">
+                        <h2 className="text-4xl md:text-5xl font-headline font-extrabold mb-4 tracking-tight text-foreground dark:text-[#FFF5F4]">
                             Everything you need, <br className="hidden md:block" />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-theme-700 to-theme-500 dark:from-theme-400 dark:to-theme-200">
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-400 dark:from-[#FBA69B] dark:to-[#FFD1C8]">
                                 beautifully simple.
                             </span>
                         </h2>
-                        <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+                        <p className="text-lg text-muted-foreground dark:text-[#FFEBE8]/80 max-w-2xl mx-auto">
                             We've completely reimagined the scholarship experience to be fast, secure, and exclusively tailored for you.
                         </p>
                     </div>
@@ -350,15 +350,15 @@ export default function LandingPage() {
 
                         {/* Tile 1 — The Central Hub */}
                         <div className="md:col-span-2 relative group rounded-[2rem] p-8 md:p-10 overflow-hidden
-                            bg-white/90 border border-[#FBA69B]/30 backdrop-blur-xl
-                            shadow-lg shadow-pink-900/5 hover:shadow-2xl hover:shadow-[#FBA69B]/10 transition-all duration-700 hover:-translate-y-1"
+                            bg-white dark:bg-[#47221E]/40 border border-primary/20 dark:border-[#672B25] backdrop-blur-xl
+                            shadow-lg shadow-primary/5 dark:shadow-black/20 hover:shadow-2xl hover:shadow-primary/10 transition-all duration-700 hover:-translate-y-1"
                         >
-                            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white to-transparent opacity-80 pointer-events-none" />
-                            <div className="absolute inset-0 bg-gradient-to-br from-[#FBA69B]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/50 dark:via-white/10 to-transparent opacity-80 pointer-events-none" />
+                            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 dark:from-[#FBA69B]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
                             <div className="h-full flex flex-col justify-end relative z-10 transition-transform duration-700">
-                                <Target className="w-12 h-12 text-pink-500 mb-5 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-700" />
-                                <h3 className="text-2xl md:text-3xl font-headline font-bold mb-2 text-[#301A18]">The Central Hub</h3>
-                                <p className="text-[#301A18]/70 text-base font-medium max-w-md">
+                                <Target className="w-12 h-12 text-primary dark:text-[#FBA69B] mb-5 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-700" />
+                                <h3 className="text-2xl md:text-3xl font-headline font-bold mb-2 text-foreground dark:text-[#FFF5F4]">The Central Hub</h3>
+                                <p className="text-muted-foreground dark:text-[#FFEBE8]/70 text-base font-medium max-w-md">
                                     Discover hundreds of verified scholarships in one unified, clutter-free space. Stop hunting across the web.
                                 </p>
                             </div>
@@ -366,16 +366,16 @@ export default function LandingPage() {
 
                         {/* Tile 2 — Girls First */}
                         <div className="relative group rounded-[2rem] p-8 overflow-hidden
-                            bg-[#FBA69B]/5 border border-[#FBA69B]/30 backdrop-blur-xl
-                            shadow-lg shadow-pink-900/5 hover:shadow-xl hover:shadow-[#FBA69B]/10 transition-all duration-700 hover:-translate-y-1
+                            bg-white dark:bg-[#47221E]/30 border border-primary/20 dark:border-[#672B25] backdrop-blur-xl
+                            shadow-lg shadow-primary/5 dark:shadow-black/20 hover:shadow-xl hover:shadow-primary/10 transition-all duration-700 hover:-translate-y-1
                             flex flex-col justify-between"
                         >
-                            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white to-transparent opacity-80 pointer-events-none" />
-                            <div className="absolute inset-0 bg-gradient-to-tr from-[#FBA69B]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-                            <HeartHandshake className="w-10 h-10 text-pink-500 group-hover:-rotate-12 group-hover:scale-110 transition-transform duration-700 relative z-10" />
+                            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/50 dark:via-white/10 to-transparent opacity-80 pointer-events-none" />
+                            <div className="absolute inset-0 bg-gradient-to-tr from-primary/15 dark:from-[#FBA69B]/15 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                            <HeartHandshake className="w-10 h-10 text-primary dark:text-[#FBA69B] group-hover:-rotate-12 group-hover:scale-110 transition-transform duration-700 relative z-10" />
                             <div className="relative z-10">
-                                <h3 className="text-2xl font-headline font-bold mb-2 text-[#301A18]">Girls First</h3>
-                                <p className="text-[#301A18]/70 font-medium text-sm">
+                                <h3 className="text-2xl font-headline font-bold mb-2 text-foreground dark:text-[#FFF5F4]">Girls First</h3>
+                                <p className="text-muted-foreground dark:text-[#FFEBE8]/70 font-medium text-sm">
                                     100% focused on opportunities exclusively for female students across India.
                                 </p>
                             </div>
@@ -383,16 +383,16 @@ export default function LandingPage() {
 
                         {/* Tile 3 — Universal Apply */}
                         <div className="relative group rounded-[2rem] p-8 overflow-hidden
-                            bg-white/90 border border-[#FBA69B]/30 backdrop-blur-xl
-                            shadow-lg shadow-pink-900/5 hover:shadow-xl hover:shadow-[#FBA69B]/10 transition-all duration-700 hover:-translate-y-1
+                            bg-white dark:bg-[#47221E]/30 border border-primary/20 dark:border-[#672B25] backdrop-blur-xl
+                            shadow-lg shadow-primary/5 dark:shadow-black/20 hover:shadow-xl hover:shadow-primary/10 transition-all duration-700 hover:-translate-y-1
                             flex flex-col justify-between"
                         >
-                            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white to-transparent opacity-80 pointer-events-none" />
-                            <div className="absolute inset-0 bg-gradient-to-tr from-[#FBA69B]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
-                            <BookCheck className="w-10 h-10 text-pink-500 group-hover:-translate-y-2 group-hover:scale-110 transition-transform duration-700 relative z-10" />
+                            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/50 dark:via-white/10 to-transparent opacity-80 pointer-events-none" />
+                            <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 dark:from-[#FBA69B]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                            <BookCheck className="w-10 h-10 text-primary dark:text-[#FBA69B] group-hover:-translate-y-2 group-hover:scale-110 transition-transform duration-700 relative z-10" />
                             <div className="relative z-10">
-                                <h3 className="text-2xl font-headline font-bold mb-2 text-[#301A18]">Universal Apply</h3>
-                                <p className="text-[#301A18]/70 font-medium text-sm">
+                                <h3 className="text-2xl font-headline font-bold mb-2 text-foreground dark:text-[#FFF5F4]">Universal Apply</h3>
+                                <p className="text-muted-foreground dark:text-[#FFEBE8]/70 font-medium text-sm">
                                     One profile. One unified format. Zero repetitive paperwork.
                                 </p>
                             </div>
@@ -400,19 +400,19 @@ export default function LandingPage() {
 
                         {/* Tile 4 — AI-Powered Matches */}
                         <div className="md:col-span-2 relative group rounded-[2rem] p-8 md:p-10 overflow-hidden
-                            bg-white/90 border border-[#FBA69B]/30 backdrop-blur-xl
-                            shadow-lg shadow-pink-900/5 hover:shadow-2xl hover:shadow-[#FBA69B]/10 transition-all duration-700 hover:-translate-y-1"
+                            bg-white dark:bg-[#47221E]/40 border border-primary/20 dark:border-[#672B25] backdrop-blur-xl
+                            shadow-lg shadow-primary/5 dark:shadow-black/20 hover:shadow-2xl hover:shadow-primary/10 transition-all duration-700 hover:-translate-y-1"
                         >
-                            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white to-transparent opacity-80 pointer-events-none" />
-                            <div className="absolute inset-0 bg-gradient-to-br from-[#FBA69B]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/50 dark:via-white/10 to-transparent opacity-80 pointer-events-none" />
+                            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 dark:from-[#FBA69B]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
 
                             {/* Decorative glowing orb */}
-                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-[#FBA69B]/20 blur-[60px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary/20 dark:bg-[#FBA69B]/15 blur-[60px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
 
                             <div className="h-full flex flex-col justify-end relative z-10 transition-transform duration-700">
-                                <Sparkles className="w-12 h-12 text-pink-500 mb-5 group-hover:animate-pulse" />
-                                <h3 className="text-2xl md:text-3xl font-headline font-bold mb-2 text-[#301A18]">AI-Powered Matches</h3>
-                                <p className="text-[#301A18]/70 text-base font-medium max-w-md">
+                                <Sparkles className="w-12 h-12 text-primary dark:text-[#FBA69B] mb-5 group-hover:animate-pulse" />
+                                <h3 className="text-2xl md:text-3xl font-headline font-bold mb-2 text-foreground dark:text-[#FFF5F4]">AI-Powered Matches</h3>
+                                <p className="text-muted-foreground dark:text-[#FFEBE8]/70 text-base font-medium max-w-md">
                                     Our intelligent engine instantly analyzes your profile and highlights the exact scholarships you're most likely to win.
                                 </p>
                             </div>
@@ -425,11 +425,11 @@ export default function LandingPage() {
             {/* About Us Section */}
             <AboutSection />
 
-            {/* App Download / PWA Section (Premium Dark Banner) */}
-            <section className="py-20 md:py-28 bg-[#301A18] relative overflow-hidden border-y border-[#47221E]">
+            {/* App Download / PWA Section */}
+            <section className="py-20 md:py-28 bg-white dark:bg-[#301A18] relative overflow-hidden border-y border-primary/20 dark:border-[#47221E] transition-colors">
                 {/* Decorative background glows */}
-                <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 rounded-full bg-[#FBA69B]/20 blur-3xl pointer-events-none" />
-                <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-96 h-96 rounded-full bg-[#FBA69B]/10 blur-3xl pointer-events-none" />
+                <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 rounded-full bg-primary/20 dark:bg-[#FBA69B]/20 blur-3xl pointer-events-none" />
+                <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-96 h-96 rounded-full bg-primary/10 dark:bg-[#FBA69B]/10 blur-3xl pointer-events-none" />
 
                 <div className="container mx-auto px-4 relative z-10">
                     <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-12 p-4 md:p-8">
@@ -437,25 +437,25 @@ export default function LandingPage() {
                         <div className="flex-1 text-center md:text-left space-y-6">
                             {isPwaInstalled ? (
                                 <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
-                                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#47221E] text-[#FDC8C0] text-sm font-semibold mb-2 border border-[#672B25] shadow-sm">
+                                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 dark:bg-[#47221E] text-primary dark:text-[#FDC8C0] text-sm font-semibold mb-2 border border-primary/20 dark:border-[#672B25] shadow-sm">
                                         <CheckCircle2 className="w-4 h-4" /> App Installed
                                     </div>
-                                    <h2 className="text-3xl md:text-5xl font-headline font-bold text-[#FFF5F4]">
-                                        You're all <span className="text-[#FBA69B]">set!</span>
+                                    <h2 className="text-3xl md:text-5xl font-headline font-bold text-foreground dark:text-[#FFF5F4]">
+                                        You're all <span className="text-primary dark:text-[#FBA69B]">set!</span>
                                     </h2>
-                                    <p className="text-lg text-[#FFEBE8] max-w-lg mx-auto md:mx-0 font-medium">
+                                    <p className="text-lg text-muted-foreground dark:text-[#FFEBE8] max-w-lg mx-auto md:mx-0 font-medium">
                                         Fund Her Future is successfully installed on your device. Enjoy the fastest, offline-ready experience right from your home screen.
                                     </p>
                                 </div>
                             ) : (
                                 <div className="space-y-6">
-                                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#47221E] text-[#FFF5F4] text-sm font-semibold mb-2 border border-[#672B25]">
+                                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 dark:bg-[#47221E] text-primary dark:text-[#FFF5F4] text-sm font-semibold mb-2 border border-primary/20 dark:border-[#672B25]">
                                         <Smartphone className="w-4 h-4" /> Install from Browser
                                     </div>
-                                    <h2 className="text-3xl md:text-5xl font-headline font-bold text-[#FFF5F4]">
-                                        Take Fund Her Future <span className="text-[#FBA69B]">Anywhere.</span>
+                                    <h2 className="text-3xl md:text-5xl font-headline font-bold text-foreground dark:text-[#FFF5F4]">
+                                        Take Fund Her Future <span className="text-primary dark:text-[#FBA69B]">Anywhere.</span>
                                     </h2>
-                                    <p className="text-lg text-[#FFEBE8] max-w-lg mx-auto md:mx-0 font-medium">
+                                    <p className="text-lg text-muted-foreground dark:text-[#FFEBE8] max-w-lg mx-auto md:mx-0 font-medium">
                                         Install our fast, lightweight web app directly to your device. No app store required. Works perfectly across all your favorite platforms.
                                     </p>
 

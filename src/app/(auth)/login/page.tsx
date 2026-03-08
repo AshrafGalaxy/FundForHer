@@ -1,5 +1,5 @@
 
-import { Home, Lightbulb, TrendingUp, Users } from 'lucide-react';
+import { ArrowLeft, Lightbulb, TrendingUp, Users } from 'lucide-react';
 import Logo from '@/components/ui/Logo';
 import Link from 'next/link';
 import { ClientLoginForm } from '@/features/auth/ClientLoginForm';
@@ -7,7 +7,12 @@ import { Button } from '@/components/ui/button';
 
 export default function LoginPage() {
   return (
-    <div className="min-h-screen flex flex-col md:flex-row bg-background">
+    <div className="min-h-screen flex flex-col md:flex-row bg-background relative">
+      {/* Global Back to Home Button */}
+      <Button asChild variant="ghost" className="absolute top-6 left-10 md:left-14 z-50">
+        <Link href="/"><ArrowLeft className="mr-2 w-4 h-4" />Back to Home</Link>
+      </Button>
+
       {/* Left Pane - Visual Hook */}
       <div className="hidden md:flex w-full md:w-1/2 lg:w-[55%] bg-primary/5 border-r border-primary/10 flex-col items-center justify-center p-12 relative overflow-hidden">
         {/* Decorative Background Elements */}
@@ -44,13 +49,6 @@ export default function LoginPage() {
 
       {/* Right Pane - The Dual Choice Authentication */}
       <div className="w-full md:w-1/2 lg:w-[45%] flex flex-col justify-center items-center p-6 md:p-12 relative">
-        <Button asChild variant="ghost" className="absolute top-6 left-6 md:hidden">
-          <Link href="/"><Home className="mr-2 w-4 h-4" />Home</Link>
-        </Button>
-        <Button asChild variant="ghost" className="absolute top-6 right-6 hidden md:flex">
-          <Link href="/"><Home className="mr-2 w-4 h-4" />Back to Home</Link>
-        </Button>
-
         <div className="w-full max-w-md mx-auto mt-12 md:mt-0">
           <div className="md:hidden flex items-center justify-center gap-2 mb-8">
             <Logo className="w-8 h-8" />

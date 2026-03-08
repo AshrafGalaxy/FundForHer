@@ -17,6 +17,7 @@ import { Separator } from '@/components/ui/separator';
 import { Badge } from '@/components/ui/badge';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
+import { useCardAppearance } from '@/hooks/useCardAppearance';
 
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -36,6 +37,7 @@ export const ScholarshipCard = ({
   const { id, title, provider, amount, deadline, fieldOfStudy, eligibility, isFeatured, lastUpdated, status, providerLogo } = scholarship;
   const [isClient, setIsClient] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
+  const { appearance } = useCardAppearance();
 
   useEffect(() => {
     setIsClient(true);
@@ -50,6 +52,78 @@ export const ScholarshipCard = ({
     if (days < 7) return 'bg-red-500/90 text-white shadow-red-500/20';
     if (days < 30) return 'bg-orange-500/90 text-white shadow-orange-500/20';
     return 'bg-emerald-500/90 text-white shadow-emerald-500/20';
+  }
+
+  if (appearance === 'classic') {
+    return (
+      <Card className="flex flex-col h-full hover:shadow-lg transition-shadow border-border relative overflow-hidden bg-card">
+        <Link href={`/scholarship/${id}`} className="flex flex-col flex-grow p-5 pb-0 relative z-10 w-full h-full text-foreground hover:no-underline">
+          <div className="flex justify-between items-start mb-3">
+            <div className="flex items-center gap-3">
+              {providerLogo ? (
+                <div className="w-10 h-10 relative rounded border overflow-hidden bg-white shrink-0">
+                  <Image src={providerLogo} alt={`${provider} logo`} layout="fill" objectFit="contain" className="p-1" />
+                </div>
+              ) : (
+                <div className="w-10 h-10 rounded bg-muted flex items-center justify-center text-muted-foreground font-bold border shrink-0">
+                  {provider.charAt(0)}
+                </div>
+              )}
+              <div className="flex items-center">
+                <span className="text-sm font-semibold text-muted-foreground uppercase tracking-widest leading-none line-clamp-1">{provider}</span>
+              </div>
+            </div>
+          </div>
+          <CardTitle className="font-headline text-xl mb-3 line-clamp-2 leading-snug text-foreground font-bold h-14">
+            {title}
+          </CardTitle>
+          <div className="flex flex-wrap gap-1.5 mb-4 items-center">
+            {fieldOfStudy.slice(0, 3).map(field => (
+              <span key={field} className="px-2 py-0.5 text-xs font-semibold bg-secondary/80 text-secondary-foreground rounded-md border shadow-sm">
+                {field}
+              </span>
+            ))}
+          </div>
+
+          <div className="space-y-3 text-sm flex-grow mb-6 pt-2">
+            <div className="flex flex-col gap-0.5">
+              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Amount</span>
+              <p className="font-bold text-2xl text-emerald-600 dark:text-emerald-400 flex items-center">
+                <span className="font-sans text-xl mr-0.5">₹</span>{new Intl.NumberFormat('en-IN').format(amount)}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2 text-muted-foreground pt-2 border-t mt-3 flex-wrap">
+              <Calendar className="w-4 h-4 shrink-0 text-foreground" />
+              <span className="font-medium text-foreground text-xs uppercase tracking-widest">Deadline:</span>
+              <span className="text-sm font-semibold text-foreground">{isClient && deadline ? format(deadline, 'dd MMM yyyy') : '...'}</span>
+            </div>
+
+            <div className="flex items-start gap-2 pt-2 text-muted-foreground">
+              <Target className="w-4 h-4 mt-0.5 shrink-0 text-foreground" />
+              <span className="text-sm line-clamp-2 leading-relaxed"><span className="font-medium text-foreground">{eligibility.title}:</span> {eligibility.details}</span>
+            </div>
+          </div>
+        </Link>
+        <div className="p-5 pt-0 mt-auto relative z-10 w-full">
+          <Button className="w-full font-bold bg-theme-600 hover:bg-theme-700 text-white" asChild>
+            <Link href={`/scholarship/${id}`}>View Details</Link>
+          </Button>
+        </div>
+
+        <div className="absolute top-4 right-4 z-20">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="rounded-full shadow-sm bg-background border h-8 w-8 hover:bg-muted focus:ring-2 focus:ring-primary/20"
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggleBookmark(scholarship); }}
+            aria-label={isBookmarked ? 'Remove bookmark' : 'Bookmark scholarship'}
+          >
+            <Bookmark className={cn("h-4 w-4", isBookmarked ? "fill-orange-500 text-orange-500" : "text-muted-foreground")} />
+          </Button>
+        </div>
+      </Card>
+    );
   }
 
   return (
