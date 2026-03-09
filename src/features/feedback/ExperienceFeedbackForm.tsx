@@ -38,9 +38,9 @@ const ratingDescriptions: { [key: number]: string } = {
 
 // Generates a color from red to green based on value from 1 to 10
 const getColorForValue = (value: number) => {
-    // Hue goes from 0 (red) to 120 (green)
-    const hue = (value - 1) * (120 / 9);
-    return `hsl(${hue}, 80%, 50%)`;
+  // Hue goes from 0 (red) to 120 (green)
+  const hue = (value - 1) * (120 / 9);
+  return `hsl(${hue}, 80%, 50%)`;
 };
 
 
@@ -92,21 +92,21 @@ const RatingScale = ({ control, name, label }: { control: any, name: keyof FormV
             </div>
           </FormControl>
           <div className="flex justify-between text-xs text-muted-foreground mt-1 px-1 h-4 transition-opacity duration-200">
-             <span className={cn("transition-opacity duration-300", field.value ? 'opacity-0' : 'opacity-100')}>Not Satisfied</span>
-              
-              <span className="font-medium text-center">
-                  {field.value ? (
-                    <span className="transition-opacity duration-300 opacity-100">
-                      {`${field.value}: ${ratingDescriptions[field.value]}`}
-                    </span>
-                  ) : (
-                    <span className={cn("transition-opacity duration-300", hoveredValue ? 'opacity-100' : 'opacity-0')}>
-                        {hoveredValue ? `${hoveredValue}: ${ratingDescriptions[hoveredValue]}` : ''}
-                    </span>
-                  )}
-              </span>
+            <span className={cn("transition-opacity duration-300", field.value ? 'opacity-0' : 'opacity-100')}>Not Satisfied</span>
 
-              <span className={cn("transition-opacity duration-300", field.value ? 'opacity-0' : 'opacity-100')}>Very Satisfied</span>
+            <span className="font-medium text-center">
+              {field.value ? (
+                <span className="transition-opacity duration-300 opacity-100">
+                  {`${field.value}: ${ratingDescriptions[field.value]}`}
+                </span>
+              ) : (
+                <span className={cn("transition-opacity duration-300", hoveredValue ? 'opacity-100' : 'opacity-0')}>
+                  {hoveredValue ? `${hoveredValue}: ${ratingDescriptions[hoveredValue]}` : ''}
+                </span>
+              )}
+            </span>
+
+            <span className={cn("transition-opacity duration-300", field.value ? 'opacity-0' : 'opacity-100')}>Very Satisfied</span>
           </div>
           <FormMessage />
         </FormItem>
@@ -116,9 +116,14 @@ const RatingScale = ({ control, name, label }: { control: any, name: keyof FormV
 };
 
 
+import { useFirestore, useAuth } from '@/firebase';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+
 export function ExperienceFeedbackForm() {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const db = useFirestore();
+  const auth = useAuth();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -133,64 +138,104 @@ export function ExperienceFeedbackForm() {
   });
 
   async function onSubmit(values: FormValues) {
+    if (!db) {
+      toast({ title: "Error", description: "Database connection failed.", variant: "destructive" });
+      return;
+    }
+
     setIsLoading(true);
-    // Simulate form submission
-    await new Promise(resolve => setTimeout(resolve, 500));
-    console.log('Experience Feedback Submitted:', values);
-    setIsLoading(false);
-    toast({
-      title: 'Feedback Submitted!',
-      description: 'Thank you for sharing your experience with us.',
-    });
-    form.reset();
+
+    try {
+      const user = auth?.currentUser;
+      await addDoc(collection(db, 'feedback'), {
+        ...values,
+        userId: user?.uid || 'anonymous',
+        userEmail: user?.email || 'anonymous',
+        submittedAt: serverTimestamp(),
+        type: 'experience'
+      });
+
+      // Trigger email notification
+      await fetch('/api/notify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'experience',
+          userId: user?.uid || 'anonymous',
+          userEmail: user?.email || 'anonymous',
+          overallExperience: values.overallExperience,
+          findability: values.findability,
+          designAppeal: values.designAppeal,
+          infoQuality: values.infoQuality,
+          recommendLikelihood: values.recommendLikelihood,
+          additionalComments: values.additionalComments,
+        })
+      }).catch(e => console.error("Email notification failed", e));
+
+      toast({
+        title: 'Feedback Submitted!',
+        description: 'Thank you for sharing your experience with us. It helps us grow!',
+      });
+
+      form.reset();
+    } catch (error) {
+      console.error("Error submitting feedback:", error);
+      toast({
+        title: "Submission Failed",
+        description: "There was a problem sending your feedback. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   return (
-      <Card>
-        <CardContent className="p-6">
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-              
-              <RatingScale control={form.control} name="overallExperience" label="How would you rate your overall experience with FUND HER FUTURE?" />
-              <RatingScale control={form.control} name="findability" label="How easy was it to find relevant scholarships?" />
-              <RatingScale control={form.control} name="designAppeal" label="How would you rate the design and visual appeal of the website?" />
-              <RatingScale control={form.control} name="infoQuality" label="How satisfied are you with the quality of scholarship information provided?" />
-              <RatingScale control={form.control} name="recommendLikelihood" label="How likely are you to recommend FUND HER FUTURE to a friend or colleague?" />
-              
-              <FormField
-                control={form.control}
-                name="additionalComments"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Any other comments or suggestions?</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Tell us more about your experience or ideas for improvement..."
-                        className="min-h-[120px]"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+    <Card>
+      <CardContent className="p-6">
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
 
-              <Button type="submit" disabled={isLoading} className="w-full md:w-auto">
-                {isLoading ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Submitting...
-                  </>
-                ) : (
-                  <>
-                    <Send className="mr-2 h-4 w-4" />
-                    Submit Feedback
-                  </>
-                )}
-              </Button>
-            </form>
-          </Form>
-        </CardContent>
-      </Card>
+            <RatingScale control={form.control} name="overallExperience" label="How would you rate your overall experience with FUND HER FUTURE?" />
+            <RatingScale control={form.control} name="findability" label="How easy was it to find relevant scholarships?" />
+            <RatingScale control={form.control} name="designAppeal" label="How would you rate the design and visual appeal of the website?" />
+            <RatingScale control={form.control} name="infoQuality" label="How satisfied are you with the quality of scholarship information provided?" />
+            <RatingScale control={form.control} name="recommendLikelihood" label="How likely are you to recommend FUND HER FUTURE to a friend or colleague?" />
+
+            <FormField
+              control={form.control}
+              name="additionalComments"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Any other comments or suggestions?</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Tell us more about your experience or ideas for improvement..."
+                      className="min-h-[120px]"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <Button type="submit" disabled={isLoading} className="w-full md:w-auto">
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Submitting...
+                </>
+              ) : (
+                <>
+                  <Send className="mr-2 h-4 w-4" />
+                  Submit Feedback
+                </>
+              )}
+            </Button>
+          </form>
+        </Form>
+      </CardContent>
+    </Card>
   );
 }

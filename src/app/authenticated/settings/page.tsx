@@ -84,9 +84,7 @@ export default function SettingsPage() {
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
                 <div>
-                    <Button variant="ghost" className="-ml-4 mb-2 text-muted-foreground hover:text-foreground" asChild>
-                        <Link href="/authenticated/dashboard"><ArrowLeft className="w-4 h-4 mr-2" /> Back to Dashboard</Link>
-                    </Button>
+
                     <h1 className="text-3xl font-headline font-bold text-foreground tracking-tight flex items-center gap-3">
                         <Settings2 className="w-8 h-8 text-primary" />
                         Preferences

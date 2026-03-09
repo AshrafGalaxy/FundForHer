@@ -25,7 +25,7 @@ export function useAuth() {
 const PUBLIC_ROUTES = ['/', '/login', '/register', '/provider/login', '/provider/register'];
 
 // Routes where we want to hide the global site-wide header (e.g., Dashboard with its own navigation)
-const HIDDEN_HEADER_ROUTES = ['/authenticated/dashboard'];
+const HIDDEN_HEADER_ROUTES: string[] = ['/onboarding'];
 
 export default function AuthProvider({
   children,

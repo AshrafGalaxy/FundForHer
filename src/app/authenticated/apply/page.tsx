@@ -233,7 +233,7 @@ function ApplyFormContent() {
   return (
     <div className="max-w-5xl mx-auto py-8 px-4 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <Button variant="ghost" className="mb-6 -ml-4 hover:bg-theme-100 dark:hover:bg-theme-900" asChild>
-        <Link href={`/scholarship/${scholarshipId}`}>
+        <Link href={`/authenticated/scholarship/${scholarshipId}`}>
           <ArrowLeft className="h-4 w-4 mr-2" /> Back to Details
         </Link>
       </Button>

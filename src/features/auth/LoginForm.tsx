@@ -19,11 +19,14 @@ import { useAuth as useFirebaseAuth } from '@/firebase';
 import {
   GoogleAuthProvider,
   signInWithPopup,
+  signInWithCredential,
   RecaptchaVerifier,
   signInWithPhoneNumber,
   sendPasswordResetEmail,
   ConfirmationResult
 } from 'firebase/auth';
+import { Capacitor } from '@capacitor/core';
+import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
 import { useFirestore } from '@/firebase';
 import { getUserProfile, getProviderProfile } from '@/server/db/user-data';
 
@@ -154,20 +157,35 @@ export function LoginForm({ isProviderLogin }: LoginFormProps) {
     if (!auth || !db) return;
     setIsGoogleLoading(true);
     try {
-      const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(auth, provider);
+      let resultUser;
+
+      if (Capacitor.isNativePlatform()) {
+        const nativeResult = await FirebaseAuthentication.signInWithGoogle();
+
+        if (nativeResult.credential?.idToken) {
+          const credential = GoogleAuthProvider.credential(nativeResult.credential.idToken);
+          const result = await signInWithCredential(auth, credential);
+          resultUser = result.user;
+        } else {
+          throw new Error("No ID Token received from Native Google Auth");
+        }
+      } else {
+        const provider = new GoogleAuthProvider();
+        const result = await signInWithPopup(auth, provider);
+        resultUser = result.user;
+      }
 
       // Check if profile exists
       if (isProviderLogin) {
-        const profile = await getProviderProfile(db, result.user.uid);
+        const profile = await getProviderProfile(db, resultUser.uid);
         if (!profile) {
           // Providers without a profile must register properly first.
-          await result.user.delete();
+          await resultUser.delete();
           toast({ variant: 'destructive', title: 'Provider Account Not Found', description: 'Please register your company first.' });
           return;
         }
       } else {
-        const profile = await getUserProfile(db, result.user.uid);
+        const profile = await getUserProfile(db, resultUser.uid);
         if (!profile) {
           // A student logged in with Google but hasn't completed onboarding. Route them!
           router.push('/onboarding');

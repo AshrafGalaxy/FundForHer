@@ -133,9 +133,7 @@ export default function ApplicationsTrackerPage() {
                         Track the real-time status of your submissions, view smart benchmarking insights, and discover pivot opportunities if an application is unsuccessful.
                     </p>
                 </div>
-                <Button variant="outline" asChild>
-                    <Link href="/authenticated/dashboard"><ArrowLeft className="w-4 h-4 mr-2" /> Back to Dashboard</Link>
-                </Button>
+
             </div>
 
             {applications.length === 0 ? (

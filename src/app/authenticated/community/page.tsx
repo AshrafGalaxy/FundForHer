@@ -114,9 +114,7 @@ export default function CommunityHubPage() {
             {/* Header Profile */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
                 <div>
-                    <Button variant="ghost" className="mb-4 -ml-4 text-muted-foreground hover:bg-muted/50" asChild>
-                        <Link href="/authenticated/dashboard"><ArrowLeft className="w-4 h-4 mr-2" /> Back to Dashboard</Link>
-                    </Button>
+
                     <h1 className="text-3xl font-headline font-bold text-foreground tracking-tight flex items-center gap-3">
                         <div className="p-2 bg-primary/10 rounded-xl">
                             <Users className="w-7 h-7 text-primary" />

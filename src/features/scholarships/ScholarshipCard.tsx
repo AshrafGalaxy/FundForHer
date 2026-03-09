@@ -55,73 +55,99 @@ export const ScholarshipCard = ({
   }
 
   if (appearance === 'classic') {
+    const getDeadlineColorClassic = () => {
+      if (!deadline) return 'bg-gray-500';
+      const days = (deadline.getTime() - new Date().getTime()) / (1000 * 3600 * 24);
+      if (days < 7) return 'bg-red-500';
+      if (days < 30) return 'bg-yellow-500';
+      return 'bg-green-500';
+    }
+
     return (
-      <Card className="flex flex-col h-full hover:shadow-lg transition-shadow border-border relative overflow-hidden bg-card">
-        <Link href={`/scholarship/${id}`} className="flex flex-col flex-grow p-5 pb-0 relative z-10 w-full h-full text-foreground hover:no-underline">
-          <div className="flex justify-between items-start mb-3">
-            <div className="flex items-center gap-3">
+      <Card className="flex flex-col h-full transition-all duration-300 hover:shadow-2xl hover:shadow-theme-200/50 dark:hover:shadow-theme-900/30 hover:-translate-y-1 relative group overflow-hidden border-border dark:border-border hover:border-theme-300/50 dark:hover:border-theme-700/50">
+        <Link href={`/authenticated/scholarship/${id}`} className="flex flex-col flex-grow p-0 relative z-10">
+          <CardHeader className="pt-6 pb-4 w-full relative">
+            {/* Subtle Glassmorphism Header Gradient */}
+            <div className="absolute inset-0 bg-gradient-to-b from-theme-50/80 to-transparent dark:from-theme-950/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none -z-10" />
+
+            <div className="flex justify-between items-start mb-2">
               {providerLogo ? (
-                <div className="w-10 h-10 relative rounded border overflow-hidden bg-white shrink-0">
-                  <Image src={providerLogo} alt={`${provider} logo`} layout="fill" objectFit="contain" className="p-1" />
+                <div className="w-16 h-8 relative mr-4">
+                  <Image src={providerLogo} alt={`${provider} logo`} layout="fill" objectFit="contain" />
                 </div>
               ) : (
-                <div className="w-10 h-10 rounded bg-muted flex items-center justify-center text-muted-foreground font-bold border shrink-0">
-                  {provider.charAt(0)}
+                isFeatured && <Badge variant="default" className="bg-green-600 hover:bg-green-700 text-white border-0">Featured</Badge>
+              )}
+
+              {status === 'Live' && deadline && (
+                <div className={`px-2 py-1 text-xs text-white rounded-md ${getDeadlineColorClassic()}`}>
+                  {daysRemaining.replace('about ', '')} to go
                 </div>
               )}
-              <div className="flex items-center">
-                <span className="text-sm font-semibold text-muted-foreground uppercase tracking-widest leading-none line-clamp-1">{provider}</span>
+              {status === 'Upcoming' && <Badge variant="secondary" className="border-0">Upcoming</Badge>}
+              {status === 'Always Open' && <Badge variant="outline">Always Open</Badge>}
+            </div>
+            <div className="flex justify-between items-start pt-2">
+              <CardTitle className="font-headline text-base leading-snug mb-1 pr-8 group-hover:text-theme-900 dark:group-hover:text-theme-300 transition-colors">{title}</CardTitle>
+            </div>
+            <CardDescription className="flex items-center gap-2 text-sm text-muted-foreground">
+              <School className="h-4 w-4" />
+              {provider}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex-grow space-y-3 text-sm w-full">
+            <div className="flex items-center gap-2">
+              <IndianRupee className="h-5 w-5 text-primary" />
+              <div>
+                <p className="font-semibold text-foreground"><span style={{ fontFamily: 'sans-serif' }}>₹</span>{new Intl.NumberFormat('en-IN').format(amount)}</p>
+                <p className="text-xs text-muted-foreground">Award</p>
               </div>
             </div>
-          </div>
-          <CardTitle className="font-headline text-xl mb-3 line-clamp-2 leading-snug text-foreground font-bold h-14">
-            {title}
-          </CardTitle>
-          <div className="flex flex-wrap gap-1.5 mb-4 items-center">
-            {fieldOfStudy.slice(0, 3).map(field => (
-              <span key={field} className="px-2 py-0.5 text-xs font-semibold bg-secondary/80 text-secondary-foreground rounded-md border shadow-sm">
-                {field}
-              </span>
-            ))}
-          </div>
-
-          <div className="space-y-3 text-sm flex-grow mb-6 pt-2">
-            <div className="flex flex-col gap-0.5">
-              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Amount</span>
-              <p className="font-bold text-2xl text-emerald-600 dark:text-emerald-400 flex items-center">
-                <span className="font-sans text-xl mr-0.5">₹</span>{new Intl.NumberFormat('en-IN').format(amount)}
-              </p>
+            <div className="flex items-start gap-2">
+              <Target className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+              <div>
+                <p className="font-semibold text-foreground">{eligibility.title}</p>
+                <p className="text-muted-foreground line-clamp-2">{eligibility.details}</p>
+              </div>
             </div>
-
-            <div className="flex items-center gap-2 text-muted-foreground pt-2 border-t mt-3 flex-wrap">
-              <Calendar className="w-4 h-4 shrink-0 text-foreground" />
-              <span className="font-medium text-foreground text-xs uppercase tracking-widest">Deadline:</span>
-              <span className="text-sm font-semibold text-foreground">{isClient && deadline ? format(deadline, 'dd MMM yyyy') : '...'}</span>
+            {deadline && (
+              <div className="flex items-center gap-2">
+                <Calendar className="h-5 w-5 text-primary" />
+                <div>
+                  <p className="font-semibold text-foreground">{isClient ? format(deadline, 'd MMM yyyy') : '...'}</p>
+                  <p className="text-xs text-muted-foreground">Deadline</p>
+                </div>
+              </div>
+            )}
+          </CardContent>
+          <CardFooter className="flex-col items-start gap-3 pt-2 mt-auto w-full">
+            <div className="flex flex-wrap gap-2">
+              {fieldOfStudy.slice(0, 3).map(field => (
+                <span key={field} className="px-2 py-1 text-xs bg-secondary text-secondary-foreground rounded-full">
+                  {field}
+                </span>
+              ))}
             </div>
-
-            <div className="flex items-start gap-2 pt-2 text-muted-foreground">
-              <Target className="w-4 h-4 mt-0.5 shrink-0 text-foreground" />
-              <span className="text-sm line-clamp-2 leading-relaxed"><span className="font-medium text-foreground">{eligibility.title}:</span> {eligibility.details}</span>
+            <Separator />
+            <div className="w-full flex justify-between items-center text-xs text-muted-foreground">
+              {lastUpdated && <span>Last Updated: {lastUpdatedText}</span>}
             </div>
-          </div>
+          </CardFooter>
         </Link>
-        <div className="p-5 pt-0 mt-auto relative z-10 w-full">
-          <Button className="w-full font-bold bg-theme-600 hover:bg-theme-700 text-white" asChild>
-            <Link href={`/scholarship/${id}`}>View Details</Link>
-          </Button>
-        </div>
-
-        <div className="absolute top-4 right-4 z-20">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="rounded-full shadow-sm bg-background border h-8 w-8 hover:bg-muted focus:ring-2 focus:ring-primary/20"
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggleBookmark(scholarship); }}
-            aria-label={isBookmarked ? 'Remove bookmark' : 'Bookmark scholarship'}
-          >
-            <Bookmark className={cn("h-4 w-4", isBookmarked ? "fill-orange-500 text-orange-500" : "text-muted-foreground")} />
-          </Button>
-        </div>
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute top-4 right-2 flex-shrink-0 z-20"
+          onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggleBookmark(scholarship); }}
+          aria-label={isBookmarked ? 'Remove bookmark' : 'Bookmark scholarship'}
+        >
+          <Bookmark
+            className={cn(
+              'h-5 w-5 text-muted-foreground transition-colors group-hover:text-theme-900 dark:group-hover:text-theme-300/70',
+              isBookmarked && 'fill-theme-600 dark:fill-theme-500 text-theme-600 dark:text-theme-500'
+            )}
+          />
+        </Button>
       </Card>
     );
   }
@@ -132,7 +158,7 @@ export const ScholarshipCard = ({
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      <Link href={`/scholarship/${id}`} className="flex flex-col flex-grow p-0 relative z-10 w-full h-full">
+      <Link href={`/authenticated/scholarship/${id}`} className="flex flex-col flex-grow p-0 relative z-10 w-full h-full">
         <CardHeader className="pt-6 pb-4 w-full relative">
           {/* Subtle Glassmorphism Header Gradient */}
           <div className="absolute inset-0 bg-gradient-to-b from-theme-100/50 to-transparent dark:from-theme-900/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none -z-10" />

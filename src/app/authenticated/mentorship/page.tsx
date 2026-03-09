@@ -105,9 +105,7 @@ export default function MentorshipHubPage() {
                 <div className="absolute bottom-0 left-0 w-32 h-32 bg-amber-400/20 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" />
 
                 <div className="relative z-10">
-                    <Button variant="ghost" className="mb-6 -ml-4 text-white hover:bg-white/20 hover:text-white" asChild>
-                        <Link href="/authenticated/dashboard"><ArrowLeft className="w-4 h-4 mr-2" /> Back to Dashboard</Link>
-                    </Button>
+
                     <h1 className="text-4xl sm:text-5xl font-headline font-bold mb-4 tracking-tight">The Mentorship Hub</h1>
                     <p className="max-w-xl text-amber-100 text-lg leading-relaxed">
                         Connect 1-on-1 with Verified Scholars. Book a 15-minute virtual coffee chat to refine your essays, discuss interviews, and get insider advice.

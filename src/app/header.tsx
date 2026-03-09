@@ -3,7 +3,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Menu, User, X, LogOut, LogIn, Sparkles, Sun, Moon, Monitor, BookOpen, FilePenLine, UserPlus, Briefcase, LayoutDashboard } from 'lucide-react';
+import { Menu, User, X, LogOut, LogIn, Sparkles, Sun, Moon, Monitor, BookOpen, FilePenLine, UserPlus, Briefcase, LayoutDashboard, Users, GraduationCap, ClipboardList, Settings, Bookmark } from 'lucide-react';
 import Logo from '@/components/ui/Logo';
 import { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
@@ -18,8 +18,10 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 import { useTheme } from "next-themes"
 import { logout } from '@/lib/auth';
 import { cn } from '@/lib/utils';
@@ -27,6 +29,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { useAuth as useFirebaseAuth, useFirestore } from '@/firebase';
 import { useAuth } from './auth-provider';
 import { getProviderProfile } from '@/server/db/user-data';
+import { useNavigationStore } from '@/hooks/useNavigationStore';
 
 export const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -42,6 +45,14 @@ export const Header = () => {
 
   const user = authContext?.user;
   const authLoaded = authContext ? !authContext.loading : false;
+
+  const { sidebarState } = useNavigationStore();
+  const isCollapsed = sidebarState === 'collapsed';
+  const isHidden = sidebarState === 'hidden';
+
+  // Even if the sidebar is hidden, we want the header to retain its dashboard layout structure
+  // so the logo stays pinned to the left in the 'collapsed' width equivalent space, rather than shifting center.
+  const isDashboardLayout = pathname.startsWith('/authenticated') || pathname.startsWith('/provider');
 
   useEffect(() => {
     // This is a separate, streamlined check just for the header's display logic.
@@ -75,6 +86,9 @@ export const Header = () => {
 
   const studentNavLinks = [
     { href: '/authenticated/dashboard', label: 'Scholarships', icon: BookOpen },
+    { href: '/authenticated/applications', label: 'My Applications', icon: ClipboardList },
+    { href: '/authenticated/community', label: 'Community', icon: Users },
+    { href: '/authenticated/mentorship', label: 'Mentorship', icon: GraduationCap },
     { href: '/authenticated/apply', label: 'Apply Now', icon: FilePenLine },
     { href: '/authenticated/feedback', label: 'Feedback', icon: Sparkles },
   ];
@@ -161,9 +175,13 @@ export const Header = () => {
           </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={() => router.push(isProvider ? '/provider/dashboard' : '/authenticated/profile')}>
-            <User className="mr-2 h-4 w-4" /> {isProvider ? 'Dashboard' : 'Profile'}
-          </DropdownMenuItem>
+          <DropdownMenuLabel className="font-normal">
+            <div className="flex flex-col space-y-1">
+              <p className="text-sm font-medium leading-none">{user.displayName || 'User'}</p>
+              <p className="text-xs leading-none text-muted-foreground">{user.email}</p>
+            </div>
+          </DropdownMenuLabel>
+          <DropdownMenuSeparator />
           <DropdownMenuItem onClick={handleLogout}>
             <LogOut className="mr-2 h-4 w-4" /> Logout
           </DropdownMenuItem>
@@ -194,19 +212,27 @@ export const Header = () => {
 
 
   return (
-    <header className="bg-card shadow-sm sticky top-0 z-40">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between h-16">
+    <header className={cn("bg-card sticky top-0 z-40", isDashboardLayout ? "border-b border-border shadow-none" : "shadow-sm")}>
+      <div className={cn("mx-auto flex items-center h-16", isDashboardLayout ? "w-full" : "container px-4")}>
+
+        {/* Left Branding Block / Sidebar Spacer */}
+        <div className={cn(
+          "flex items-center h-full shrink-0 transition-all duration-300 border-r border-border",
+          isDashboardLayout ? "w-[240px] px-4" : "pr-4"
+        )}>
           <Link href="/" className="flex items-center gap-2">
-            <Logo className="w-8 h-8 text-primary" />
-            <span className="text-xl font-headline font-bold text-card-foreground">
+            <Logo className="shrink-0 text-primary transition-all hover:scale-105 w-8 h-8" />
+            <span className={cn("font-headline font-bold text-card-foreground truncate uppercase tracking-tight", isDashboardLayout ? "text-[17px]" : "text-xl")}>
               FUND HER FUTURE
             </span>
           </Link>
+        </div>
+
+        {/* Right Nav Actions Area */}
+        <div className={cn("flex-1 flex items-center justify-between md:justify-end h-full", isDashboardLayout && "px-4")}>
 
           {/* Desktop Nav */}
           <nav className="hidden md:flex items-center gap-2 text-sm font-medium">
-            {renderNavLinks()}
             <div className="flex items-center gap-2">
               {renderUserMenu()}
               <DropdownMenu>
@@ -296,6 +322,14 @@ export const Header = () => {
                           >
                             <User className="h-5 w-5" /> {isProvider ? 'Dashboard' : 'Profile'}
                           </MobileNavLink>
+                          {!isProvider && (
+                            <MobileNavLink
+                              href="/authenticated/settings"
+                              onClick={() => setIsMenuOpen(false)}
+                            >
+                              <Settings className="h-5 w-5" /> Settings
+                            </MobileNavLink>
+                          )}
                           <Button variant="ghost" onClick={() => { handleLogout(); setIsMenuOpen(false); }} className="flex items-center justify-start gap-2 text-lg text-muted-foreground hover:text-theme-900 dark:hover:text-theme-300 p-0 h-auto">
                             <LogOut className="h-5 w-5" /> Logout
                           </Button>

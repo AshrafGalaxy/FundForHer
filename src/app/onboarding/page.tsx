@@ -83,13 +83,17 @@ export default function OnboardingFlow() {
         <div className="min-h-screen bg-background text-foreground flex flex-col relative overflow-hidden">
             {/* Value Gamification Widget */}
             <MatchCounter
+                step={step}
                 educationLevel={step >= 2 ? data.educationLevel : null}
                 fieldOfStudy={step >= 3 ? data.fieldOfStudy : null}
             />
 
             {/* Header / Logo */}
             <div className="p-8 pb-0 flex items-center gap-3 relative z-10">
-                <Logo className="w-10 h-10" />
+                <Logo className="w-10 h-10 text-primary" />
+                <span className="font-headline font-bold text-card-foreground truncate uppercase tracking-tight text-xl">
+                    FUND HER FUTURE
+                </span>
             </div>
 
             {/* Main Conversational Area */}

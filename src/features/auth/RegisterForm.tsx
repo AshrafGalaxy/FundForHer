@@ -13,7 +13,9 @@ import { Loader2, UserPlus } from 'lucide-react';
 import { register } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { Capacitor } from '@capacitor/core';
+import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
+import { GoogleAuthProvider, signInWithPopup, signInWithCredential } from 'firebase/auth';
 import { FirebaseError } from 'firebase/app';
 import { createInitialUserProfile } from '@/server/db/user-data';
 import { cn } from '@/lib/utils';
@@ -98,8 +100,19 @@ export function RegisterForm() {
     if (!auth || !db) return;
     setIsGoogleLoading(true);
     try {
-      const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
+      if (Capacitor.isNativePlatform()) {
+        const nativeResult = await FirebaseAuthentication.signInWithGoogle();
+
+        if (nativeResult.credential?.idToken) {
+          const credential = GoogleAuthProvider.credential(nativeResult.credential.idToken);
+          await signInWithCredential(auth, credential);
+        } else {
+          throw new Error("No ID Token received from Native Google Auth");
+        }
+      } else {
+        const provider = new GoogleAuthProvider();
+        await signInWithPopup(auth, provider);
+      }
 
       // Send the new 1-click user straight to the conversational onboarding
       router.push('/onboarding');
