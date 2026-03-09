@@ -13,8 +13,6 @@ interface NotifyPayload {
     [key: string]: any;
 }
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 export async function POST(req: Request) {
     try {
         const body: NotifyPayload = await req.json();
@@ -25,6 +23,8 @@ export async function POST(req: Request) {
             console.warn("RESEND_API_KEY is not set. Skipping email notification.");
             return NextResponse.json({ success: false, message: 'Email skipped (no API key)' }, { status: 200 }); // Still return 200 so UI doesn't break
         }
+
+        const resend = new Resend(process.env.RESEND_API_KEY);
 
         // The email address that receives Bug Reports and General Feedback
         // If not set in .env.local, fallback to a default email (You should change this to yours)
