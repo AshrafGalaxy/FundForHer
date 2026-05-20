@@ -9,7 +9,8 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowLeft, Award, BookOpen, Calendar, IndianRupee, MapPin, Target, UserCheck, Loader2 } from 'lucide-react';
 import type { Scholarship } from '@/lib/types';
-import { useFirestore, useUser } from '@/firebase';
+import { useFirestore } from '@/firebase';
+import { useUser } from '@/firebase/auth/use-user';
 import { doc, getDoc } from 'firebase/firestore';
 import { SmartExternalLink } from '@/components/ui/smart-external-link';
 import { CheckOddsWidget } from '@/components/scholarships/CheckOddsWidget';
@@ -17,7 +18,7 @@ import { CheckOddsWidget } from '@/components/scholarships/CheckOddsWidget';
 export default function ScholarshipDetailsClient({ id }: { id: string }) {
     const router = useRouter();
     const db = useFirestore();
-    const { user, loading: userLoading } = useUser() as any;
+    const { user, loading: userLoading } = useUser();
     const [scholarship, setScholarship] = useState<Scholarship | null>(null);
     const [loading, setLoading] = useState(true);
 
