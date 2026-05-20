@@ -121,7 +121,7 @@ const nextConfig: NextConfig = {
   // Static export has no server, so skip server-only packages
   ...(isCapacitor
     ? { output: 'export' }
-    : { serverExternalPackages: ['firebase-admin'] }
+    : { serverExternalPackages: ['firebase-admin', 'inngest'] }
   ),
 };
 
