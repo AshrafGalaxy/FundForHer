@@ -16,7 +16,7 @@ import { useEffect, useState } from 'react';
 import { Loader2, Sparkles, Calendar } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useFirestore } from '@/firebase';
-import { collection, getDocs, doc, getDoc, query, orderBy, limit, where, Timestamp } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc, query, orderBy, limit, where, Timestamp, getCountFromServer, getAggregateFromServer, sum } from 'firebase/firestore';
 import { FeaturedScholarshipCarousel } from '@/components/FeaturedScholarshipCarousel';
 import { InfiniteMarquee } from '@/components/InfiniteMarquee';
 import { MagneticWrapper } from '@/components/MagneticWrapper';
@@ -182,14 +182,19 @@ export default function LandingPage() {
         }
 
         if (db) {
-            getDocs(collection(db, 'scholarships'))
-                .then(snapshot => {
-                    const data = snapshot.docs.map(doc => doc.data() as Scholarship);
-                    const amount = data.reduce((sum: number, s: Scholarship) => sum + (s.amount || 0), 0);
-                    setStats({ totalScholarships: data.length, totalAmount: amount, fetching: false });
+            Promise.all([
+                getCountFromServer(collection(db, 'scholarships')),
+                getAggregateFromServer(collection(db, 'scholarships'), { totalAmount: sum('amount') })
+            ])
+                .then(([countSnap, aggSnap]) => {
+                    setStats({ 
+                        totalScholarships: countSnap.data().count, 
+                        totalAmount: aggSnap.data().totalAmount || 0, 
+                        fetching: false 
+                    });
                 })
                 .catch(e => {
-                    console.error("Client SDK Fetch failed:", e);
+                    console.error("Aggregation Fetch failed:", e);
                     setStats({ totalScholarships: 0, totalAmount: 0, fetching: false });
                 });
 
@@ -460,25 +465,15 @@ export default function LandingPage() {
                                     </p>
 
                                     <div className="pt-2 pb-2 flex justify-center md:justify-start">
-                                        <Button
-                                            size="lg"
-                                            className="bg-theme-600 hover:bg-theme-700 text-white font-bold px-8 py-6 rounded-full shadow-xl shadow-theme-900/40 border-none transition-transform hover:scale-105"
-                                            onClick={async () => {
-                                                const promptEvent = (window as any).pwaDeferredPrompt;
-                                                if (promptEvent) {
-                                                    promptEvent.prompt();
-                                                    const { outcome } = await promptEvent.userChoice;
-                                                    if (outcome === 'accepted') {
-                                                        (window as any).pwaDeferredPrompt = null;
-                                                    }
-                                                } else {
-                                                    window.dispatchEvent(new Event('direct-pwa-install'));
-                                                }
-                                            }}
-                                        >
-                                            <Download className="w-5 h-5 mr-2" />
-                                            Download App Now
-                                        </Button>
+                                        <a href="/downloads/fundherfuture-latest.apk" download="FundHerFuture.apk">
+                                            <Button
+                                                size="lg"
+                                                className="bg-theme-600 hover:bg-theme-700 text-white font-bold px-8 py-6 rounded-full shadow-xl shadow-theme-900/40 border-none transition-transform hover:scale-105"
+                                            >
+                                                <Download className="w-5 h-5 mr-2" />
+                                                Download App Now
+                                            </Button>
+                                        </a>
                                     </div>
 
                                     <div className="flex items-center justify-center md:justify-start gap-8 pt-6 text-[#FDC8C0]">
