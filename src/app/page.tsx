@@ -16,7 +16,8 @@ import { useEffect, useState } from 'react';
 import { Loader2, Sparkles, Calendar } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useFirestore } from '@/firebase';
-import { collection, getDocs, doc, getDoc, query, orderBy, limit, where, Timestamp, getCountFromServer, getAggregateFromServer, sum } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc, query, orderBy, limit, where, Timestamp } from 'firebase/firestore';
+import { getSiteStats } from '@/app/actions/get-stats';
 import { FeaturedScholarshipCarousel } from '@/components/FeaturedScholarshipCarousel';
 import { InfiniteMarquee } from '@/components/InfiniteMarquee';
 import { MagneticWrapper } from '@/components/MagneticWrapper';
@@ -182,21 +183,15 @@ export default function LandingPage() {
         }
 
         if (db) {
-            Promise.all([
-                getCountFromServer(collection(db, 'scholarships')),
-                getAggregateFromServer(collection(db, 'scholarships'), { totalAmount: sum('amount') })
-            ])
-                .then(([countSnap, aggSnap]) => {
-                    setStats({ 
-                        totalScholarships: countSnap.data().count, 
-                        totalAmount: aggSnap.data().totalAmount || 0, 
-                        fetching: false 
-                    });
-                })
-                .catch(e => {
-                    console.error("Aggregation Fetch failed:", e);
-                    setStats({ totalScholarships: 0, totalAmount: 0, fetching: false });
-                });
+            // Fetch global stats via server action (Admin SDK — bypasses Firestore client rules)
+        getSiteStats()
+            .then(({ totalScholarships, totalAmount }) => {
+                setStats({ totalScholarships, totalAmount, fetching: false });
+            })
+            .catch(e => {
+                console.error('Stats fetch failed:', e);
+                setStats({ totalScholarships: 0, totalAmount: 0, fetching: false });
+            });
 
             // Fetch scholarships added in the last 5 days only
             const fiveDaysAgo = new Date();
