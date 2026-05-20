@@ -14,7 +14,8 @@ export async function POST(request: Request) {
         const expectedSecret = process.env.CRON_SECRET;
 
         if (expectedSecret && secret !== expectedSecret) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+            console.error('Unauthorized sync attempt. Invalid or missing secret parameter.');
+            return NextResponse.json({ error: 'Unauthorized', message: 'Invalid or missing secret parameter' }, { status: 401 });
         }
 
         const orchestrator = new ScraperOrchestrator();
