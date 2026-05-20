@@ -12,6 +12,7 @@ import type { Scholarship } from '@/lib/types';
 import { useFirestore } from '@/firebase';
 import { useUser } from '@/firebase/auth/use-user';
 import { doc, getDoc } from 'firebase/firestore';
+import { getUserProfile, type UserProfile } from '@/server/db/user-data';
 import { SmartExternalLink } from '@/components/ui/smart-external-link';
 import { CheckOddsWidget } from '@/components/scholarships/CheckOddsWidget';
 
@@ -21,6 +22,7 @@ export default function ScholarshipDetailsClient({ id }: { id: string }) {
     const { user, loading: userLoading } = useUser();
     const [scholarship, setScholarship] = useState<Scholarship | null>(null);
     const [loading, setLoading] = useState(true);
+    const [firestoreProfile, setFirestoreProfile] = useState<UserProfile | null>(null);
 
     useEffect(() => {
         if (!db) return;
@@ -50,6 +52,14 @@ export default function ScholarshipDetailsClient({ id }: { id: string }) {
 
         fetchScholarship();
     }, [db, id, router]);
+
+    // Separately fetch the full Firestore user profile for the AI widget
+    useEffect(() => {
+        if (!db || !user) return;
+        getUserProfile(db, user.uid).then(profile => {
+            setFirestoreProfile(profile);
+        }).catch(e => console.error('Failed to fetch user profile for AI:', e));
+    }, [db, user]);
 
     if (loading || userLoading) {
         return (
@@ -120,7 +130,7 @@ export default function ScholarshipDetailsClient({ id }: { id: string }) {
                             </div>
                         </div>
 
-                        {user && scholarship && (
+                        {user && scholarship && firestoreProfile && (
                             <div className="pt-2">
                                 <CheckOddsWidget 
                                     scholarshipTitle={scholarship.title}
@@ -131,15 +141,19 @@ export default function ScholarshipDetailsClient({ id }: { id: string }) {
                                         fieldOfStudy: scholarship.fieldOfStudy,
                                         location: scholarship.location,
                                         eligibilityDetails: scholarship.eligibility?.details,
+                                        amount: scholarship.amount,
                                     }}
-                                    userProfile={(() => {
-                                        const { uid, email, displayName, photoURL, createdAt, lastLoginAt, ...rest } = user;
-                                        return rest;
-                                    })()}
+                                    userProfile={{
+                                        fullName: firestoreProfile.fullName,
+                                        age: firestoreProfile.age,
+                                        qualification: firestoreProfile.qualification,
+                                        fieldOfStudy: firestoreProfile.fieldOfStudy,
+                                        college: firestoreProfile.college,
+                                        address: firestoreProfile.address,
+                                    }}
                                 />
                             </div>
                         )}
-
                         <div className="flex justify-center pt-8">
                             <ApplyButton />
                         </div>
