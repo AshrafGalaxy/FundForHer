@@ -9,12 +9,15 @@ import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { ArrowLeft, Award, BookOpen, Calendar, IndianRupee, MapPin, Target, UserCheck, Loader2 } from 'lucide-react';
 import type { Scholarship } from '@/lib/types';
-import { useFirestore } from '@/firebase';
+import { useFirestore, useUser } from '@/firebase';
 import { doc, getDoc } from 'firebase/firestore';
+import { SmartExternalLink } from '@/components/ui/smart-external-link';
+import { CheckOddsWidget } from '@/components/scholarships/CheckOddsWidget';
 
 export default function ScholarshipDetailsClient({ id }: { id: string }) {
     const router = useRouter();
     const db = useFirestore();
+    const { user, loading: userLoading } = useUser() as any;
     const [scholarship, setScholarship] = useState<Scholarship | null>(null);
     const [loading, setLoading] = useState(true);
 
@@ -47,7 +50,7 @@ export default function ScholarshipDetailsClient({ id }: { id: string }) {
         fetchScholarship();
     }, [db, id, router]);
 
-    if (loading) {
+    if (loading || userLoading) {
         return (
             <div className="flex justify-center items-center min-h-[50vh]">
                 <Loader2 className="h-12 w-12 animate-spin text-theme-600 dark:text-theme-400" />
@@ -67,9 +70,9 @@ export default function ScholarshipDetailsClient({ id }: { id: string }) {
     const ApplyButton = () => {
         if (scholarship.officialLink) {
             return (
-                <Button asChild size="lg">
-                    <a href={scholarship.officialLink} target="_blank" rel="noopener noreferrer">Apply Now</a>
-                </Button>
+                <SmartExternalLink url={scholarship.officialLink} fallbackTitle={`Apply: ${scholarship.title}`}>
+                    <Button size="lg">Apply Now</Button>
+                </SmartExternalLink>
             );
         }
         return (
@@ -116,7 +119,27 @@ export default function ScholarshipDetailsClient({ id }: { id: string }) {
                             </div>
                         </div>
 
-                        <div className="flex justify-center pt-4">
+                        {user && scholarship && (
+                            <div className="pt-2">
+                                <CheckOddsWidget 
+                                    scholarshipTitle={scholarship.title}
+                                    eligibilityData={{
+                                        title: scholarship.title,
+                                        scholarshipType: scholarship.scholarshipType,
+                                        eligibilityLevel: scholarship.eligibilityLevel,
+                                        fieldOfStudy: scholarship.fieldOfStudy,
+                                        location: scholarship.location,
+                                        eligibilityDetails: scholarship.eligibility?.details,
+                                    }}
+                                    userProfile={(() => {
+                                        const { uid, email, displayName, photoURL, createdAt, lastLoginAt, ...rest } = user;
+                                        return rest;
+                                    })()}
+                                />
+                            </div>
+                        )}
+
+                        <div className="flex justify-center pt-8">
                             <ApplyButton />
                         </div>
                     </CardContent>
