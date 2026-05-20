@@ -16,7 +16,8 @@ export interface ValidationResult {
 
 /**
  * Validates a parsed scholarship before writing to Firestore.
- * Rejects garbage AI output: empty titles, past deadlines, negative amounts.
+ * Rejects only hard garbage: empty titles, negative amounts.
+ * Null/rolling deadlines are allowed (status set to 'Upcoming').
  */
 export function validateScholarship(
     scholarship: Omit<Scholarship, 'id' | 'lastUpdated'>
@@ -33,15 +34,16 @@ export function validateScholarship(
         reasons.push('Amount is negative');
     }
 
-    // Reject past-deadline scholarships (with 1-day grace period)
+    // Only reject explicitly past-deadline scholarships with a 30-day grace period.
+    // Null/missing deadlines are allowed — they will be set to 'Upcoming'.
     if (scholarship.deadline) {
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
         const deadline = scholarship.deadline instanceof Date
             ? scholarship.deadline
             : new Date(scholarship.deadline as any);
-        if (!isNaN(deadline.getTime()) && deadline < yesterday) {
-            reasons.push(`Deadline already passed: ${deadline.toDateString()}`);
+        if (!isNaN(deadline.getTime()) && deadline < thirtyDaysAgo) {
+            reasons.push(`Deadline passed over 30 days ago: ${deadline.toDateString()}`);
         }
     }
 

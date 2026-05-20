@@ -11,6 +11,7 @@ import type { Scholarship } from '@/lib/types';
 import { discoverScholarships } from '@/server/scraper/discovery';
 import { scrapeUrlWithFirecrawl } from '@/server/scraper/firecrawl-scraper';
 import { withRetry } from '@/server/scraper/retry';
+import { CURATED_STATIC_URLS, DISCOVERY_QUERIES } from '@/server/scraper/curated-sources';
 
 // ─────────────────────────────────────────────
 // V1: Process a single scraped scholarship item (fired from manual triggers / Buddy4Study scraper)
@@ -245,6 +246,83 @@ export const nightlyCleanupCron = inngest.createFunction(
 );
 
 // ─────────────────────────────────────────────
+// Main Discovery Pipeline (triggered via GitHub Action or manual)
+// ─────────────────────────────────────────────
+export const triggerDiscoveryPipeline = inngest.createFunction(
+    { id: 'trigger-discovery-pipeline', retries: 1 },
+    { event: 'scholarship/trigger-discovery' },
+    async ({ event, step }) => {
+        const startTime = Date.now();
+        console.log(`🚀 Discovery pipeline started. Source: ${event.data?.source ?? 'manual'}`);
+
+        // Step 1: Dispatch curated static URLs immediately (no Serper needed)
+        const { CURATED_STATIC_URLS } = await import('@/server/scraper/curated-sources');
+        const curatedEvents = CURATED_STATIC_URLS.map(url => ({
+            name: 'scholarship/process-url' as const,
+            data: { url },
+        }));
+        await step.sendEvent('dispatch-curated-urls', curatedEvents);
+        console.log(`📌 Dispatched ${curatedEvents.length} curated static URLs for processing.`);
+
+        // Step 2: Run multiple Serper discovery queries for fresh URLs
+        const { DISCOVERY_QUERIES } = await import('@/server/scraper/curated-sources');
+        const discoveredUrls = await step.run('serper-discovery', async () => {
+            if (!process.env.SERPER_API_KEY) {
+                console.warn('⚠️ SERPER_API_KEY not set — skipping discovery queries.');
+                return [];
+            }
+            const allUrls = new Set<string>();
+            for (const query of DISCOVERY_QUERIES) {
+                try {
+                    const urls = await discoverScholarships(query);
+                    urls.forEach(u => allUrls.add(u));
+                } catch (e: any) {
+                    console.warn(`Serper query failed for "${query}": ${e.message}`);
+                }
+            }
+            // Deduplicate against curated set to avoid double processing
+            const uniqueDiscovered = Array.from(allUrls).filter(
+                u => !CURATED_STATIC_URLS.includes(u)
+            );
+            console.log(`🔍 Serper discovered ${allUrls.size} URLs, ${uniqueDiscovered.length} unique after dedup.`);
+            return uniqueDiscovered.slice(0, 15); // Cap to 15 fresh URLs per run
+        });
+
+        // Step 3: Dispatch discovered URLs
+        if (discoveredUrls.length > 0) {
+            const discoveredEvents = discoveredUrls.map(url => ({
+                name: 'scholarship/process-url' as const,
+                data: { url },
+            }));
+            await step.sendEvent('dispatch-discovered-urls', discoveredEvents);
+            console.log(`📤 Dispatched ${discoveredEvents.length} Serper-discovered URLs.`);
+        }
+
+        // Step 4: Log the trigger run
+        await step.run('log-trigger-run', async () => {
+            await logScraperRun({
+                runAt: new Date(),
+                urlsDiscovered: discoveredUrls.length,
+                urlsSkippedDuplicate: 0,
+                scholarshipsInserted: 0, // Actual counts logged by processDiscoveredUrl
+                scholarshipsUpdated: 0,
+                scholarshipsSkippedInvalid: 0,
+                expiredMarked: 0,
+                errorsCount: 0,
+                errorMessages: [],
+                durationSeconds: Math.round((Date.now() - startTime) / 1000),
+            });
+        });
+
+        return {
+            curatedDispatched: curatedEvents.length,
+            freshDiscovered: discoveredUrls.length,
+            totalDispatched: curatedEvents.length + discoveredUrls.length,
+        };
+    }
+);
+
+// ─────────────────────────────────────────────
 // Exports
 // ─────────────────────────────────────────────
 export const functions = [
@@ -252,4 +330,5 @@ export const functions = [
     dailyDiscoveryCron,
     processDiscoveredUrl,
     nightlyCleanupCron,
+    triggerDiscoveryPipeline,
 ];
