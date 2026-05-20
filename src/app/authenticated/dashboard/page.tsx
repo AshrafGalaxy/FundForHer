@@ -14,7 +14,7 @@ import { useTheme } from 'next-themes';
 import { Badge } from '@/components/ui/badge';
 import Logo from '@/components/ui/Logo';
 import { useUser } from '@/firebase/auth/use-user';
-import { collection, doc, onSnapshot, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, doc, onSnapshot, setDoc, deleteDoc, serverTimestamp, query, where } from 'firebase/firestore';
 import { useFirestore } from '@/firebase';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -123,7 +123,8 @@ export default function DashboardPage() {
     setLoading(true);
 
     const scholarshipsRef = collection(db, 'scholarships');
-    const unsubscribe = onSnapshot(scholarshipsRef, (snapshot) => {
+    const activeQuery = query(scholarshipsRef, where('status', '!=', 'Expired'));
+    const unsubscribe = onSnapshot(activeQuery, (snapshot) => {
       const data = snapshot.docs.map(doc => {
         const d = doc.data();
         return {
