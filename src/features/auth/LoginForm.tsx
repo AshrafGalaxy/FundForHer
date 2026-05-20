@@ -26,7 +26,6 @@ import {
   ConfirmationResult
 } from 'firebase/auth';
 import { Capacitor } from '@capacitor/core';
-import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
 import { useFirestore } from '@/firebase';
 import { getUserProfile, getProviderProfile } from '@/server/db/user-data';
 
@@ -160,6 +159,7 @@ export function LoginForm({ isProviderLogin }: LoginFormProps) {
       let resultUser;
 
       if (Capacitor.isNativePlatform()) {
+        const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication');
         const nativeResult = await FirebaseAuthentication.signInWithGoogle();
 
         if (nativeResult.credential?.idToken) {

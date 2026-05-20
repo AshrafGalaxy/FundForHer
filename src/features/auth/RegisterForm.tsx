@@ -14,7 +14,6 @@ import { register } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Capacitor } from '@capacitor/core';
-import { FirebaseAuthentication } from '@capacitor-firebase/authentication';
 import { GoogleAuthProvider, signInWithPopup, signInWithCredential } from 'firebase/auth';
 import { FirebaseError } from 'firebase/app';
 import { createInitialUserProfile } from '@/server/db/user-data';
@@ -101,6 +100,7 @@ export function RegisterForm() {
     setIsGoogleLoading(true);
     try {
       if (Capacitor.isNativePlatform()) {
+        const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication');
         const nativeResult = await FirebaseAuthentication.signInWithGoogle();
 
         if (nativeResult.credential?.idToken) {
