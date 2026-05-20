@@ -176,11 +176,24 @@ export async function markExpiredScholarships(): Promise<number> {
 
     if (snapshot.empty) return 0;
 
-    const batch = adminDb.batch();
-    snapshot.docs.forEach(doc => {
-        batch.update(doc.ref, { status: 'Expired', lastUpdated: new Date() });
-    });
-    await batch.commit();
+    // Chunk into groups of 500 to respect Firestore batch limit
+    const BATCH_LIMIT = 500;
+    const docs = snapshot.docs;
+    const now = new Date();
+
+    for (let i = 0; i < docs.length; i += BATCH_LIMIT) {
+        const chunk = docs.slice(i, i + BATCH_LIMIT);
+        const batch = adminDb.batch();
+        chunk.forEach(doc => {
+            batch.update(doc.ref, { status: 'Expired', lastUpdated: now });
+        });
+        await batch.commit();
+
+        // Sync each expired doc to Algolia
+        for (const doc of chunk) {
+            await syncToAlgolia(doc.id, { ...doc.data(), status: 'Expired', lastUpdated: now });
+        }
+    }
 
     console.log(`🗑️ Marked ${snapshot.size} scholarships as Expired.`);
     return snapshot.size;
