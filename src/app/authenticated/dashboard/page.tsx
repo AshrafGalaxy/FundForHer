@@ -88,7 +88,7 @@ export default function DashboardPage() {
   const ITEMS_PER_PAGE = 10;
 
   const authUser = useAuth();
-  const user = useUser();
+  const { user, loading: userLoading } = useUser();
   const db = useFirestore();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -123,17 +123,21 @@ export default function DashboardPage() {
     setLoading(true);
 
     const scholarshipsRef = collection(db, 'scholarships');
-    const activeQuery = query(scholarshipsRef, where('status', '!=', 'Expired'));
-    const unsubscribe = onSnapshot(activeQuery, (snapshot) => {
-      const data = snapshot.docs.map(doc => {
-        const d = doc.data();
-        return {
-          id: doc.id,
-          ...d,
-          deadline: d.deadline?.toDate ? d.deadline.toDate() : new Date(d.deadline),
-          lastUpdated: d.lastUpdated?.toDate ? d.lastUpdated.toDate() : new Date(d.lastUpdated),
-        } as Scholarship;
-      });
+    // Use a plain snapshot listener — no inequality where clause — to avoid
+    // requiring a composite Firestore index. Filter client-side instead.
+    const unsubscribe = onSnapshot(scholarshipsRef, (snapshot) => {
+      const data = snapshot.docs
+        .map(doc => {
+          const d = doc.data();
+          return {
+            id: doc.id,
+            ...d,
+            deadline: d.deadline?.toDate ? d.deadline.toDate() : (d.deadline ? new Date(d.deadline) : null),
+            lastUpdated: d.lastUpdated?.toDate ? d.lastUpdated.toDate() : (d.lastUpdated ? new Date(d.lastUpdated) : null),
+          } as Scholarship;
+        })
+        // Client-side filter: exclude expired scholarships
+        .filter(s => (s as any).status !== 'Expired');
 
       setScholarships(data);
       setAllScholarshipTypes(getAllScholarshipTypes(data));
