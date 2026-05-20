@@ -16,7 +16,7 @@ import { useEffect, useState } from 'react';
 import { Loader2, Sparkles, Calendar } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useFirestore } from '@/firebase';
-import { collection, getDocs, doc, getDoc, query, orderBy, limit, where, Timestamp } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc, query, orderBy, limit, Timestamp } from 'firebase/firestore';
 import { getSiteStats } from '@/app/actions/get-stats';
 import { FeaturedScholarshipCarousel } from '@/components/FeaturedScholarshipCarousel';
 import { InfiniteMarquee } from '@/components/InfiniteMarquee';
@@ -193,33 +193,40 @@ export default function LandingPage() {
                 setStats({ totalScholarships: 0, totalAmount: 0, fetching: false });
             });
 
-            // Fetch scholarships added in the last 5 days only
-            const fiveDaysAgo = new Date();
-            fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
+            // Simple query: just orderBy + limit — no compound where clause, no composite index needed.
+            // Date filtering is done client-side to work for unauthenticated users.
             const recentQuery = query(
                 collection(db, 'scholarships'),
-                where('lastUpdated', '>=', Timestamp.fromDate(fiveDaysAgo)),
                 orderBy('lastUpdated', 'desc'),
-                limit(3)
+                limit(10)
             );
+            const fiveDaysAgo = new Date();
+            fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
             getDocs(recentQuery)
                 .then(snap => {
-                    const mapped = snap.docs.map(d => {
-                        const data = d.data();
-                        // Safely convert Firestore Timestamps → JS Dates
-                        const toDate = (val: any): Date | null => {
-                            if (!val) return null;
-                            if (val instanceof Date) return val;
-                            if (val?.toDate) return val.toDate();
-                            return new Date(val);
-                        };
-                        return {
-                            id: d.id,
-                            ...data,
-                            deadline: toDate(data.deadline),
-                            lastUpdated: toDate(data.lastUpdated),
-                        } as Scholarship;
-                    });
+                    const mapped = snap.docs
+                        .map(d => {
+                            const data = d.data();
+                            const toDate = (val: any): Date | null => {
+                                if (!val) return null;
+                                if (val instanceof Date) return val;
+                                if (val?.toDate) return val.toDate();
+                                return new Date(val);
+                            };
+                            return {
+                                id: d.id,
+                                ...data,
+                                deadline: toDate(data.deadline),
+                                lastUpdated: toDate(data.lastUpdated),
+                            } as Scholarship;
+                        })
+                        // Client-side filter: only last 5 days and not expired
+                        .filter(s => {
+                            if ((s as any).status === 'Expired') return false;
+                            if (!s.lastUpdated) return false;
+                            return s.lastUpdated >= fiveDaysAgo;
+                        })
+                        .slice(0, 3);
                     setLatestScholarships(mapped);
                     setFetchingLatest(false);
                 })
