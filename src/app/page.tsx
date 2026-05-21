@@ -132,23 +132,81 @@ const FeatureCard = ({ icon, title, description }: { icon: React.ReactNode, titl
 
 export default function LandingPage() {
     const [isPwaInstalled, setIsPwaInstalled] = useState(false);
+    const [deviceType, setDeviceType] = useState<'android' | 'ios' | 'desktop' | 'unknown'>('unknown');
+    const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+    const [pwaPromptAvailable, setPwaPromptAvailable] = useState(false);
 
     useEffect(() => {
-        // Check if the app is already installed and running in standalone mode
+        // ── Standalone / installed detection ────────────────────────────
         if (window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true) {
             setIsPwaInstalled(true);
         }
-
-        const handleAppInstalled = () => {
-            setIsPwaInstalled(true);
-        };
+        const handleAppInstalled = () => setIsPwaInstalled(true);
         window.addEventListener('appinstalled', handleAppInstalled);
 
-        // Also check if they launched the standalone app and navigating back to home
+        // ── Device matrix detection ─────────────────────────────────────
+        // Uses UA + touch capability + screen width for reliable classification.
+        const ua = window.navigator.userAgent.toLowerCase();
+        const isTouch = window.navigator.maxTouchPoints > 0;
+        const isMobileWidth = window.innerWidth <= 900;
+
+        if (/android/.test(ua) && isTouch) {
+            setDeviceType('android');
+        } else if (/iphone|ipad|ipod/.test(ua)) {
+            setDeviceType('ios');
+        } else if (/windows|macintosh|linux/.test(ua) && !isTouch) {
+            setDeviceType('desktop');
+        } else if (isMobileWidth && isTouch) {
+            // Fallback: touch + narrow screen = treat as android for download purposes
+            setDeviceType('android');
+        } else {
+            setDeviceType('desktop');
+        }
+
+        // ── Capture PWA deferred install prompt (Chrome/Edge on Android + Desktop) ──
+        const handleBeforeInstallPrompt = (e: Event) => {
+            e.preventDefault();
+            setDeferredPrompt(e);
+            setPwaPromptAvailable(true);
+        };
+        window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
         return () => {
             window.removeEventListener('appinstalled', handleAppInstalled);
+            window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
         };
     }, []);
+
+    // ── Adaptive download handler ────────────────────────────────────────────
+    const handleDownloadCTA = async (e: React.MouseEvent) => {
+        if (deviceType === 'android') {
+            // Android mobile: serve APK directly
+            const link = document.createElement('a');
+            link.href = '/downloads/fundherfuture-latest.apk';
+            link.download = 'FundHerFuture.apk';
+            link.setAttribute('type', 'application/vnd.android.package-archive');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } else if (deviceType === 'ios') {
+            // iOS: guide to Share → Add to Home Screen (Safari PWA)
+            alert('To install on iOS: tap the Share button (□↑) in Safari, then choose "Add to Home Screen".');
+        } else {
+            // Desktop: trigger native PWA install prompt or open shortcut guide
+            if (pwaPromptAvailable && deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    setIsPwaInstalled(true);
+                    setPwaPromptAvailable(false);
+                    setDeferredPrompt(null);
+                }
+            } else {
+                // Fallback: open the live web app in a new tab
+                window.open('https://fundherfuture.vercel.app', '_blank', 'noopener');
+            }
+        }
+    };
 
     const authContext = useAuth();
     const db = useFirestore();
@@ -466,16 +524,47 @@ export default function LandingPage() {
                                         Install our fast, lightweight web app directly to your device. No app store required. Works perfectly across all your favorite platforms.
                                     </p>
 
-                                    <div className="pt-2 pb-2 flex justify-center md:justify-start">
-                                        <a href="/downloads/fundherfuture-latest.apk" download="FundHerFuture.apk">
+                                    <div className="pt-2 pb-2 flex flex-col gap-3 justify-center md:justify-start">
+                                        {/* ── Adaptive Download CTA ── */}
+                                        {deviceType === 'android' ? (
                                             <Button
+                                                id="cta-download-android"
                                                 size="lg"
+                                                onClick={handleDownloadCTA}
                                                 className="bg-theme-600 hover:bg-theme-700 text-white font-bold px-8 py-6 rounded-full shadow-xl shadow-theme-900/40 border-none transition-transform hover:scale-105"
                                             >
                                                 <Download className="w-5 h-5 mr-2" />
-                                                Download App Now
+                                                Download APK — Android
                                             </Button>
-                                        </a>
+                                        ) : deviceType === 'ios' ? (
+                                            <Button
+                                                id="cta-install-ios"
+                                                size="lg"
+                                                onClick={handleDownloadCTA}
+                                                className="bg-theme-600 hover:bg-theme-700 text-white font-bold px-8 py-6 rounded-full shadow-xl shadow-theme-900/40 border-none transition-transform hover:scale-105"
+                                            >
+                                                <Smartphone className="w-5 h-5 mr-2" />
+                                                Add to Home Screen — iOS
+                                            </Button>
+                                        ) : (
+                                            // Desktop: PWA install or open web app
+                                            <Button
+                                                id="cta-install-desktop"
+                                                size="lg"
+                                                onClick={handleDownloadCTA}
+                                                className="bg-theme-600 hover:bg-theme-700 text-white font-bold px-8 py-6 rounded-full shadow-xl shadow-theme-900/40 border-none transition-transform hover:scale-105"
+                                            >
+                                                <Laptop className="w-5 h-5 mr-2" />
+                                                {pwaPromptAvailable ? 'Install Web App' : 'Open Web App'}
+                                            </Button>
+                                        )}
+                                        {deviceType !== 'unknown' && (
+                                            <p className="text-xs text-muted-foreground text-center md:text-left">
+                                                {deviceType === 'android' && '📦 Android APK · v1.1.0 · ~18 MB'}
+                                                {deviceType === 'ios' && '🍎 Safari → Share → Add to Home Screen'}
+                                                {deviceType === 'desktop' && '💻 Installs as a shortcut from your browser — no download needed'}
+                                            </p>
+                                        )}
                                     </div>
 
                                     <div className="flex items-center justify-center md:justify-start gap-8 pt-6 text-[#FDC8C0]">
