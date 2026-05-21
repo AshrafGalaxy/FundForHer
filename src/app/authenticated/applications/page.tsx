@@ -62,8 +62,8 @@ export default function ApplicationsTrackerPage() {
                         const schSnap = await getDoc(schRef);
                         if (schSnap.exists()) {
                             const schData = schSnap.data();
-                            amount = schData.rewardAmount?.amount || 0;
-                            provider = schData.provider || "Unknown Provider";
+                            amount = schData.amount || schData.rewardAmount?.amount || 0;
+                            provider = schData.provider || appData.provider || "Unknown Provider";
                         }
                     } catch (e) { console.error("Could not fetch sch data", e); }
 

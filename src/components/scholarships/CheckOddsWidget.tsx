@@ -14,6 +14,8 @@ interface CheckOddsWidgetProps {
   userProfile: Record<string, any>;
   /** When true, renders inline (no wrapping Card) — for embedding in the Apply page sidebar */
   inline?: boolean;
+  /** Called when AI result comes back with isEligible = false */
+  onIneligible?: () => void;
 }
 
 interface OddsResult {
@@ -29,6 +31,7 @@ export function CheckOddsWidget({
   eligibilityData,
   userProfile,
   inline = false,
+  onIneligible,
 }: CheckOddsWidgetProps) {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<OddsResult | null>(null);
@@ -59,6 +62,7 @@ export function CheckOddsWidget({
       }
 
       setResult(data as OddsResult);
+      if (!data.isEligible && onIneligible) onIneligible();
     } catch (err: any) {
       setError(err.message || 'An unexpected error occurred. Please try again.');
     } finally {
