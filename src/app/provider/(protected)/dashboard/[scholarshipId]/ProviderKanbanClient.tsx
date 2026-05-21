@@ -4,163 +4,196 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/app/auth-provider';
 import { useFirestore } from '@/firebase';
-import { collection, query, where, getDocs, doc, getDoc, orderBy } from 'firebase/firestore';
+import { collection, query, where, onSnapshot, doc, getDoc, orderBy } from 'firebase/firestore';
 import type { Application, ApplicationStatus, Scholarship } from '@/lib/types';
 import type { ProviderProfile } from '@/server/db/user-data';
 import { getProviderProfile } from '@/server/db/user-data';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Loader2, Star, Users } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { ArrowLeft, Loader2, Star, Users, RefreshCw } from 'lucide-react';
 import Link from 'next/link';
 import { CandidateReviewModal } from '@/features/provider/CandidateReviewModal';
+import { cn } from '@/lib/utils';
+import { motion, AnimatePresence } from 'framer-motion';
 
-const COLUMNS: { id: ApplicationStatus; label: string; color: string }[] = [
-    { id: 'new', label: 'New Applicants', color: 'border-blue-200 bg-blue-50/50' },
-    { id: 'reviewing', label: 'Under Review', color: 'border-amber-200 bg-amber-50/50' },
-    { id: 'shortlisted', label: 'Shortlisted', color: 'border-purple-200 bg-purple-50/50' },
-    { id: 'accepted', label: 'Accepted/Awarded', color: 'border-green-200 bg-green-50/50' },
-    { id: 'rejected', label: 'Rejected', color: 'border-zinc-200 bg-zinc-50' },
+const COLUMNS: { id: ApplicationStatus; label: string; accent: string; pill: string }[] = [
+  { id: 'new', label: 'New Applicants', accent: 'border-t-blue-500', pill: 'bg-blue-100 text-blue-700' },
+  { id: 'reviewing', label: 'Under Review', accent: 'border-t-amber-500', pill: 'bg-amber-100 text-amber-700' },
+  { id: 'shortlisted', label: 'Shortlisted', accent: 'border-t-purple-500', pill: 'bg-purple-100 text-purple-700' },
+  { id: 'accepted', label: 'Accepted / Awarded', accent: 'border-t-green-500', pill: 'bg-green-100 text-green-700' },
+  { id: 'rejected', label: 'Rejected', accent: 'border-t-zinc-400', pill: 'bg-zinc-100 text-zinc-600' },
 ];
 
 export default function ProviderKanbanBoardClient() {
-    const params = useParams();
-    const scholarshipId = params.scholarshipId as string;
-    const router = useRouter();
+  const params = useParams();
+  const scholarshipId = params.scholarshipId as string;
+  const router = useRouter();
+  const authContext = useAuth();
+  const db = useFirestore();
+  const user = authContext?.user;
 
-    const authContext = useAuth();
-    const db = useFirestore();
-    const user = authContext?.user;
+  const [applications, setApplications] = useState<Application[]>([]);
+  const [scholarship, setScholarship] = useState<Scholarship | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [selectedApp, setSelectedApp] = useState<Application | null>(null);
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
 
-    const [applications, setApplications] = useState<Application[]>([]);
-    const [scholarship, setScholarship] = useState<Scholarship | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [providerProfile, setProviderProfile] = useState<ProviderProfile | null>(null);
+  useEffect(() => {
+    if (!user || !db || !scholarshipId) return;
 
-    const [selectedApp, setSelectedApp] = useState<Application | null>(null);
+    let unsubscribe: (() => void) | null = null;
 
-    useEffect(() => {
-        const fetchData = async () => {
-            if (!user || !db || !scholarshipId) return;
+    const init = async () => {
+      try {
+        // 1. Verify provider
+        const profile = await getProviderProfile(db, user.uid);
+        if (!profile || profile.kycStatus !== 'verified') { router.push('/provider/dashboard'); return; }
 
-            try {
-                // 1. Verify Provider is Valid
-                const profile = await getProviderProfile(db, user.uid);
-                if (!profile || profile.kycStatus !== 'verified') {
-                    router.push('/provider/dashboard');
-                    return;
-                }
-                setProviderProfile(profile);
+        // 2. Load scholarship details
+        const sDoc = await getDoc(doc(db, 'scholarships', scholarshipId));
+        if (!sDoc.exists() || sDoc.data().providerId !== user.uid) { router.push('/provider/dashboard'); return; }
+        setScholarship({ id: sDoc.id, ...sDoc.data() } as Scholarship);
 
-                // 2. Fetch Scholarship details
-                const sDoc = await getDoc(doc(db, 'scholarships', scholarshipId));
-                if (sDoc.exists() && sDoc.data().providerId === user.uid) {
-                    setScholarship({ id: sDoc.id, ...sDoc.data() } as Scholarship);
-                } else {
-                    router.push('/provider/dashboard');
-                    return;
-                }
+        // 3. Real-time listener on applications
+        const appsQuery = query(
+          collection(db, 'applications'),
+          where('scholarshipId', '==', scholarshipId),
+          orderBy('appliedAt', 'desc')
+        );
 
-                // 3. Fetch Applications for this scholarship
-                const appsQuery = query(
-                    collection(db, 'applications'),
-                    where('scholarshipId', '==', scholarshipId),
-                    orderBy('matchScore', 'desc') // Pre-sort by highest AI Match
-                );
+        unsubscribe = onSnapshot(appsQuery, (snap) => {
+          const apps: Application[] = snap.docs.map(d => ({ id: d.id, ...d.data() } as Application));
+          setApplications(apps);
+          setLastUpdated(new Date());
+          setLoading(false);
+          // D5 FIX: Keep selectedApp in sync with live status updates
+          setSelectedApp(prev => {
+            if (!prev) return null;
+            const updated = apps.find(a => a.id === prev.id);
+            return updated ?? prev;
+          });
+        }, (err) => {
+          console.error('Kanban listener error:', err);
+          setLoading(false);
+        });
 
-                const snap = await getDocs(appsQuery);
-                const fetchedApps: Application[] = [];
-                snap.forEach(d => {
-                    fetchedApps.push({ id: d.id, ...d.data() } as Application);
-                });
 
-                setApplications(fetchedApps);
-
-            } catch (error) {
-                console.error("Failed to load kanban data:", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        if (user && db) fetchData();
-    }, [user, db, scholarshipId, router]);
-
-    const handleStatusUpdate = (appId: string, newStatus: ApplicationStatus) => {
-        setApplications(prev => prev.map(a =>
-            a.id === appId ? { ...a, status: newStatus } : a
-        ));
+      } catch (err) {
+        console.error(err);
+        setLoading(false);
+      }
     };
 
-    if (loading) {
-        return <div className="flex justify-center items-center h-screen"><Loader2 className="w-10 h-10 animate-spin text-primary" /></div>;
-    }
+    init();
+    return () => { if (unsubscribe) unsubscribe(); };
+  }, [user, db, scholarshipId, router]);
 
-    if (!scholarship) return null;
+  const handleStatusUpdate = (appId: string, newStatus: ApplicationStatus) => {
+    setApplications(prev => prev.map(a => a.id === appId ? { ...a, status: newStatus } : a));
+    // Also update the modal's app reference optimistically before onSnapshot arrives
+    setSelectedApp(prev => prev?.id === appId ? { ...prev, status: newStatus } : prev);
+  };
 
-    // Group apps by status
-    const columnData = COLUMNS.map(col => ({
-        ...col,
-        items: applications.filter(a => a.status === col.id)
-    }));
 
-    return (
-        <div className="container max-w-[1600px] mx-auto px-4 py-8 h-screen flex flex-col overflow-hidden">
-            {/* Header */}
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 flex-shrink-0">
-                <div>
-                    <Button asChild variant="ghost" className="-ml-4 mb-2">
-                        <Link href="/provider/dashboard"><ArrowLeft className="mr-2" /> Back to Dashboard</Link>
-                    </Button>
-                    <h1 className="text-3xl font-headline font-bold">{scholarship.title}</h1>
-                    <p className="text-muted-foreground flex items-center gap-2 mt-1">
-                        <Users className="w-4 h-4" /> {applications.length} Total Applicants Pipeline
-                    </p>
-                </div>
-            </div>
+  if (loading) {
+    return <div className="flex justify-center items-center h-screen"><Loader2 className="w-10 h-10 animate-spin text-primary" /></div>;
+  }
 
-            {/* Kanban Board Layout */}
-            <div className="flex gap-6 overflow-x-auto pb-6 pt-2 flex-1 items-start">
-                {columnData.map(col => (
-                    <div key={col.id} className={`flex-shrink-0 w-80 rounded-xl border ${col.color} p-4 flex flex-col h-full max-h-full`}>
-                        <div className="flex justify-between items-center mb-4">
-                            <h3 className="font-semibold">{col.label}</h3>
-                            <span className="bg-background text-xs font-bold px-2.5 py-1 rounded-full shadow-sm text-foreground">
-                                {col.items.length}
-                            </span>
-                        </div>
+  if (!scholarship) return null;
 
-                        <div className="flex flex-col gap-3 overflow-y-auto pr-1 pb-2">
-                            {col.items.map(app => (
-                                <div
-                                    key={app.id}
-                                    onClick={() => setSelectedApp(app)}
-                                    className="bg-card hover:bg-card/80 border shadow-sm rounded-lg p-3 cursor-pointer transition-all hover:-translate-y-1 hover:shadow-md"
-                                >
-                                    <div className="flex justify-between items-start mb-2">
-                                        <p className="font-medium text-sm truncate pr-2">{app.resumeSnapshot.fullName}</p>
-                                        <div className={`text-xs px-2 py-0.5 rounded-full font-bold flex items-center gap-1 shrink-0 ${app.matchScore >= 80 ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
-                                            <Star className="w-3 h-3 fill-current" /> {app.matchScore}%
-                                        </div>
-                                    </div>
-                                    <p className="text-xs text-muted-foreground truncate">{app.resumeSnapshot.qualification}</p>
-                                </div>
-                            ))}
-                            {col.items.length === 0 && (
-                                <div className="text-center p-6 border-2 border-dashed border-muted rounded-lg opacity-50">
-                                    <p className="text-xs text-muted-foreground">Drop candidate here</p>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                ))}
-            </div>
+  const columnData = COLUMNS.map(col => ({
+    ...col,
+    items: applications.filter(a => a.status === col.id),
+  }));
 
-            {/* Candidate Modal */}
-            <CandidateReviewModal
-                application={selectedApp}
-                open={!!selectedApp}
-                onOpenChange={(open) => !open && setSelectedApp(null)}
-                onStatusChange={handleStatusUpdate}
-            />
+  return (
+    <div className="container max-w-[1600px] mx-auto px-4 py-8 h-screen flex flex-col overflow-hidden">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 shrink-0">
+        <div>
+          <Button asChild variant="ghost" className="-ml-4 mb-1">
+            <Link href="/provider/dashboard"><ArrowLeft className="mr-2" /> Back to Dashboard</Link>
+          </Button>
+          <h1 className="text-2xl font-headline font-bold">{scholarship.title}</h1>
+          <p className="text-muted-foreground flex items-center gap-2 mt-1 text-sm">
+            <Users className="w-4 h-4" /> {applications.length} Total Applicants
+            <span className="text-muted-foreground/50">·</span>
+            <RefreshCw className="w-3 h-3" />
+            <span className="text-xs">Live — last updated {lastUpdated.toLocaleTimeString()}</span>
+          </p>
         </div>
-    );
+        <div className="flex gap-2 flex-wrap">
+          {COLUMNS.map(col => {
+            const count = applications.filter(a => a.status === col.id).length;
+            return count > 0 ? (
+              <Badge key={col.id} className={cn('text-xs', col.pill)}>{count} {col.label}</Badge>
+            ) : null;
+          })}
+        </div>
+      </div>
+
+      {/* Kanban Board */}
+      <div className="flex gap-4 overflow-x-auto pb-6 pt-1 flex-1 items-start">
+        {columnData.map(col => (
+          <div key={col.id}
+            className={`flex-shrink-0 w-72 rounded-xl border-t-4 ${col.accent} bg-card border border-border shadow-sm flex flex-col max-h-full`}>
+            <div className="flex justify-between items-center p-3 border-b border-border/50">
+              <h3 className="font-semibold text-sm">{col.label}</h3>
+              <span className={cn('text-xs font-bold px-2 py-0.5 rounded-full', col.pill)}>{col.items.length}</span>
+            </div>
+            <div className="flex flex-col gap-2 overflow-y-auto p-2 flex-1">
+              <AnimatePresence>
+                {col.items.map(app => {
+                  const name = app.fullName || app.resumeSnapshot?.fullName || 'Unknown';
+                  const qual = app.currentEducationLevel || app.degree || app.resumeSnapshot?.qualification || '';
+                  const inst = app.institution || app.resumeSnapshot?.college || '';
+                  return (
+                    <motion.div
+                      key={app.id}
+                      layout
+                      initial={{ opacity: 0, scale: 0.95 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.95 }}
+                      onClick={() => setSelectedApp(app)}
+                      className="bg-background border border-border/60 shadow-sm rounded-lg p-3 cursor-pointer hover:-translate-y-0.5 hover:shadow-md transition-all group"
+                    >
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs shrink-0">
+                            {name.charAt(0).toUpperCase()}
+                          </div>
+                          <p className="font-medium text-sm truncate">{name}</p>
+                        </div>
+                        <div className={cn(
+                          'text-[10px] px-1.5 py-0.5 rounded-full font-bold flex items-center gap-0.5 shrink-0 ml-2',
+                          app.matchScore >= 75 ? 'bg-green-100 text-green-700' : app.matchScore >= 50 ? 'bg-amber-100 text-amber-700' : 'bg-gray-100 text-gray-600'
+                        )}>
+                          <Star className="w-2.5 h-2.5 fill-current" /> {app.matchScore}%
+                        </div>
+                      </div>
+                      {qual && <p className="text-xs text-muted-foreground truncate">{qual}</p>}
+                      {inst && <p className="text-xs text-muted-foreground/70 truncate">{inst}</p>}
+                      {app.state && <p className="text-[10px] text-muted-foreground/60 mt-1">📍 {app.state}</p>}
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
+              {col.items.length === 0 && (
+                <div className="text-center p-6 border-2 border-dashed border-muted rounded-lg">
+                  <p className="text-xs text-muted-foreground">No candidates here</p>
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <CandidateReviewModal
+        application={selectedApp}
+        open={!!selectedApp}
+        onOpenChange={(open) => !open && setSelectedApp(null)}
+        onStatusChange={handleStatusUpdate}
+      />
+    </div>
+  );
 }

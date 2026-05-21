@@ -61,8 +61,12 @@ export function SidebarNav({ isProvider = false }: SidebarNavProps) {
     ];
 
     const providerLinks = [
-        { href: '/provider/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+        { href: '/provider/dashboard',   label: 'Dashboard',        icon: LayoutDashboard },
+        { href: '/provider/scholarships', label: 'My Scholarships',  icon: BookOpen },
+        { href: '/provider/profile',     label: 'Profile & Branding', icon: User },
+        { href: '/provider/settings',    label: 'Settings',          icon: Settings },
     ];
+
 
     const links = isProvider ? providerLinks : studentLinks;
 
