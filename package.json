@@ -13,6 +13,7 @@
     "build:android": "move src\\app\\api src\\app\\_api_bak && set CAPACITOR=true && next build && move src\\app\\_api_bak src\\app\\api && npx cap sync android"
   },
   "dependencies": {
+    "@ai-sdk/google": "^3.0.78",
     "@ai-sdk/groq": "^3.0.29",
     "@ai-sdk/react": "^3.0.118",
     "@ai-sdk/xai": "^3.0.67",
