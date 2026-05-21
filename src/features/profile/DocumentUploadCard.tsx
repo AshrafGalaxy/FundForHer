@@ -64,10 +64,14 @@ export function DocumentUploadCard({
       snap => setProgress(Math.round((snap.bytesTransferred / snap.totalBytes) * 100)),
       err => { setError(err.message); setUploading(false); },
       async () => {
+        // Capture the permanent downloadURL and store it in the vault entry
+        // This eliminates redundant Storage reads on every preview open
+        const downloadURL = await getDownloadURL(task.snapshot.ref);
         const entry: DocumentVaultEntry = {
           docType,
           label,
           storagePath,
+          downloadURL,
           fileName: file.name,
           fileSizeBytes: file.size,
           uploadedAt: new Date().toISOString(),
@@ -77,6 +81,7 @@ export function DocumentUploadCard({
         setProgress(0);
       },
     );
+
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -100,9 +105,15 @@ export function DocumentUploadCard({
   };
 
   const handlePreview = async () => {
-    if (!storage || !existing) return;
-    setPreviewLoading(true);
+    if (!existing) return;
     setPreviewOpen(true);
+    // Use cached downloadURL to avoid redundant Storage read
+    if (existing.downloadURL) {
+      setPreviewUrl(existing.downloadURL);
+      return;
+    }
+    if (!storage) return;
+    setPreviewLoading(true);
     try {
       const url = await getDownloadURL(ref(storage, existing.storagePath));
       setPreviewUrl(url);
@@ -112,6 +123,7 @@ export function DocumentUploadCard({
       setPreviewLoading(false);
     }
   };
+
 
   const sizeKB = existing ? Math.round(existing.fileSizeBytes / 1024) : 0;
   const uploadedDate = existing ? new Date(existing.uploadedAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) : '';

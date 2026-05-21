@@ -2,14 +2,16 @@
 
 import { useState, useCallback } from 'react';
 import { useDropzone } from 'react-dropzone';
-import { Camera, Image as ImageIcon, Loader2, UploadCloud, X } from 'lucide-react';
+import { Camera, Image as ImageIcon, Loader2, UploadCloud } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { useStorage } from '@/firebase';
+import { useStorage, useFirestore } from '@/firebase';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 import { updateProfile } from 'firebase/auth';
+import { doc, updateDoc } from 'firebase/firestore';
 import Image from 'next/image';
+
 
 interface AvatarUploadModalProps {
     user: import('firebase/auth').User;
@@ -25,7 +27,9 @@ export function AvatarUploadModal({ user, currentPhotoUrl, children, onUploadSuc
     const [isUploading, setIsUploading] = useState(false);
     const [progress, setProgress] = useState(0);
     const storage = useStorage();
+    const db = useFirestore();
     const { toast } = useToast();
+
 
     const onDrop = useCallback((acceptedFiles: File[]) => {
         const selected = acceptedFiles[0];
@@ -67,7 +71,12 @@ export function AvatarUploadModal({ user, currentPhotoUrl, children, onUploadSuc
             async () => {
                 try {
                     const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                    // Update Firebase Auth profile
                     await updateProfile(user, { photoURL: downloadURL });
+                    // Persist to Firestore so refresh doesn't revert the avatar
+                    if (db) {
+                        await updateDoc(doc(db, 'users', user.uid), { photoURL: downloadURL });
+                    }
                     onUploadSuccess(downloadURL);
                     setIsOpen(false);
                     setFile(null);

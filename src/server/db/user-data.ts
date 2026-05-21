@@ -1,5 +1,30 @@
 
 // src/server/db/user-data.ts
+
+// ── Privacy Types ─────────────────────────────────────────────────────────────
+
+// Fields the user can individually toggle public/private
+export type PublicFieldKey =
+  | 'education'        // College, degree, field of study
+  | 'location'         // State + city only (never full address)
+  | 'category'         // General/OBC/SC/ST etc.
+  | 'languages'        // Languages known
+  | 'skills'           // Technical + soft + programming skills
+  | 'certifications'   // Certification list
+  | 'achievements'     // Awards & extracurriculars
+  | 'internships'      // Work experience
+  | 'fellowships'      // Fellowships
+  | 'scholarshipsWon'  // Previous scholarships awarded
+  | 'publications';    // Research & publications
+
+// Always private (never shown publicly — enforced server-side too):
+// phone, whatsapp, email, address, aadhar, annualFamilyIncome,
+// rationCardType, testScores, documents, dob (age shown instead)
+
+export const DEFAULT_PUBLIC_FIELDS: PublicFieldKey[] = [
+  'education', 'location', 'skills', 'certifications', 'achievements',
+];
+
 import { doc, setDoc, getDoc, serverTimestamp, updateDoc, deleteDoc, Timestamp, type Firestore } from 'firebase/firestore';
 
 // ── Sub-types ─────────────────────────────────────────────────────────────────
@@ -97,13 +122,15 @@ export interface Publication {
 }
 
 export interface DocumentVaultEntry {
-  docType: string;       // e.g. 'aadhar_front', 'income_cert'
-  label: string;         // human-readable label
-  storagePath: string;   // Firebase Storage path (not the download URL)
+  docType: string;        // e.g. 'aadhar_front', 'income_cert'
+  label: string;          // human-readable label
+  storagePath: string;    // Firebase Storage path (not the download URL)
+  downloadURL?: string;   // Permanent HTTPS URL — cached to avoid redundant Storage reads
   fileName: string;
   fileSizeBytes: number;
-  uploadedAt: string;    // ISO date string
+  uploadedAt: string;     // ISO date string
 }
+
 
 // ── Main UserProfile ──────────────────────────────────────────────────────────
 
@@ -114,9 +141,14 @@ export interface UserProfile {
   fullName: string;
   email: string;
   photoURL?: string | null;
+  username?: string | null;       // unique @handle e.g. "priya_sharma"
   tagline?: string | null;        // 80-char headline
   bio?: string | null;            // 300-char about me
   avatarFrame?: 'default' | 'gold' | 'verified' | 'community'; // cosmetic ring
+
+  // ── Privacy Settings ──────────────────────────────────────────
+  isProfilePublic?: boolean;      // false = private (only self can see full profile)
+  publicFields?: PublicFieldKey[]; // which optional sections are visible publicly
 
   // ── Personal Details ───────────────────────────────────────────
   phone?: string | null;
@@ -187,6 +219,10 @@ export interface ProviderProfile {
   gstNumber: string;
   kycStatus: 'pending' | 'verified' | 'rejected' | 'require_more_info';
   kycDocumentUrl: string | null;
+  // ── Branding (new) ───────────────────────────────────────────────
+  logoUrl?: string | null;        // Firebase Storage public URL — shown on ScholarshipCards
+  websiteUrl?: string | null;     // Organisation website
+  description?: string | null;    // Mission / about blurb
   createdAt: any;
   updatedAt: any;
 }
