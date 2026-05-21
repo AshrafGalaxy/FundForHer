@@ -454,10 +454,11 @@ function ApplyFormContent() {
 
       const appRef = doc(collection(db, 'applications'));
       const applicationData = {
-        userId: auth.currentUser.uid,
+        studentId: auth.currentUser.uid,   // ← must match Firestore rule: studentId == request.auth.uid
         scholarshipId: scholarship.id,
         scholarshipTitle: scholarship.title,
         provider: scholarship.provider,
+        providerId: scholarship.providerId ?? null,   // ← lets provider kanban filter by their scholarships
         amount: scholarship.amount,
         deadline: scholarship.deadline ?? null,
         // Personal
