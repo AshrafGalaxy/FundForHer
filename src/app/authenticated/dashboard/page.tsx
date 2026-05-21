@@ -10,8 +10,10 @@ import { Button } from '@/components/ui/button';
 import { Loader2, Bookmark, SearchX, Telescope, IndianRupee, Calendar, Target, ChevronLeft, ChevronRight, X, Archive } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useUser } from '@/firebase/auth/use-user';
-import { collection, doc, getDocs, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, doc, getDocs, getDoc, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
 import { scholarshipsCache } from '@/lib/scholarships-cache';
+import { computeAllMatchScores } from '@/lib/compute-match-score';
+import type { UserProfile } from '@/server/db/user-data';
 import { useToast } from '@/hooks/use-toast';
 import { useFirestore } from '@/firebase';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -87,6 +89,7 @@ export default function DashboardPage() {
   const [activeStatus, setActiveStatus] = useState<ScholarshipStatus>('All');
   const [activeTab, setActiveTab] = useState<ActiveTab>('all');
   const [currentPage, setCurrentPage] = useState(1);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const ITEMS_PER_PAGE = 10;
 
   const authUser = useAuth();
@@ -161,6 +164,20 @@ export default function DashboardPage() {
         setLoading(false);
       });
   }, [db]);
+
+  // ── Load user profile once for real match scoring ──────────────────────
+  useEffect(() => {
+    if (!user || !db) return;
+    getDoc(doc(db, 'users', user.uid))
+      .then(snap => { if (snap.exists()) setUserProfile(snap.data() as UserProfile); })
+      .catch(console.error);
+  }, [user, db]);
+
+  // ── Real match scores (deterministic, client-side, zero AI calls) ────────
+  const matchScores = useMemo(
+    () => computeAllMatchScores(scholarships, userProfile),
+    [scholarships, userProfile],
+  );
 
   // ── Priority 3: One-shot bookmark fetch (no live listener) ────────────────
   useEffect(() => {
@@ -590,6 +607,7 @@ export default function DashboardPage() {
                       isBookmarked={bookmarkedIds.has(scholarship.id)}
                       onToggleBookmark={() => handleToggleBookmark(scholarship)}
                       isExpired={isExpiredClient(scholarship)}
+                      matchScore={matchScores.get(scholarship.id)}
                     />
                   ))}
                 </div>

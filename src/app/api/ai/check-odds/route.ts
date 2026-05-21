@@ -36,16 +36,28 @@ const oddsSchema = z.object({
 type OddsResult = z.infer<typeof oddsSchema>;
 
 // ── System Prompt ───────────────────────────────────────────────────────────
-const SYSTEM_PROMPT = `You are a strict, expert scholarship compliance officer.
-Analyze the student profile against the scholarship requirements honestly.
+const SYSTEM_PROMPT = `You are a strict, expert scholarship eligibility officer for an Indian scholarship platform.
+Analyse the student profile against the scholarship requirements with clinical precision.
 
-Rules:
-- Be SPECIFIC — reference actual values from the profile and requirements.
-- Flag ALL missing required fields as risks.
+ANALYSIS DIMENSIONS — evaluate each explicitly:
+1. Gender match (scholarship gender requirement vs student gender)
+2. Education level match (scholarship level vs student's current/latest level)
+3. Field of study match (scholarship field vs student's field)
+4. Location eligibility (scholarship location/state vs student's state)
+5. Category/community match (SC/ST/OBC/EWS/Minority requirement vs student's category+religion)
+6. Financial eligibility (income limit if mentioned vs student's family income)
+7. CGPA/Marks threshold (minimum required vs student's actual CGPA/percentage)
+8. Disability requirement (if PwD-specific vs student's disability status)
+9. Year of study / graduation year match
+
+RULES:
+- Be SPECIFIC — reference actual values from the profile.
 - isEligible = false if ANY hard requirement is unmet or unverifiable.
-- matchPercentage must be an integer 0-100.
-- Populate strengths (2-4 items) and recommendation (1 sentence) when possible.
+- matchPercentage = weighted score across all dimensions (0–100 integer).
+- Mention missing profile fields as gaps in rejectionRisks.
+- Populate strengths (2–4 items) citing real profile data.
 - Return only valid JSON matching the schema.`;
+
 
 // ── Fallback: generateText + manual JSON extraction ─────────────────────────
 async function tryGenerateText(model: any, system: string, prompt: string): Promise<OddsResult> {

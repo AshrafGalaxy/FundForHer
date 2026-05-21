@@ -33,7 +33,7 @@ export const ScholarshipCard = ({
   scholarship,
   isBookmarked,
   onToggleBookmark,
-  matchScore = 95,
+  matchScore,
   isExpired = false,
 }: ScholarshipCardProps) => {
   const { id, title, provider, amount, deadline, fieldOfStudy, eligibility, isFeatured, lastUpdated, status, providerLogo } = scholarship;
@@ -222,10 +222,20 @@ export const ScholarshipCard = ({
 
             {/* Right badges — mr-11 creates a 44px gap so absolute bookmark button (top-4 right-4, 36px) never overlaps */}
             <div className="flex flex-col items-end gap-1.5 mr-11 shrink-0">
-              {/* Match badge — hidden when expired */}
-              {!isExpired && (
-                <Badge variant="secondary" className="bg-orange-100/80 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300 border-none px-2 py-0.5 shadow-sm text-[10px] font-bold tracking-wider">
-                  🔥 MATCH {matchScore}%
+              {/* Match badge — shown only when real score computed, hidden when expired */}
+              {!isExpired && matchScore !== undefined && (
+                <Badge
+                  variant="secondary"
+                  className={cn(
+                    'border-none px-2 py-0.5 shadow-sm text-[10px] font-bold tracking-wider',
+                    matchScore >= 75
+                      ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
+                      : matchScore >= 50
+                      ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300'
+                      : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
+                  )}
+                >
+                  {matchScore >= 75 ? '✓' : matchScore >= 50 ? '~' : '!'} MATCH {matchScore}%
                 </Badge>
               )}
 
