@@ -5,6 +5,8 @@ import {
     isUrlAlreadyKnown,
     markExpiredScholarships,
     logScraperRun,
+    markUrlParsed,
+    isUrlParsedRecently,
     type UpsertResult,
 } from '@/server/db/scholarship-firestore';
 import type { Scholarship } from '@/lib/types';
@@ -155,6 +157,16 @@ export const processDiscoveredUrl = inngest.createFunction(
             return { skipped: true, reason: 'URL already in database', url };
         }
 
+        // Gate 2: Skip if parsed recently (URL parse cache — 30 day TTL)
+        const recentlyCached = await step.run("check-parse-cache", async () => {
+            return await isUrlParsedRecently(url);
+        });
+
+        if (recentlyCached) {
+            console.log(`⏭️ Skipping recently-parsed URL (cache hit): ${url}`);
+            return { skipped: true, reason: 'URL in parse cache (30d TTL)', url };
+        }
+
         // Step 1: Scrape the URL via Firecrawl (with free cheerio fallback)
         const markdownText = await step.run("extract-markdown", async () => {
             return await withRetry(
@@ -218,6 +230,11 @@ export const processDiscoveredUrl = inngest.createFunction(
         const inserted = results.filter(r => r.action === 'inserted').length;
         const updated = results.filter(r => r.action === 'updated').length;
         const skipped = results.filter(r => r.action === 'skipped').length;
+
+        // Mark this URL as parsed in the 30-day cache
+        await step.run("mark-url-cached", async () => {
+            await markUrlParsed(url, parsedArray.length);
+        });
 
         return {
             success: true,
