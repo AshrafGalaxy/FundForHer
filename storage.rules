@@ -1,0 +1,67 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // ── Student Avatars ────────────────────────────────────────────────────────
+    // Owner can write (image only, < 5 MB). Any authenticated user can read
+    // (needed for community feed author avatars).
+    match /avatars/{userId}/{fileName} {
+      allow read:  if request.auth != null;
+      allow write: if request.auth != null
+                   && request.auth.uid == userId
+                   && request.resource.size <= 5 * 1024 * 1024
+                   && request.resource.contentType.matches('image/.*');
+      allow delete: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // ── Student Document Vault ─────────────────────────────────────────────────
+    // Owner can write (PDF/image, < 2 MB). Only the owner can read their own docs.
+    // Providers see docs only via the download URLs shared inside the Application
+    // document — they never query this path directly.
+    match /documents/{userId}/{docType}/{fileName} {
+      allow read:   if request.auth != null && request.auth.uid == userId;
+      allow write:  if request.auth != null
+                    && request.auth.uid == userId
+                    && request.resource.size <= 2 * 1024 * 1024
+                    && (
+                         request.resource.contentType == 'application/pdf'
+                      || request.resource.contentType.matches('image/(jpeg|jpg|png)')
+                    );
+      allow delete: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // ── Provider Logos ─────────────────────────────────────────────────────────
+    // Public read (shown on student-facing ScholarshipCards).
+    // Only the owning provider can write (image, < 1 MB).
+    match /provider-logos/{providerId}/{fileName} {
+      allow read:   if true;
+      allow write:  if request.auth != null
+                    && request.auth.uid == providerId
+                    && request.resource.size <= 1 * 1024 * 1024
+                    && request.resource.contentType.matches('image/.*');
+      allow delete: if request.auth != null && request.auth.uid == providerId;
+    }
+
+    // ── Provider KYC Documents ────────────────────────────────────────────────
+    // Strictly owner-only read/write. Admin access handled via Firebase Admin SDK
+    // in a Cloud Function or trusted backend — never exposed to the client.
+    match /provider-kyc/{providerId}/{fileName} {
+      allow read:   if request.auth != null && request.auth.uid == providerId;
+      allow write:  if request.auth != null
+                    && request.auth.uid == providerId
+                    && request.resource.size <= 5 * 1024 * 1024
+                    && (
+                         request.resource.contentType == 'application/pdf'
+                      || request.resource.contentType.matches('image/.*')
+                    );
+      allow delete: if request.auth != null && request.auth.uid == providerId;
+    }
+
+    // ── Catch-all deny ─────────────────────────────────────────────────────────
+    // Reject any path not explicitly matched above.
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
