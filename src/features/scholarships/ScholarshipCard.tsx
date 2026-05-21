@@ -143,8 +143,9 @@ export const ScholarshipCard = ({
             <div className="flex items-start gap-2">
               <Target className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
               <div>
-                <p className="font-semibold text-foreground">{eligibility.title}</p>
-                <p className="text-muted-foreground line-clamp-2">{eligibility.details}</p>
+                <p className="font-semibold text-foreground">{eligibility?.title}</p>
+                <p className="text-muted-foreground line-clamp-2">{eligibility?.details}</p>
+
               </div>
             </div>
             {deadline && (
@@ -305,7 +306,8 @@ export const ScholarshipCard = ({
                 <Target className="h-4 w-4 mt-0.5 flex-shrink-0 text-primary/70" />
                 <div className="flex-1">
                   <p className="text-xs line-clamp-2 group-hover:line-clamp-4 transition-all duration-300">
-                    <span className="font-medium mr-1">{eligibility.title}:</span>{eligibility.details}
+                    <span className="font-medium mr-1">{eligibility?.title}:</span>{eligibility?.details}
+
                   </p>
                 </div>
               </div>

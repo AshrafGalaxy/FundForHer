@@ -26,11 +26,9 @@ const ChartContext = React.createContext<ChartContextProps | null>(null)
 
 function useChart() {
   const context = React.useContext(ChartContext)
-
   if (!context) {
     throw new Error("useChart must be used within a <ChartContainer />")
   }
-
   return context
 }
 
@@ -102,17 +100,30 @@ ${colorConfig
 
 const ChartTooltip = RechartsPrimitive.Tooltip
 
-const ChartTooltipContent = React.forwardRef<
-  HTMLDivElement,
-  React.ComponentProps<typeof RechartsPrimitive.Tooltip> &
-    React.ComponentProps<"div"> & {
-      hideLabel?: boolean
-      hideIndicator?: boolean
-      indicator?: "line" | "dot" | "dashed"
-      nameKey?: string
-      labelKey?: string
-    }
->(
+// ── recharts v3 removed payload/label from the forwarded-ref props ──────────
+// We use a plain function component (not forwardRef) and type the tooltip
+// content props manually so the full payload is available at runtime.
+type TooltipContentProps = {
+  active?: boolean
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  payload?: any[]
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  label?: any
+  className?: string
+  indicator?: "line" | "dot" | "dashed"
+  hideLabel?: boolean
+  hideIndicator?: boolean
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  formatter?: (...args: any[]) => React.ReactNode
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  labelFormatter?: (label: any, payload: any[]) => React.ReactNode
+  labelClassName?: string
+  color?: string
+  nameKey?: string
+  labelKey?: string
+}
+
+const ChartTooltipContent = React.forwardRef<HTMLDivElement, TooltipContentProps>(
   (
     {
       active,
@@ -185,21 +196,23 @@ const ChartTooltipContent = React.forwardRef<
       >
         {!nestLabel ? tooltipLabel : null}
         <div className="grid gap-1.5">
-          {payload.map((item, index) => {
+          {payload.map((item: Record<string, unknown>, index: number) => {
             const key = `${nameKey || item.name || item.dataKey || "value"}`
             const itemConfig = getPayloadConfigFromPayload(config, item, key)
-            const indicatorColor = color || item.payload.fill || item.color
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            const indicatorColor = color || (item.payload as any)?.fill || (item.color as string)
 
             return (
               <div
-                key={item.dataKey}
+                key={item.dataKey as string ?? index}
                 className={cn(
                   "flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5 [&>svg]:text-muted-foreground",
                   indicator === "dot" && "items-center"
                 )}
               >
                 {formatter && item?.value !== undefined && item.name ? (
-                  formatter(item.value, item.name, item, index, item.payload)
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  (formatter as (...a: any[]) => React.ReactNode)(item.value, item.name, item, index, item.payload)
                 ) : (
                   <>
                     {itemConfig?.icon ? (
@@ -235,12 +248,12 @@ const ChartTooltipContent = React.forwardRef<
                       <div className="grid gap-1.5">
                         {nestLabel ? tooltipLabel : null}
                         <span className="text-muted-foreground">
-                          {itemConfig?.label || item.name}
+                          {itemConfig?.label || (item.name as string)}
                         </span>
                       </div>
-                      {item.value && (
+                      {item.value !== undefined && (
                         <span className="font-mono font-medium tabular-nums text-foreground">
-                          {item.value.toLocaleString()}
+                          {(item.value as number).toLocaleString()}
                         </span>
                       )}
                     </div>
@@ -258,14 +271,17 @@ ChartTooltipContent.displayName = "ChartTooltip"
 
 const ChartLegend = RechartsPrimitive.Legend
 
-const ChartLegendContent = React.forwardRef<
-  HTMLDivElement,
-  React.ComponentProps<"div"> &
-    Pick<RechartsPrimitive.LegendProps, "payload" | "verticalAlign"> & {
-      hideIcon?: boolean
-      nameKey?: string
-    }
->(
+// ── recharts v3: LegendProps no longer exposes payload/verticalAlign via Pick ──
+// Declare them manually to avoid the broken Pick<LegendProps, "payload"|"verticalAlign"> constraint.
+type LegendContentProps = React.ComponentProps<"div"> & {
+  hideIcon?: boolean
+  nameKey?: string
+  verticalAlign?: "top" | "bottom" | "middle"
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  payload?: Array<{ value?: string; dataKey?: string; color?: string; [k: string]: any }>
+}
+
+const ChartLegendContent = React.forwardRef<HTMLDivElement, LegendContentProps>(
   (
     { className, hideIcon = false, payload, verticalAlign = "bottom", nameKey },
     ref

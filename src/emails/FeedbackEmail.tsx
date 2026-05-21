@@ -35,7 +35,8 @@ export const FeedbackEmail = ({
     return (
         <Html>
             <Head />
-            <Preview>✨ New Platform Feedback: {overallExperience}/10</Preview>
+            <Preview>✨ New Platform Feedback: {`${overallExperience}`}/10</Preview>
+
             <Body style={main}>
                 <Container style={container}>
                     <Heading style={h1}>✨ New Platform Feedback</Heading>
