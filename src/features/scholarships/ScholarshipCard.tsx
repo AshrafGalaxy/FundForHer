@@ -1,5 +1,5 @@
 'use client';
-import { format, formatDistanceToNow } from 'date-fns';
+import { format } from 'date-fns';
 import { Bookmark, Calendar, IndianRupee, School, Target } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -45,25 +45,48 @@ export const ScholarshipCard = ({
     setIsClient(true);
   }, []);
 
-  const daysRemaining = isClient && deadline ? formatDistanceToNow(deadline, { addSuffix: true }) : '...';
   const lastUpdatedText = isClient && lastUpdated ? format(lastUpdated, 'dd-MM-yyyy') : '...';
 
-  const getDeadlineColor = () => {
-    if (!deadline) return 'bg-gray-500/80 text-white';
-    const days = (deadline.getTime() - new Date().getTime()) / (1000 * 3600 * 24);
-    if (days < 7) return 'bg-red-500/90 text-white shadow-red-500/20';
-    if (days < 30) return 'bg-orange-500/90 text-white shadow-orange-500/20';
-    return 'bg-emerald-500/90 text-white shadow-emerald-500/20';
-  }
+  /**
+   * Returns a precise human-readable deadline label + CSS classes based on days remaining.
+   * Labels are specific for nearby deadlines and broader for far-future ones.
+   */
+  const getDeadlineInfo = (): { label: string; className: string; pulse: boolean } => {
+    if (!deadline || !isClient) return { label: '...', className: 'bg-gray-400/80 text-white', pulse: false };
+    const diffMs = deadline.getTime() - new Date().getTime();
+    const days = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
+
+    if (days <= 0)  return { label: '🔒 Deadline Passed', className: 'bg-red-600 text-white', pulse: false };
+    if (days === 1) return { label: '⚠️ 1 day to go!',   className: 'bg-red-600 text-white shadow-red-600/40', pulse: true };
+    if (days === 2) return { label: '⚠️ 2 days to go',   className: 'bg-red-500 text-white shadow-red-500/40', pulse: true };
+    if (days === 3) return { label: '🔴 3 days to go',   className: 'bg-red-500 text-white shadow-red-500/40', pulse: false };
+    if (days <= 6)  return { label: `🔴 ${days} days to go`,  className: 'bg-red-400/90 text-white shadow-red-400/30', pulse: false };
+    if (days === 7) return { label: '🟠 7 days to go',   className: 'bg-orange-500/90 text-white shadow-orange-500/30', pulse: false };
+    if (days <= 13) return { label: `${days} days to go`, className: 'bg-orange-400/90 text-white shadow-orange-400/30', pulse: false };
+    if (days === 14) return { label: '14 days to go',    className: 'bg-orange-400/90 text-white', pulse: false };
+    if (days === 15) return { label: '15 days to go',    className: 'bg-amber-500/90 text-white', pulse: false };
+    if (days <= 24) return { label: `${days} days to go`, className: 'bg-amber-500/90 text-white', pulse: false };
+    if (days === 25) return { label: '25 days to go',    className: 'bg-amber-400/90 text-white', pulse: false };
+    if (days <= 30) return { label: `${days} days to go`, className: 'bg-amber-400/90 text-white', pulse: false };
+    if (days <= 44) return { label: '~1 month to go',    className: 'bg-emerald-500/90 text-white', pulse: false };
+    if (days <= 59) return { label: '~2 months to go',   className: 'bg-emerald-500/90 text-white', pulse: false };
+    if (days <= 89) return { label: '~3 months to go',   className: 'bg-emerald-500/90 text-white', pulse: false };
+    if (days <= 119) return { label: '~4 months to go',  className: 'bg-emerald-600/90 text-white', pulse: false };
+    return { label: '4+ months to go', className: 'bg-emerald-600/90 text-white', pulse: false };
+  };
+
+  const deadlineInfo = getDeadlineInfo();
 
   if (appearance === 'classic') {
-    const getDeadlineColorClassic = () => {
+    const classicDeadlineClass = (): string => {
       if (!deadline) return 'bg-gray-500';
-      const days = (deadline.getTime() - new Date().getTime()) / (1000 * 3600 * 24);
-      if (days < 7) return 'bg-red-500';
-      if (days < 30) return 'bg-yellow-500';
+      const days = Math.ceil((deadline.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+      if (days <= 3)  return 'bg-red-600';
+      if (days <= 7)  return 'bg-red-500';
+      if (days <= 15) return 'bg-orange-500';
+      if (days <= 30) return 'bg-amber-500';
       return 'bg-green-500';
-    }
+    };
 
     return (
       <Card className={cn("flex flex-col h-full transition-all duration-300 hover:shadow-2xl hover:shadow-theme-200/50 dark:hover:shadow-theme-900/30 hover:-translate-y-1 relative group overflow-hidden border-border dark:border-border hover:border-theme-300/50 dark:hover:border-theme-700/50", isExpired && "opacity-60 grayscale-[40%] hover:opacity-80")}>
@@ -81,18 +104,25 @@ export const ScholarshipCard = ({
                 isFeatured && <Badge variant="default" className="bg-green-600 hover:bg-green-700 text-white border-0">Featured</Badge>
               )}
 
-              {status === 'Live' && deadline && !isExpired && (
-                <div className={`px-2 py-1 text-xs text-white rounded-md ${getDeadlineColorClassic()}`}>
-                  {daysRemaining.replace('about ', '')} to go
+              {/* Deadline countdown — positioned with mr-10 to avoid bookmark button overlap */}
+              {!isExpired && status !== 'Upcoming' && status !== 'Always Open' && deadline && (
+                <div
+                  className={cn(
+                    'px-2 py-1 text-xs text-white rounded-md font-semibold mr-10',
+                    classicDeadlineClass(),
+                    deadlineInfo.pulse && 'animate-pulse',
+                  )}
+                >
+                  {deadlineInfo.label}
                 </div>
               )}
               {isExpired && (
-                <div className="px-2 py-1 text-xs text-white rounded-md bg-red-500">
+                <div className="px-2 py-1 text-xs text-white rounded-md bg-red-600 font-semibold mr-10">
                   🔒 Deadline Passed
                 </div>
               )}
-              {status === 'Upcoming' && <Badge variant="secondary" className="border-0">Upcoming</Badge>}
-              {status === 'Always Open' && <Badge variant="outline">Always Open</Badge>}
+              {status === 'Upcoming' && <Badge variant="secondary" className="border-0 mr-10">Upcoming</Badge>}
+              {status === 'Always Open' && <Badge variant="outline" className="mr-10">Always Open</Badge>}
             </div>
             <div className="flex justify-between items-start pt-2">
               <CardTitle className="font-headline text-base leading-snug mb-1 pr-8 group-hover:text-theme-900 dark:group-hover:text-theme-300 transition-colors">{title}</CardTitle>
@@ -190,21 +220,34 @@ export const ScholarshipCard = ({
               </div>
             </div>
 
-            <div className="flex flex-col items-end gap-1.5">
-              {/* Premium Match Badge — hidden when expired */}
+            {/* Right badges — mr-11 creates a 44px gap so absolute bookmark button (top-4 right-4, 36px) never overlaps */}
+            <div className="flex flex-col items-end gap-1.5 mr-11 shrink-0">
+              {/* Match badge — hidden when expired */}
               {!isExpired && (
                 <Badge variant="secondary" className="bg-orange-100/80 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300 border-none px-2 py-0.5 shadow-sm text-[10px] font-bold tracking-wider">
                   🔥 MATCH {matchScore}%
                 </Badge>
               )}
 
+              {/* Deadline countdown badge */}
               {isExpired ? (
-                <Badge variant="outline" className="border-none px-2 py-0.5 text-[10px] shadow-sm font-semibold tracking-wide bg-red-500/90 text-white">
+                <Badge variant="outline" className="border-none px-2 py-0.5 text-[10px] shadow-sm font-semibold tracking-wide bg-red-600 text-white">
                   🔒 Deadline Passed
                 </Badge>
-              ) : status === 'Live' && deadline ? (
-                <Badge variant="outline" className={cn("border-none px-2 py-0.5 text-[10px] shadow-sm font-semibold tracking-wide", getDeadlineColor())}>
-                  {daysRemaining.replace('about ', '')} left
+              ) : deadline && status !== 'Always Open' ? (
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    'border-none px-2 py-0.5 text-[10px] shadow-lg font-semibold tracking-wide',
+                    deadlineInfo.className,
+                    deadlineInfo.pulse && 'animate-pulse',
+                  )}
+                >
+                  {deadlineInfo.label}
+                </Badge>
+              ) : status === 'Always Open' ? (
+                <Badge variant="outline" className="border-none px-2 py-0.5 text-[10px] shadow-sm font-medium bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300">
+                  Always Open
                 </Badge>
               ) : null}
             </div>
