@@ -25,14 +25,16 @@ interface ScholarshipCardProps {
   scholarship: Scholarship;
   isBookmarked: boolean;
   onToggleBookmark: (scholarship: Scholarship) => void;
-  matchScore?: number; // Optional prop for the AI match score
+  matchScore?: number;
+  isExpired?: boolean; // True when deadline has passed (computed client-side in real time)
 }
 
 export const ScholarshipCard = ({
   scholarship,
   isBookmarked,
   onToggleBookmark,
-  matchScore = 95, // Default to a high match for the demo
+  matchScore = 95,
+  isExpired = false,
 }: ScholarshipCardProps) => {
   const { id, title, provider, amount, deadline, fieldOfStudy, eligibility, isFeatured, lastUpdated, status, providerLogo } = scholarship;
   const [isClient, setIsClient] = useState(false);
@@ -64,7 +66,7 @@ export const ScholarshipCard = ({
     }
 
     return (
-      <Card className="flex flex-col h-full transition-all duration-300 hover:shadow-2xl hover:shadow-theme-200/50 dark:hover:shadow-theme-900/30 hover:-translate-y-1 relative group overflow-hidden border-border dark:border-border hover:border-theme-300/50 dark:hover:border-theme-700/50">
+      <Card className={cn("flex flex-col h-full transition-all duration-300 hover:shadow-2xl hover:shadow-theme-200/50 dark:hover:shadow-theme-900/30 hover:-translate-y-1 relative group overflow-hidden border-border dark:border-border hover:border-theme-300/50 dark:hover:border-theme-700/50", isExpired && "opacity-60 grayscale-[40%] hover:opacity-80")}>
         <Link href={`/authenticated/scholarship/${id}`} className="flex flex-col flex-grow p-0 relative z-10">
           <CardHeader className="pt-6 pb-4 w-full relative">
             {/* Subtle Glassmorphism Header Gradient */}
@@ -79,9 +81,14 @@ export const ScholarshipCard = ({
                 isFeatured && <Badge variant="default" className="bg-green-600 hover:bg-green-700 text-white border-0">Featured</Badge>
               )}
 
-              {status === 'Live' && deadline && (
+              {status === 'Live' && deadline && !isExpired && (
                 <div className={`px-2 py-1 text-xs text-white rounded-md ${getDeadlineColorClassic()}`}>
                   {daysRemaining.replace('about ', '')} to go
+                </div>
+              )}
+              {isExpired && (
+                <div className="px-2 py-1 text-xs text-white rounded-md bg-red-500">
+                  🔒 Deadline Passed
                 </div>
               )}
               {status === 'Upcoming' && <Badge variant="secondary" className="border-0">Upcoming</Badge>}
@@ -154,7 +161,10 @@ export const ScholarshipCard = ({
 
   return (
     <Card
-      className="flex flex-col h-full transition-all duration-500 hover:shadow-2xl hover:shadow-theme-300/40 dark:hover:shadow-theme-900/40 hover:-translate-y-2 relative group overflow-hidden border-border dark:border-border hover:border-theme-300/80 dark:hover:border-theme-700/80 bg-card/80 backdrop-blur-sm"
+      className={cn(
+        "flex flex-col h-full transition-all duration-500 hover:shadow-2xl hover:shadow-theme-300/40 dark:hover:shadow-theme-900/40 hover:-translate-y-2 relative group overflow-hidden border-border dark:border-border hover:border-theme-300/80 dark:hover:border-theme-700/80 bg-card/80 backdrop-blur-sm",
+        isExpired && "opacity-65 grayscale-[35%] hover:opacity-85 hover:grayscale-[20%] transition-all"
+      )}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -181,16 +191,22 @@ export const ScholarshipCard = ({
             </div>
 
             <div className="flex flex-col items-end gap-1.5">
-              {/* Premium Match Badge */}
-              <Badge variant="secondary" className="bg-orange-100/80 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300 border-none px-2 py-0.5 shadow-sm text-[10px] font-bold tracking-wider">
-                🔥 MATCH {matchScore}%
-              </Badge>
+              {/* Premium Match Badge — hidden when expired */}
+              {!isExpired && (
+                <Badge variant="secondary" className="bg-orange-100/80 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300 border-none px-2 py-0.5 shadow-sm text-[10px] font-bold tracking-wider">
+                  🔥 MATCH {matchScore}%
+                </Badge>
+              )}
 
-              {status === 'Live' && deadline && (
+              {isExpired ? (
+                <Badge variant="outline" className="border-none px-2 py-0.5 text-[10px] shadow-sm font-semibold tracking-wide bg-red-500/90 text-white">
+                  🔒 Deadline Passed
+                </Badge>
+              ) : status === 'Live' && deadline ? (
                 <Badge variant="outline" className={cn("border-none px-2 py-0.5 text-[10px] shadow-sm font-semibold tracking-wide", getDeadlineColor())}>
                   {daysRemaining.replace('about ', '')} left
                 </Badge>
-              )}
+              ) : null}
             </div>
           </div>
 
@@ -250,7 +266,7 @@ export const ScholarshipCard = ({
         {/* Hover Action Area */}
         <div className={cn("absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-card via-card to-transparent border-t transform transition-all duration-300 ease-out z-20", isHovered ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0 pointer-events-none")}>
           <Button className="w-full shadow-lg shadow-primary/20 bg-theme-600 hover:bg-theme-700 text-white rounded-xl">
-            View Details & Apply
+            {isExpired ? 'View Details' : 'View Details & Apply'}
           </Button>
         </div>
       </Link>

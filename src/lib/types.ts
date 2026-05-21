@@ -15,7 +15,7 @@ export type Scholarship = {
   scholarshipType: string;
   isFeatured?: boolean;
   lastUpdated: Date;
-  status: 'Live' | 'Upcoming' | 'Always Open';
+  status: 'Live' | 'Upcoming' | 'Always Open' | 'Expired';
   gender: string;
   religion: string;
   officialLink?: string;
