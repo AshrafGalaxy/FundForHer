@@ -215,17 +215,21 @@ export interface ProviderProfile {
   companyName: string;
   email: string;
   companyPhone: string;
-  registrationNumber: string;
-  gstNumber: string;
+  registrationNumber?: string | null;   // optional — not required for demo
+  gstNumber?: string | null;            // optional — not required for demo
+  orgType?: string | null;              // e.g. NGO, Trust, Corporate CSR
+  state?: string | null;
+  city?: string | null;
   kycStatus: 'pending' | 'verified' | 'rejected' | 'require_more_info';
   kycDocumentUrl: string | null;
-  // ── Branding (new) ───────────────────────────────────────────────
-  logoUrl?: string | null;        // Firebase Storage public URL — shown on ScholarshipCards
-  websiteUrl?: string | null;     // Organisation website
-  description?: string | null;    // Mission / about blurb
+  // ── Branding ─────────────────────────────────────────────────────
+  logoUrl?: string | null;
+  websiteUrl?: string | null;
+  description?: string | null;
   createdAt: any;
   updatedAt: any;
 }
+
 
 // ── CRUD Helpers ──────────────────────────────────────────────────────────────
 
@@ -265,12 +269,15 @@ export const createInitialProviderProfile = async (
   await setDoc(providerRef, {
     ...data,
     uid,
-    kycStatus: data.kycStatus || 'pending',
-    kycDocumentUrl: data.kycDocumentUrl || null,
+    // Honour the kycStatus passed in — defaults to 'pending' only if not supplied.
+    // Registration form passes 'verified' for immediate dashboard access.
+    kycStatus:      data.kycStatus ?? 'pending',
+    kycDocumentUrl: data.kycDocumentUrl ?? null,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
 };
+
 
 export const getUserProfile = async (db: Firestore, uid: string): Promise<UserProfile | null> => {
   const docSnap = await getDoc(doc(db, 'users', uid));

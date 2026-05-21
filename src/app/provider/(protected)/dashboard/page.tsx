@@ -118,7 +118,6 @@ export default function ProviderDashboard() {
         const profile = await getProviderProfile(db, user.uid);
         if (!profile || cancelled) { setIsLoading(false); return; }
         setProviderProfile(profile);
-        if (profile.kycStatus !== 'verified') { setIsLoading(false); return; }
 
         // Fetch this provider's scholarships (one getDocs — cached by IndexedDB)
         const schSnap = await getDocs(
@@ -222,30 +221,9 @@ export default function ProviderDashboard() {
     );
   }
 
-  // ── Pending verification ──────────────────────────────────────────────────
-  if (providerProfile.kycStatus !== 'verified') {
-    return (
-      <div className="container mx-auto px-4 py-16 flex justify-center">
-        <Card className="text-center p-8 border-primary/20 bg-primary/5 shadow-xl max-w-xl w-full">
-          <div className="mx-auto w-24 h-24 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center mb-6 shadow-sm border border-orange-200">
-            <ShieldCheck className="w-12 h-12" />
-          </div>
-          <CardTitle className="font-headline text-3xl">Verification in Progress</CardTitle>
-          <CardDescription className="text-lg mt-4 px-4 text-muted-foreground">
-            Your account is under review. Once your <strong>Verified Blue Tick</strong> is approved, your full dashboard will unlock.
-          </CardDescription>
-          <div className="mt-6 bg-amber-50 border border-amber-200 rounded-lg p-3 text-sm text-amber-800">
-            Status: <strong className="capitalize">{providerProfile.kycStatus.replace('_', ' ')}</strong>
-          </div>
-          <Button asChild className="mt-6 w-full" variant="outline">
-            <Link href="/provider/profile">Manage Profile While You Wait</Link>
-          </Button>
-        </Card>
-      </div>
-    );
-  }
 
   // ── Acceptance rate for overview ──────────────────────────────────────────
+
   const overallRate = liveStats.total > 0
     ? Math.round((liveStats.awarded / liveStats.total) * 100)
     : 0;

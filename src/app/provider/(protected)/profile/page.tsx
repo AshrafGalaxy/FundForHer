@@ -329,6 +329,23 @@ export default function ProviderProfilePage() {
               <p className="text-sm font-mono bg-muted/40 border rounded-md px-3 py-2">{profile.gstNumber || '—'}</p>
             </div>
           </div>
+
+          {/* Organisation metadata */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="space-y-1.5">
+              <Label className="text-muted-foreground text-xs uppercase tracking-wide">Organisation Type</Label>
+              <p className="text-sm bg-muted/40 border rounded-md px-3 py-2">{profile.orgType || '—'}</p>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-muted-foreground text-xs uppercase tracking-wide">State</Label>
+              <p className="text-sm bg-muted/40 border rounded-md px-3 py-2">{profile.state || '—'}</p>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-muted-foreground text-xs uppercase tracking-wide">City</Label>
+              <p className="text-sm bg-muted/40 border rounded-md px-3 py-2">{profile.city || '—'}</p>
+            </div>
+          </div>
+
           <p className="text-xs text-muted-foreground flex items-center gap-1">
             <ShieldCheck className="w-3 h-3 text-muted-foreground/50" />
             Registration and GST numbers are locked after KYC verification. Contact support to update.
