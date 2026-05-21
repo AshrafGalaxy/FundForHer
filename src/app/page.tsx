@@ -17,7 +17,6 @@ import { Loader2, Sparkles, Calendar } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useFirestore } from '@/firebase';
 import { collection, getDocs, doc, getDoc, query, orderBy, limit, Timestamp } from 'firebase/firestore';
-import { getSiteStats } from '@/app/actions/get-stats';
 import { FeaturedScholarshipCarousel } from '@/components/FeaturedScholarshipCarousel';
 import { InfiniteMarquee } from '@/components/InfiniteMarquee';
 import { MagneticWrapper } from '@/components/MagneticWrapper';
@@ -241,15 +240,20 @@ export default function LandingPage() {
         }
 
         if (db) {
-            // Fetch global stats via server action (Admin SDK — bypasses Firestore client rules)
-        getSiteStats()
-            .then(({ totalScholarships, totalAmount }) => {
-                setStats({ totalScholarships, totalAmount, fetching: false });
-            })
-            .catch(e => {
-                console.error('Stats fetch failed:', e);
-                setStats({ totalScholarships: 0, totalAmount: 0, fetching: false });
-            });
+            // Fetch global stats client-side (compatible with static export + Vercel)
+            getDocs(collection(db, 'scholarships'))
+                .then(snap => {
+                    let totalAmount = 0;
+                    snap.forEach(d => {
+                        const amt = d.data().amount;
+                        if (typeof amt === 'number' && !isNaN(amt)) totalAmount += amt;
+                    });
+                    setStats({ totalScholarships: snap.size, totalAmount, fetching: false });
+                })
+                .catch(e => {
+                    console.error('Stats fetch failed:', e);
+                    setStats({ totalScholarships: 0, totalAmount: 0, fetching: false });
+                });
 
             // Simple query: just orderBy + limit — no compound where clause, no composite index needed.
             // Date filtering is done client-side to work for unauthenticated users.
