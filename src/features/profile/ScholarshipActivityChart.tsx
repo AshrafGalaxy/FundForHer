@@ -3,9 +3,8 @@
 import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useFirestore } from '@/firebase';
-import { collection, query, where, getDocs } from 'firebase/firestore';
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
-import { Loader2, TrendingUp, Bookmark, Trophy } from 'lucide-react';
+import { collection, getDocs, query, where } from 'firebase/firestore';
+import { TrendingUp, Bookmark, Trophy, Send } from 'lucide-react';
 import type { UserProfile } from '@/server/db/user-data';
 
 interface ScholarshipActivityChartProps {
@@ -13,32 +12,74 @@ interface ScholarshipActivityChartProps {
     userProfile: UserProfile;
 }
 
+interface StatItem {
+    name: string;
+    value: number;
+    color: string;
+    icon: React.ReactNode;
+    label: string;
+}
+
 export function ScholarshipActivityChart({ userId, userProfile }: ScholarshipActivityChartProps) {
-    const [data, setData] = useState<{ name: string; value: number; color: string }[]>([]);
+    const [stats, setStats] = useState<StatItem[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const db = useFirestore();
 
     useEffect(() => {
+        if (!db) return;
+
         async function fetchStats() {
-            if (!db) return;
             try {
-                // Fetch saved scholarships to display real data
-                const savedQuery = query(collection(db, 'users', userId, 'savedScholarships'));
-                const savedSnapshot = await getDocs(savedQuery);
-                const savedCount = savedSnapshot.size;
+                // Correct collection name: bookmarkedScholarships
+                const bookmarkSnap = await getDocs(
+                    collection(db!, 'users', userId, 'bookmarkedScholarships')
+                );
+                const savedCount = bookmarkSnap.size;
 
-                // For demo/gamification purposes, we provide some mocked "applied/won" numbers 
-                // until a formal application tracking schema exists.
-                const mockApplied = Math.floor(savedCount * 0.4) || 2;
-                const mockWon = Math.floor(mockApplied * 0.2) || 0;
+                // Real application count from applications collection
+                let appliedCount = 0;
+                let wonCount = 0;
+                try {
+                    const appSnap = await getDocs(
+                        query(collection(db!, 'applications'), where('userId', '==', userId))
+                    );
+                    appliedCount = appSnap.size;
+                    wonCount = appSnap.docs.filter(d => d.data().status === 'Awarded').length;
+                } catch {
+                    // applications collection may not exist yet — silently ignore
+                }
 
-                setData([
-                    { name: 'Saved', value: savedCount || 5, color: '#fba69b' }, // Theme Pink
-                    { name: 'Applied', value: mockApplied, color: '#fde047' }, // Yellow
-                    { name: 'Won', value: mockWon, color: '#4ade80' }, // Green
+                setStats([
+                    {
+                        name: 'Saved',
+                        value: savedCount,
+                        color: '#f472b6',
+                        icon: <Bookmark className="w-4 h-4" />,
+                        label: savedCount === 1 ? 'scholarship' : 'scholarships',
+                    },
+                    {
+                        name: 'Applied',
+                        value: appliedCount,
+                        color: '#facc15',
+                        icon: <Send className="w-4 h-4" />,
+                        label: appliedCount === 1 ? 'application' : 'applications',
+                    },
+                    {
+                        name: 'Won',
+                        value: wonCount,
+                        color: '#4ade80',
+                        icon: <Trophy className="w-4 h-4" />,
+                        label: wonCount === 1 ? 'scholarship' : 'scholarships',
+                    },
                 ]);
             } catch (error) {
                 console.error('Error fetching activity stats:', error);
+                // Fallback to zero state — never crash
+                setStats([
+                    { name: 'Saved',   value: 0, color: '#f472b6', icon: <Bookmark className="w-4 h-4" />, label: 'scholarships' },
+                    { name: 'Applied', value: 0, color: '#facc15', icon: <Send className="w-4 h-4" />,     label: 'applications' },
+                    { name: 'Won',     value: 0, color: '#4ade80', icon: <Trophy className="w-4 h-4" />,   label: 'scholarships' },
+                ]);
             } finally {
                 setIsLoading(false);
             }
@@ -47,87 +88,74 @@ export function ScholarshipActivityChart({ userId, userProfile }: ScholarshipAct
         fetchStats();
     }, [db, userId]);
 
-    if (isLoading) {
-        return (
-            <Card className="flex flex-col items-center justify-center p-8 h-[350px]">
-                <Loader2 className="w-8 h-8 animate-spin text-theme-500 mb-4" />
-                <p className="text-sm text-muted-foreground animate-pulse">Loading activity dashboard...</p>
-            </Card>
-        );
-    }
-
-    const totalInteractions = data.reduce((acc, curr) => acc + curr.value, 0);
-
     return (
-        <Card className="h-full overflow-hidden bg-gradient-to-br from-card to-secondary/20">
-            <CardHeader className="pb-2">
-                <CardTitle className="flex items-center gap-2 font-headline text-xl">
-                    <TrendingUp className="text-theme-600 dark:text-theme-400" />
+        <Card className="overflow-hidden bg-gradient-to-br from-card to-secondary/20">
+            <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2 font-headline text-base">
+                    <TrendingUp className="h-4 w-4 text-theme-600 dark:text-theme-400" />
                     Scholarship Activity
                 </CardTitle>
-                <CardDescription>
-                    Track your progress and match history
-                </CardDescription>
+                <CardDescription className="text-xs">Your progress at a glance</CardDescription>
             </CardHeader>
 
-            <CardContent className="flex flex-col md:flex-row items-center gap-6">
+            <CardContent className="pb-5 space-y-3">
+                {isLoading ? (
+                    // Fixed-height skeleton — prevents layout stretching
+                    <>
+                        {[1, 2, 3].map(i => (
+                            <div key={i} className="h-14 rounded-xl bg-muted animate-pulse" />
+                        ))}
+                    </>
+                ) : (
+                    stats.map((stat) => {
+                        const pct = stats[0].value > 0 && stat.name !== 'Saved'
+                            ? Math.round((stat.value / Math.max(stats[0].value, 1)) * 100)
+                            : 100;
 
-                {/* Animated Recharts Core */}
-                <div className="h-[250px] w-full md:w-1/2 min-w-[200px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                            <Pie
-                                data={data}
-                                cx="50%"
-                                cy="50%"
-                                innerRadius={60}
-                                outerRadius={80}
-                                paddingAngle={5}
-                                dataKey="value"
-                                animationBegin={200}
-                                animationDuration={1500}
+                        return (
+                            <div
+                                key={stat.name}
+                                className="flex items-center gap-3 p-3 rounded-xl bg-background border shadow-sm hover:shadow-md transition-all hover:-translate-y-0.5"
                             >
-                                {data.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={entry.color} stroke="transparent" />
-                                ))}
-                            </Pie>
-                            <Tooltip
-                                contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
-                                itemStyle={{ fontWeight: 600 }}
-                            />
-                            <Legend verticalAlign="bottom" height={36} />
-                        </PieChart>
-                    </ResponsiveContainer>
-                </div>
-
-                {/* Dashboard Stats Panel */}
-                <div className="w-full md:w-1/2 flex flex-col justify-center gap-4">
-                    {data.map((stat) => (
-                        <div key={stat.name} className="flex items-center justify-between p-3 rounded-lg bg-background border shadow-sm transition-all hover:scale-105 hover:shadow-md cursor-default group">
-                            <div className="flex items-center gap-3">
-                                <div className={`w-10 h-10 rounded-full flex items-center justify-center`} style={{ backgroundColor: `${stat.color}20`, color: stat.color }}>
-                                    {stat.name === 'Saved' && <Bookmark className="w-5 h-5" />}
-                                    {stat.name === 'Applied' && <TrendingUp className="w-5 h-5" />}
-                                    {stat.name === 'Won' && <Trophy className="w-5 h-5" />}
+                                {/* Colour dot */}
+                                <div
+                                    className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
+                                    style={{ backgroundColor: `${stat.color}25`, color: stat.color }}
+                                >
+                                    {stat.icon}
                                 </div>
-                                <div className="flex flex-col">
-                                    <span className="text-sm font-medium text-muted-foreground">{stat.name}</span>
-                                    <span className="text-xl font-bold font-headline">{stat.value}</span>
+
+                                {/* Text */}
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-baseline justify-between mb-1">
+                                        <span className="text-xs font-medium text-muted-foreground">{stat.name}</span>
+                                        <span className="text-lg font-bold font-headline tabular-nums leading-none">
+                                            {stat.value}
+                                        </span>
+                                    </div>
+                                    {/* Micro progress bar */}
+                                    <div className="h-1 rounded-full bg-secondary overflow-hidden">
+                                        <div
+                                            className="h-full rounded-full transition-all duration-700"
+                                            style={{
+                                                width: `${stat.value === 0 ? 0 : Math.max(pct, 8)}%`,
+                                                backgroundColor: stat.color,
+                                            }}
+                                        />
+                                    </div>
                                 </div>
                             </div>
+                        );
+                    })
+                )}
 
-                            {
-                                stat.name === 'Saved' && stat.value > 0 && (
-                                    <span className="text-xs bg-theme-100 text-theme-800 dark:bg-theme-900/30 dark:text-theme-400 px-2 py-1 rounded-full animate-in fade-in zoom-in group-hover:bg-theme-200">
-                                        Active
-                                    </span>
-                                )
-                            }
-                        </div>
-                    ))}
-                </div>
-
+                {/* Profile completion hint */}
+                {!isLoading && stats[0].value === 0 && (
+                    <p className="text-xs text-center text-muted-foreground pt-1">
+                        Bookmark scholarships to see your activity here.
+                    </p>
+                )}
             </CardContent>
-        </Card >
+        </Card>
     );
 }

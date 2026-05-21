@@ -10,7 +10,9 @@ import { Button } from '@/components/ui/button';
 import { Loader2, Bookmark, SearchX, Telescope, IndianRupee, Calendar, Target, ChevronLeft, ChevronRight, X, Archive } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useUser } from '@/firebase/auth/use-user';
-import { collection, doc, onSnapshot, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, doc, getDocs, setDoc, deleteDoc, serverTimestamp } from 'firebase/firestore';
+import { scholarshipsCache } from '@/lib/scholarships-cache';
+import { useToast } from '@/hooks/use-toast';
 import { useFirestore } from '@/firebase';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { logout } from '@/lib/auth';
@@ -92,6 +94,7 @@ export default function DashboardPage() {
   const db = useFirestore();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { toast } = useToast();
 
   // Deep-link support: ?tab=all|saved|archived
   useEffect(() => {
@@ -117,63 +120,86 @@ export default function DashboardPage() {
     setCurrentPage(1);
   }, [filters, activeTab, activeStatus]);
 
-  // ── Firestore listener: load ALL scholarships (including Expired) ───────────
-  // We do NOT filter Expired on the server. We classify client-side in real-time
-  // so scholarships move to "Archived" the moment their deadline passes.
+  // ── Priority 1: One-shot scholarship fetch with session-level memory cache ──
+  // getDocs fires ONCE. Cache serves all subsequent navigations. ~374 reads/session max.
   useEffect(() => {
     if (!db) return;
-    setLoading(true);
 
-    const scholarshipsRef = collection(db, 'scholarships');
-    const unsubscribe = onSnapshot(scholarshipsRef, (snapshot) => {
-      const data = snapshot.docs.map(doc => {
-        const d = doc.data();
-        return {
-          id: doc.id,
-          ...d,
-          deadline: d.deadline?.toDate ? d.deadline.toDate() : (d.deadline ? new Date(d.deadline) : null),
-          lastUpdated: d.lastUpdated?.toDate ? d.lastUpdated.toDate() : (d.lastUpdated ? new Date(d.lastUpdated) : null),
-        } as Scholarship;
-      });
-
-      setScholarships(data);
-      // Build filter option lists only from active scholarships
-      const active = data.filter(s => !isExpiredClient(s));
+    const cached = scholarshipsCache.get();
+    if (cached) {
+      setScholarships(cached);
+      const active = cached.filter(s => !isExpiredClient(s));
       setAllScholarshipTypes(getAllScholarshipTypes(active));
       setAllFieldsOfStudy(getAllFieldsOfStudy(active));
       setAllEligibilityLevels(getAllEligibilityLevels(active));
       setLoading(false);
-    }, (err) => {
-      console.error('Firestore onSnapshot error:', err);
-      setLoading(false);
-    });
+      return;
+    }
 
-    return () => unsubscribe();
+    setLoading(true);
+    getDocs(collection(db, 'scholarships'))
+      .then((snapshot) => {
+        const data = snapshot.docs.map(d => {
+          const raw = d.data();
+          return {
+            id: d.id,
+            ...raw,
+            deadline: raw.deadline?.toDate ? raw.deadline.toDate() : (raw.deadline ? new Date(raw.deadline) : null),
+            lastUpdated: raw.lastUpdated?.toDate ? raw.lastUpdated.toDate() : (raw.lastUpdated ? new Date(raw.lastUpdated) : null),
+          } as Scholarship;
+        });
+        scholarshipsCache.set(data);
+        setScholarships(data);
+        const active = data.filter(s => !isExpiredClient(s));
+        setAllScholarshipTypes(getAllScholarshipTypes(active));
+        setAllFieldsOfStudy(getAllFieldsOfStudy(active));
+        setAllEligibilityLevels(getAllEligibilityLevels(active));
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error('Failed to fetch scholarships:', err);
+        setLoading(false);
+      });
   }, [db]);
 
-  // ── Bookmarks listener ────────────────────────────────────────────────────
+  // ── Priority 3: One-shot bookmark fetch (no live listener) ────────────────
   useEffect(() => {
     if (!user || !db) return;
-    const bookmarksCollection = collection(db, 'users', user.uid, 'bookmarkedScholarships');
-    const unsubscribe = onSnapshot(bookmarksCollection, (snapshot) => {
-      setBookmarkedIds(new Set(snapshot.docs.map(d => d.id)));
-    });
-    return () => unsubscribe();
+    getDocs(collection(db, 'users', user.uid, 'bookmarkedScholarships'))
+      .then(snap => setBookmarkedIds(new Set(snap.docs.map(d => d.id))))
+      .catch(console.error);
   }, [user, db]);
 
-  // ── Bookmark toggle ───────────────────────────────────────────────────────
+  // ── Priority 3: Optimistic bookmark toggle (zero Firestore reads) ─────────
   const handleToggleBookmark = async (scholarship: Scholarship) => {
     if (!user || !db) return;
     const bookmarkRef = doc(db, 'users', user.uid, 'bookmarkedScholarships', scholarship.id);
-    if (bookmarkedIds.has(scholarship.id)) {
-      await deleteDoc(bookmarkRef);
-    } else {
-      await setDoc(bookmarkRef, {
-        ...scholarship,
-        deadline: scholarship.deadline ?? null,
-        lastUpdated: scholarship.lastUpdated ?? null,
-        bookmarkedAt: serverTimestamp(),
+    const isBookmarked = bookmarkedIds.has(scholarship.id);
+
+    // Optimistic update — instant UI, no re-read
+    setBookmarkedIds(prev => {
+      const next = new Set(prev);
+      if (isBookmarked) next.delete(scholarship.id);
+      else next.add(scholarship.id);
+      return next;
+    });
+
+    try {
+      if (isBookmarked) {
+        await deleteDoc(bookmarkRef);
+      } else {
+        // Store only the ID — not the full scholarship object
+        await setDoc(bookmarkRef, { bookmarkedAt: serverTimestamp() });
+      }
+    } catch (err: any) {
+      // Rollback on failure
+      setBookmarkedIds(prev => {
+        const next = new Set(prev);
+        if (isBookmarked) next.add(scholarship.id);
+        else next.delete(scholarship.id);
+        return next;
       });
+      toast({ variant: 'destructive', title: 'Bookmark failed', description: err.message });
     }
   };
 
