@@ -47,18 +47,18 @@ export default function ProviderKanbanBoardClient() {
       try {
         // 1. Verify provider
         const profile = await getProviderProfile(db, user.uid);
-        if (!profile || profile.kycStatus !== 'verified') { router.push('/provider/dashboard'); return; }
+        if (!profile) { router.push('/provider/dashboard'); return; }
 
         // 2. Load scholarship details
         const sDoc = await getDoc(doc(db, 'scholarships', scholarshipId));
         if (!sDoc.exists() || sDoc.data().providerId !== user.uid) { router.push('/provider/dashboard'); return; }
         setScholarship({ id: sDoc.id, ...sDoc.data() } as Scholarship);
 
-        // 3. Real-time listener on applications
+        // 3. Real-time listener on applications for this scholarship
         const appsQuery = query(
           collection(db, 'applications'),
           where('scholarshipId', '==', scholarshipId),
-          orderBy('appliedAt', 'desc')
+          orderBy('submittedAt', 'desc')   // matches field saved by apply/page.tsx
         );
 
         unsubscribe = onSnapshot(appsQuery, (snap) => {
@@ -101,9 +101,22 @@ export default function ProviderKanbanBoardClient() {
 
   if (!scholarship) return null;
 
+  // Normalise status: 'Submitted' (from apply form) → 'new' (kanban column)
+  // This lets legacy + new applications always appear in the correct column.
+  const normaliseStatus = (status: string): ApplicationStatus => {
+    if (!status) return 'new';
+    const s = status.toLowerCase();
+    if (s === 'submitted' || s === 'new') return 'new';
+    if (s === 'reviewing' || s === 'under review' || s === 'in review') return 'reviewing';
+    if (s === 'shortlisted') return 'shortlisted';
+    if (s === 'accepted' || s === 'awarded') return 'accepted';
+    if (s === 'rejected') return 'rejected';
+    return 'new'; // fallback
+  };
+
   const columnData = COLUMNS.map(col => ({
     ...col,
-    items: applications.filter(a => a.status === col.id),
+    items: applications.filter(a => normaliseStatus(a.status) === col.id),
   }));
 
   return (
