@@ -26,6 +26,14 @@ export default function CommunityHubPage() {
         setLoading(true);
 
         try {
+            // Fetch ALL awarded application userIds in ONE query (not per-post)
+            const awardedSnap = await getDocs(collection(db, 'applications'));
+            const awardedUserIds = new Set(
+                awardedSnap.docs
+                    .filter(d => d.data().status === 'Awarded')
+                    .map(d => d.data().userId as string)
+            );
+
             const postsQuery = query(collection(db, 'community_posts'), orderBy('createdAt', 'desc'));
             const snapshot = await getDocs(postsQuery);
 
@@ -33,32 +41,21 @@ export default function CommunityHubPage() {
 
             for (const postDoc of snapshot.docs) {
                 const data = postDoc.data();
-                let authorName = "Unknown";
+                let authorName = "Anonymous";
                 let authorPhotoUrl = undefined;
-                let isVerifiedScholar = false;
 
-                // Fetch Author Data if not Anonymous
                 if (!data.isAnonymous) {
                     try {
-                        // 1. Get Base Profile
-                        const userRef = doc(db, 'users', data.authorId);
-                        const userSnap = await getDoc(userRef);
+                        const userSnap = await getDoc(doc(db, 'users', data.authorId));
                         if (userSnap.exists()) {
                             authorName = userSnap.data().displayName || "Unknown";
                             authorPhotoUrl = userSnap.data().photoURL;
                         }
-
-                        // 2. Determine "Verified Scholar" Aura
-                        // In a production environment this would be cached on the user profile to prevent heavy N+1 queries.
-                        const appsQuery = query(collection(db, 'applications'));
-                        const appsSnap = await getDocs(appsQuery);
-                        const hasAwarded = appsSnap.docs.some(d => d.data().userId === data.authorId && d.data().status === 'Awarded');
-                        isVerifiedScholar = hasAwarded;
-
-                    } catch (e) { console.error("Could not fetch author profile."); }
+                    } catch (e) { console.warn("Could not fetch author profile:", e); }
                 }
 
-                // We simulate `pinnedReply` structures for the demo UI if none exist in the real database
+                const isVerifiedScholar = awardedUserIds.has(data.authorId);
+
                 const mockPinned = Math.random() > 0.7 ? {
                     authorName: "Sarah J.",
                     content: "You can request a digitized copy of your income certificate via the state portal. It usually takes 48 hours to process if you expedite it.",

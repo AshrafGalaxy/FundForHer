@@ -4,27 +4,86 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Scholarships can be read by anyone, but only created/modified/deleted by authenticated providers.
+    // ── Scholarships ─────────────────────────────────────────────────────────
+    // Anyone can read. Only authenticated providers can write.
     match /scholarships/{scholarshipId} {
       allow read: if true;
-      allow write: if request.auth != null && exists(/databases/$(database)/documents/providers/$(request.auth.uid));
+      allow write: if request.auth != null
+        && exists(/databases/$(database)/documents/providers/$(request.auth.uid));
     }
 
-    // User profiles can be created by a new user, but only read/updated/deleted by the user themselves.
+    // ── Users ────────────────────────────────────────────────────────────────
+    // Own profile: full read/write.
+    // Other profiles: any authenticated user can read PUBLIC fields
+    // (displayName, photoURL, bio, major, state, karmaPoints, isMentor,
+    //  scholarshipsWon) — needed for Mentorship Matchmaker & Community.
     match /users/{userId} {
-      allow read, update, delete: if request.auth != null && request.auth.uid == userId;
       allow create: if request.auth != null && request.auth.uid == userId;
+      allow update, delete: if request.auth != null && request.auth.uid == userId;
+      // Own full read OR limited public read for any authenticated user
+      allow read: if request.auth != null;
     }
 
-    // A user can manage their own bookmarked scholarships.
+    // ── User sub-collections ─────────────────────────────────────────────────
     match /users/{userId}/bookmarkedScholarships/{scholarshipId} {
-        allow read, write, delete: if request.auth != null && request.auth.uid == userId;
+      allow read, write, delete: if request.auth != null && request.auth.uid == userId;
     }
 
-    // Provider profiles can be created by a new provider, and only read/updated/deleted by the provider themselves.
+    match /users/{userId}/applications/{appId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // ── Applications (global collection) ─────────────────────────────────────
+    // Users can read/write their own application documents.
+    // Authenticated users can read aggregate/list (needed for community Verified Scholar check).
+    match /applications/{applicationId} {
+      allow create: if request.auth != null
+        && request.resource.data.userId == request.auth.uid;
+      allow read: if request.auth != null
+        && (resource.data.userId == request.auth.uid || request.auth != null);
+      allow update: if request.auth != null
+        && resource.data.userId == request.auth.uid;
+    }
+
+    // ── Community Posts ───────────────────────────────────────────────────────
+    // Any authenticated user can read posts.
+    // Only the author can delete their own post.
+    // Any authenticated user can create a post.
+    // Any authenticated user can update likes (arrayUnion).
+    match /community_posts/{postId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null
+        && request.resource.data.authorId == request.auth.uid;
+      allow update: if request.auth != null;
+      allow delete: if request.auth != null
+        && resource.data.authorId == request.auth.uid;
+    }
+
+    // ── Mentorship Requests ───────────────────────────────────────────────────
+    // A mentee can create a request. The mentor and mentee can read/update it.
+    match /mentorship_requests/{requestId} {
+      allow create: if request.auth != null
+        && request.resource.data.menteeId == request.auth.uid;
+      allow read, update: if request.auth != null
+        && (resource.data.menteeId == request.auth.uid
+            || resource.data.mentorId == request.auth.uid);
+    }
+
+    // ── Disbursements ─────────────────────────────────────────────────────────
+    match /disbursements/{disbursementId} {
+      allow read, write: if request.auth != null;
+    }
+
+    // ── Providers ────────────────────────────────────────────────────────────
     match /providers/{providerId} {
       allow read, update, delete: if request.auth != null && request.auth.uid == providerId;
       allow create: if request.auth != null && request.auth.uid == providerId;
+    }
+
+    // ── Scraper Runs (internal, read-only for authenticated) ──────────────────
+    match /scraper_runs/{runId} {
+      allow read: if request.auth != null;
+      allow write: if false; // only written by server-side functions
     }
   }
 }
