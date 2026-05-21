@@ -1,12 +1,9 @@
-
 // src/app/provider/(protected)/layout.tsx
 'use client';
 
 import { useAuth } from '@/app/auth-provider';
 import { Loader2 } from 'lucide-react';
-import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
-
+import { SidebarNav } from '@/components/ui/SidebarNav';
 
 export default function ProviderLayout({
   children,
@@ -14,20 +11,10 @@ export default function ProviderLayout({
   children: React.ReactNode;
 }) {
   const authContext = useAuth();
-  const router = useRouter();
 
-  const loading = authContext ? authContext.loading : true;
-  const user = authContext ? authContext.user : null;
-
-
-  useEffect(() => {
-    if (!loading && !user) {
-      router.replace('/provider/login');
-    }
-  }, [loading, user, router]);
-
-
-  if (loading) {
+  // auth-provider.tsx handles all redirects (unauthenticated + wrong-role).
+  // Show loading state while it resolves.
+  if (!authContext || authContext.loading) {
     return (
       <div className="flex justify-center items-center h-screen bg-background">
         <div className="flex flex-col items-center gap-4">
@@ -38,8 +25,13 @@ export default function ProviderLayout({
     );
   }
 
-  // The actual check for whether the user *is* a provider is now handled
-  // inside the ProviderDashboard page itself, preventing race conditions.
-
-  return <>{children}</>;
+  // If the role guard allowed us here, user is confirmed as a provider.
+  return (
+    <div className="flex min-h-screen bg-background relative selection:bg-primary/20">
+      <SidebarNav isProvider={true} />
+      <div className="flex-1 w-full min-w-0">
+        <main className="w-full relative">{children}</main>
+      </div>
+    </div>
+  );
 }
