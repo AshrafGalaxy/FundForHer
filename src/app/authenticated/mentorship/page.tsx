@@ -6,221 +6,243 @@ import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firesto
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Loader2, ArrowLeft, Search, GraduationCap, MapPin, Sparkles, ShieldCheck } from 'lucide-react';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import { Loader2, Search, GraduationCap, MapPin, ShieldCheck, Lock, Trophy, MessageCircle, Star } from 'lucide-react';
 import { Input } from '@/components/ui/input';
-import Link from 'next/link';
 import { motion } from 'framer-motion';
-import { CoffeeChatModal } from '@/components/mentorship/CoffeeChatModal';
+import { MentorshipRequestModal } from '@/components/mentorship/MentorshipRequestModal';
 import { MentorDashboard } from '@/components/mentorship/MentorDashboard';
-import { useToast } from '@/hooks/use-toast';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 type MentorProfile = {
-    uid: string;
-    displayName: string;
-    photoURL?: string;
-    major: string;
-    state: string;
-    bio?: string;
-    karmaPoints: number;
-    scholarshipsWon: string[];
+  uid: string;
+  fullName: string;
+  photoURL?: string;
+  educationEntries?: Array<{ level?: string; degree?: string; institution?: string; fieldOfStudy?: string; specialisation?: string }>;
+  stateOfDomicile?: string;
+  bio?: string;
+  karmaPoints?: number;
+  scholarshipsWon?: Array<string | { title: string }>;
+  skills?: string;
+};
+
+type WonApplication = {
+  id: string;
+  scholarshipId: string;
+  scholarshipTitle?: string;
 };
 
 export default function MentorshipHubPage() {
-    const [mentors, setMentors] = useState<MentorProfile[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [searchQuery, setSearchQuery] = useState("");
-    const [isCurrentUserMentor, setIsCurrentUserMentor] = useState(false);
+  const [mentors, setMentors] = useState<MentorProfile[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isCurrentUserMentor, setIsCurrentUserMentor] = useState(false);
+  const [isEligible, setIsEligible] = useState(false);
+  const [wonApplications, setWonApplications] = useState<WonApplication[]>([]);
+  const [selectedMentor, setSelectedMentor] = useState<MentorProfile | null>(null);
 
-    const auth = useAuth();
-    const db = useFirestore();
-    const { toast } = useToast();
+  const auth = useAuth();
+  const db = useFirestore();
 
-    useEffect(() => {
-        if (!auth?.currentUser || !db) return;
+  useEffect(() => {
+    if (!auth?.currentUser || !db) return;
+    const uid = auth.currentUser.uid;
 
-        const fetchMentors = async () => {
-            try {
-                // 1. Check if the current user is a mentor to show them the dashboard tab
-                const myProfileRef = doc(db, 'users', auth.currentUser!.uid);
-                const myProfileSnap = await getDoc(myProfileRef);
-                if (myProfileSnap.exists() && myProfileSnap.data().isMentor) {
-                    setIsCurrentUserMentor(true);
-                }
+    const init = async () => {
+      try {
+        // Check if current user is a mentor
+        const mySnap = await getDoc(doc(db, 'users', uid));
+        if (mySnap.exists() && mySnap.data().isMentor) setIsCurrentUserMentor(true);
 
-                // 2. Query all users who have opted in to be mentors
-                const q = query(collection(db, 'users'), where("isMentor", "==", true));
-                const snapshot = await getDocs(q);
+        // Check eligibility: does user have any accepted application?
+        const appSnap = await getDocs(
+          query(collection(db, 'applications'), where('studentId', '==', uid), where('status', '==', 'accepted'))
+        );
+        if (!appSnap.empty) {
+          setIsEligible(true);
+          setWonApplications(appSnap.docs.map(d => ({
+            id: d.id,
+            scholarshipId: d.data().scholarshipId,
+            scholarshipTitle: d.data().scholarshipTitle || d.data().resumeSnapshot?.scholarshipTitle,
+          })));
+        }
 
-                const loadedMentors: MentorProfile[] = [];
+        // Load mentors
+        const mentorSnap = await getDocs(query(collection(db, 'users'), where('isMentor', '==', true)));
+        const loaded: MentorProfile[] = mentorSnap.docs
+          .filter(d => d.id !== uid)
+          .map(d => ({ uid: d.id, ...d.data() } as MentorProfile));
+        setMentors(loaded);
 
-                for (const docSnap of snapshot.docs) {
-                    const data = docSnap.data();
-                    // Skip showing ourselves in the matchmaker
-                    if (docSnap.id === auth.currentUser!.uid) continue;
+      } catch (err) { console.error(err); }
+      finally { setLoading(false); }
+    };
 
-                    // In production, `scholarshipsWon` would be pre-calculated and stored on the user document for fast querying.
-                    // For this demo, we can mock it based on their Karma if array doesn't exist.
-                    const mockedWon = data.karmaPoints > 0 ? ["Reliance Foundation"] : ["Kotak Kanya"];
+    init();
+  }, [auth?.currentUser, db]);
 
-                    loadedMentors.push({
-                        uid: docSnap.id,
-                        displayName: data.displayName || "Unknown Mentor",
-                        photoURL: data.photoURL,
-                        major: data.major || "Undecided",
-                        state: data.state || "India",
-                        bio: data.bio || "I am happy to help you review your application essays!",
-                        karmaPoints: data.karmaPoints || 0,
-                        scholarshipsWon: data.scholarshipsWon || mockedWon,
-                    });
-                }
+  const filtered = mentors.filter(m => {
+    if (!searchQuery) return true;
+    const q = searchQuery.toLowerCase();
+    const latestEdu = m.educationEntries?.[m.educationEntries.length - 1];
+    return m.fullName?.toLowerCase().includes(q)
+      || latestEdu?.fieldOfStudy?.toLowerCase().includes(q)
+      || latestEdu?.specialisation?.toLowerCase().includes(q)
+      || m.stateOfDomicile?.toLowerCase().includes(q);
+  });
 
-                // Sort by Karma Points
-                loadedMentors.sort((a, b) => b.karmaPoints - a.karmaPoints);
-                setMentors(loadedMentors);
+  return (
+    <div className="container max-w-6xl mx-auto px-4 py-8 space-y-8">
+      {/* Header */}
+      <div>
+        <h1 className="text-4xl font-headline font-bold">Mentorship Hub</h1>
+        <p className="text-muted-foreground mt-1">Connect with verified scholars who've walked your path.</p>
+      </div>
 
-            } catch (err) {
-                console.error("Failed to fetch matchmaker data:", err);
-                toast({ title: "Error", description: "Could not load the Matchmaker.", variant: "destructive" });
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchMentors();
-    }, [auth?.currentUser, db, toast]);
-
-    const filteredMentors = mentors.filter(m =>
-        m.displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        m.major.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        m.scholarshipsWon.some(sw => sw.toLowerCase().includes(searchQuery.toLowerCase()))
-    );
-
-    return (
-        <div className="max-w-6xl mx-auto py-8 px-4 sm:px-6 animate-in fade-in duration-500">
-
-            {/* Heavy Premium Header */}
-            <div className="bg-gradient-to-r from-amber-600 to-amber-800 rounded-3xl p-8 sm:p-12 mb-8 text-white shadow-xl relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-                <div className="absolute bottom-0 left-0 w-32 h-32 bg-amber-400/20 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" />
-
-                <div className="relative z-10">
-
-                    <h1 className="text-4xl sm:text-5xl font-headline font-bold mb-4 tracking-tight">The Mentorship Hub</h1>
-                    <p className="max-w-xl text-amber-100 text-lg leading-relaxed">
-                        Connect 1-on-1 with Verified Scholars. Book a 15-minute virtual coffee chat to refine your essays, discuss interviews, and get insider advice.
-                    </p>
-                </div>
-            </div>
-
-            <Tabs defaultValue="matchmaker" className="w-full">
-                <TabsList className="mb-6 bg-muted/50 p-1 w-full flex justify-start h-auto border">
-                    <TabsTrigger value="matchmaker" className="text-sm py-2 px-6 rounded-md data-[state=active]:shadow-sm">
-                        <Search className="w-4 h-4 mr-2" /> Find a Mentor
-                    </TabsTrigger>
-                    {isCurrentUserMentor && (
-                        <TabsTrigger value="dashboard" className="text-sm py-2 px-6 rounded-md data-[state=active]:shadow-sm">
-                            <Sparkles className="w-4 h-4 mr-2 text-amber-500" /> Mentor Dashboard
-                        </TabsTrigger>
-                    )}
-                </TabsList>
-
-                <TabsContent value="matchmaker" className="space-y-6">
-                    <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                        <h2 className="text-xl font-headline font-bold text-foreground">The Matchmaker</h2>
-                        <div className="relative w-full sm:w-80">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                            <Input
-                                placeholder="Search by major, name, or scholarship..."
-                                className="pl-9 bg-card"
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                            />
-                        </div>
-                    </div>
-
-                    {loading ? (
-                        <div className="flex flex-col items-center justify-center min-h-[40vh] gap-4">
-                            <Loader2 className="w-10 h-10 text-amber-600 animate-spin" />
-                            <p className="text-muted-foreground animate-pulse font-medium">Calibrating the Matchmaker algorithm...</p>
-                        </div>
-                    ) : filteredMentors.length === 0 ? (
-                        <div className="p-12 text-center border-dashed border-2 bg-secondary/20 rounded-2xl">
-                            <h3 className="text-xl font-headline font-bold">No Mentors Found</h3>
-                            <p className="mt-2 mb-6 text-sm text-muted-foreground">Try adjusting your search criteria.</p>
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {filteredMentors.map((mentor, idx) => (
-                                <motion.div
-                                    key={mentor.uid}
-                                    initial={{ opacity: 0, y: 15 }}
-                                    animate={{ opacity: 1, y: 0 }}
-                                    transition={{ delay: idx * 0.1, duration: 0.4 }}
-                                    className="bg-card border rounded-2xl p-6 shadow-sm hover:shadow-md transition-all hover:border-amber-500/30 flex flex-col h-full"
-                                >
-                                    {/* Avatar & Badges */}
-                                    <div className="flex justify-between items-start mb-4 relative">
-                                        <div className="relative">
-                                            <Avatar className="w-16 h-16 border-4 border-background shadow-md relative z-10">
-                                                <AvatarImage src={mentor.photoURL} />
-                                                <AvatarFallback className="bg-amber-100 text-amber-700 font-bold text-xl">{mentor.displayName[0]}</AvatarFallback>
-                                            </Avatar>
-                                            {/* Glowing Aura */}
-                                            <motion.div
-                                                className="absolute -inset-1.5 rounded-full border-2 border-emerald-400 opacity-60 pointer-events-none"
-                                                animate={{ rotate: 360, scale: [1, 1.05, 1] }}
-                                                transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
-                                            />
-                                        </div>
-
-                                        <div className="flex flex-col items-end gap-1.5 pt-1">
-                                            <Badge variant="secondary" className="bg-amber-100 text-amber-800 hover:bg-amber-200 border-none font-bold shadow-sm">
-                                                🌟 {mentor.karmaPoints} Karma
-                                            </Badge>
-                                            <div className="text-[10px] font-bold tracking-wider uppercase text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded flex items-center gap-1 border border-emerald-200">
-                                                <ShieldCheck className="w-3 h-3" /> Scholar
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Core Info */}
-                                    <div className="flex-1 space-y-3">
-                                        <div>
-                                            <h3 className="font-headline font-bold text-lg text-foreground truncate">{mentor.displayName}</h3>
-                                            <div className="flex items-center gap-3 text-sm text-muted-foreground mt-0.5">
-                                                <span className="flex items-center gap-1 truncate"><GraduationCap className="w-3.5 h-3.5 shrink-0" /> {mentor.major}</span>
-                                                <span className="flex items-center gap-1 shrink-0"><MapPin className="w-3.5 h-3.5" /> {mentor.state}</span>
-                                            </div>
-                                        </div>
-
-                                        <p className="text-sm text-foreground/80 leading-relaxed line-clamp-3">
-                                            &quot;{mentor.bio}&quot;
-                                        </p>
-
-                                        <div className="pt-2 flex flex-wrap gap-2">
-                                            {mentor.scholarshipsWon.map((sw, i) => (
-                                                <span key={i} className="text-[10px] bg-secondary text-secondary-foreground px-2 py-1 rounded-md line-clamp-1 border">
-                                                    Won: {sw}
-                                                </span>
-                                            ))}
-                                        </div>
-                                    </div>
-
-                                    {/* Action */}
-                                    <div className="pt-6 mt-auto border-t">
-                                        <CoffeeChatModal mentorId={mentor.uid} mentorName={mentor.displayName} />
-                                    </div>
-                                </motion.div>
-                            ))}
-                        </div>
-                    )}
-                </TabsContent>
-
-                <TabsContent value="dashboard">
-                    <MentorDashboard />
-                </TabsContent>
-            </Tabs>
+      {/* Eligibility Banner */}
+      {isEligible ? (
+        <div className="bg-gradient-to-r from-emerald-500/10 to-emerald-500/5 border border-emerald-400/30 rounded-2xl p-5 flex items-center gap-4">
+          <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/40 rounded-full flex items-center justify-center shrink-0">
+            <Trophy className="w-6 h-6 text-emerald-600" />
+          </div>
+          <div className="flex-1">
+            <p className="font-semibold text-emerald-800 dark:text-emerald-300">You're a Verified Scholar! 🎉</p>
+            <p className="text-sm text-emerald-700/70 dark:text-emerald-400/70 mt-0.5">
+              You've won a scholarship — you can now request mentorship from any mentor below.
+            </p>
+          </div>
+          <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300 shrink-0">Eligible</Badge>
         </div>
-    );
+      ) : (
+        <div className="bg-gradient-to-r from-amber-500/10 to-amber-500/5 border border-amber-400/30 rounded-2xl p-5 flex items-center gap-4">
+          <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/40 rounded-full flex items-center justify-center shrink-0">
+            <Lock className="w-6 h-6 text-amber-600" />
+          </div>
+          <div className="flex-1">
+            <p className="font-semibold text-amber-800 dark:text-amber-300">Mentorship is unlocked when you win a scholarship</p>
+            <p className="text-sm text-amber-700/70 dark:text-amber-400/70 mt-0.5">
+              Apply to scholarships on your dashboard. Once accepted, this hub fully unlocks.
+            </p>
+            <div className="mt-3 w-full bg-amber-200/50 rounded-full h-1.5">
+              <div className="h-1.5 bg-amber-400 rounded-full w-1/4" />
+            </div>
+            <p className="text-[10px] text-amber-600 mt-1">0 scholarships won · Win 1 to unlock</p>
+          </div>
+        </div>
+      )}
+
+      <Tabs defaultValue="discover">
+        <TabsList className="mb-2">
+          <TabsTrigger value="discover">Discover Mentors</TabsTrigger>
+          {isCurrentUserMentor && <TabsTrigger value="dashboard">My Mentor Dashboard</TabsTrigger>}
+        </TabsList>
+
+        <TabsContent value="discover">
+          {/* Search */}
+          <div className="relative mb-6">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              className="pl-9"
+              placeholder="Search by name, field of study, or state..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+            />
+          </div>
+
+          {loading ? (
+            <div className="flex justify-center py-20"><Loader2 className="w-10 h-10 animate-spin text-primary" /></div>
+          ) : filtered.length === 0 ? (
+            <div className="text-center py-20 border-2 border-dashed rounded-xl">
+              <p className="text-muted-foreground">No mentors found matching your search.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              {filtered.map((mentor, i) => {
+                const latestEdu = mentor.educationEntries?.[mentor.educationEntries.length - 1];
+                const wonCount = mentor.scholarshipsWon?.length ?? 0;
+                return (
+                  <motion.div key={mentor.uid} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05 }}>
+                    <Card className="hover:shadow-lg hover:border-primary/30 transition-all h-full flex flex-col">
+                      <CardContent className="pt-6 flex-1 space-y-3">
+                        <div className="flex items-start gap-3">
+                          <div className="relative">
+                            <Avatar className="w-12 h-12 border-2 border-primary/20">
+                              <AvatarImage src={mentor.photoURL} />
+                              <AvatarFallback className="bg-primary/10 text-primary font-bold">
+                                {mentor.fullName?.charAt(0) ?? '?'}
+                              </AvatarFallback>
+                            </Avatar>
+                            {wonCount > 0 && (
+                              <span className="absolute -bottom-1 -right-1 bg-emerald-500 text-white rounded-full p-0.5 border-2 border-background">
+                                <ShieldCheck className="w-2.5 h-2.5" />
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-semibold text-sm truncate">{mentor.fullName}</p>
+                            {latestEdu?.fieldOfStudy && (
+                              <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+                                <GraduationCap className="w-3 h-3 shrink-0" /> {latestEdu.fieldOfStudy}
+                              </p>
+                            )}
+                            {mentor.stateOfDomicile && (
+                              <p className="text-xs text-muted-foreground flex items-center gap-1">
+                                <MapPin className="w-3 h-3 shrink-0" /> {mentor.stateOfDomicile}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+
+                        {mentor.bio && <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed">{mentor.bio}</p>}
+
+                        {wonCount > 0 && (
+                          <div className="flex items-center gap-1.5">
+                            <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-400" />
+                            <span className="text-xs font-medium text-amber-700 dark:text-amber-400">
+                              {wonCount} scholarship{wonCount !== 1 ? 's' : ''} won
+                            </span>
+                          </div>
+                        )}
+
+                        {mentor.karmaPoints !== undefined && (
+                          <Badge variant="secondary" className="text-[10px]">⚡ {mentor.karmaPoints} Karma</Badge>
+                        )}
+                      </CardContent>
+
+                      <CardFooter className="pt-0 pb-4">
+                        <Button
+                          className="w-full gap-2"
+                          variant={isEligible ? 'default' : 'secondary'}
+                          disabled={!isEligible}
+                          onClick={() => isEligible && setSelectedMentor(mentor)}
+                        >
+                          <MessageCircle className="w-4 h-4" />
+                          {isEligible ? 'Request Mentorship' : 'Win a Scholarship to Unlock'}
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                  </motion.div>
+                );
+              })}
+            </div>
+          )}
+        </TabsContent>
+
+        {isCurrentUserMentor && (
+          <TabsContent value="dashboard">
+            <MentorDashboard />
+          </TabsContent>
+        )}
+      </Tabs>
+
+      {selectedMentor && (
+        <MentorshipRequestModal
+          mentor={selectedMentor}
+          wonApplications={wonApplications}
+          open={!!selectedMentor}
+          onOpenChange={(o) => !o && setSelectedMentor(null)}
+        />
+      )}
+    </div>
+  );
 }
