@@ -25,7 +25,7 @@ export async function scrapeUrlWithFirecrawl(url: string): Promise<string> {
     try {
         console.log(`🔥 Scraping with Firecrawl: ${url}`);
         const firecrawl = getFirecrawlApp()!;
-        const scrapeResult = await (firecrawl as any).scrapeUrl(url, {
+        const scrapeResult = await (firecrawl as any).scrape(url, {
             formats: ['markdown'],
         });
 

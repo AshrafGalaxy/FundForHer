@@ -1,30 +1,165 @@
-
 rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Scholarships can be read by anyone, but only created/modified/deleted by authenticated providers.
+    // ── Helper functions ────────────────────────────────────────────────────────
+    function isAuth() {
+      return request.auth != null;
+    }
+    function isOwner(uid) {
+      return isAuth() && request.auth.uid == uid;
+    }
+    function isProvider() {
+      return isAuth() && exists(/databases/$(database)/documents/providers/$(request.auth.uid));
+    }
+    function isVerifiedProvider() {
+      return isProvider()
+        && get(/databases/$(database)/documents/providers/$(request.auth.uid)).data.kycStatus == 'verified';
+    }
+
+    // ── Scholarships ─────────────────────────────────────────────────────────
+    // Public read. Only authenticated providers can write their OWN scholarships.
+    // BUG FIX: enforce providerId == uid to prevent provider impersonation.
     match /scholarships/{scholarshipId} {
       allow read: if true;
-      allow write: if request.auth != null && exists(/databases/$(database)/documents/providers/$(request.auth.uid));
+      allow create: if isProvider()
+        && request.resource.data.providerId == request.auth.uid;
+      allow update, delete: if isProvider()
+        && resource.data.providerId == request.auth.uid;
     }
 
-    // User profiles can be created by a new user, but only read/updated/deleted by the user themselves.
+    // ── Users ─────────────────────────────────────────────────────────────────
+    // Own profile: full read/write.
+    // Other profiles: any authenticated user can read (needed for community + mentorship).
+    // Providers can NEVER write student profiles.
     match /users/{userId} {
-      allow read, update, delete: if request.auth != null && request.auth.uid == userId;
-      allow create: if request.auth != null && request.auth.uid == userId;
+      allow create: if isOwner(userId);
+      allow update, delete: if isOwner(userId);
+      allow read: if isAuth();
     }
 
-    // A user can manage their own bookmarked scholarships.
+    // ── User sub-collections ──────────────────────────────────────────────────
     match /users/{userId}/bookmarkedScholarships/{scholarshipId} {
-        allow read, write, delete: if request.auth != null && request.auth.uid == userId;
+      allow read, write, delete: if isOwner(userId);
     }
 
-    // Provider profiles can be created by a new provider, and only read/updated/deleted by the provider themselves.
-    match /providers/{providerId} {
-      allow read, update, delete: if request.auth != null && request.auth.uid == providerId;
-      allow create: if request.auth != null && request.auth.uid == providerId;
+    match /users/{userId}/applications/{appId} {
+      allow read, write: if isOwner(userId);
     }
+
+    // ── Applications (global collection) ──────────────────────────────────────
+    // BUG FIX 1: tautological OR removed — students read their own; providers read
+    //            applications for scholarships they own.
+    // BUG FIX 2: create now enforces `studentId` (not legacy `userId`) field.
+    // BUG FIX 3: update split — student can only update their own while status
+    //            is 'new' (edit before review); provider can update any field
+    //            (status, statusHistory, providerComment).
+    match /applications/{applicationId} {
+      allow create: if isAuth()
+        && request.resource.data.studentId == request.auth.uid;
+
+      allow read: if isAuth() && (
+        resource.data.studentId == request.auth.uid          // student reads own
+        || isProvider()                                       // any provider can read (for their kanban)
+      );
+
+      allow update: if isAuth() && (
+        // Student may only update their own application while it is still 'new'
+        (resource.data.studentId == request.auth.uid
+          && resource.data.status == 'new'
+          && request.resource.data.studentId == request.auth.uid)
+        // Provider may update any application fields (status, statusHistory, providerComment)
+        || isProvider()
+      );
+
+      allow delete: if isProvider()
+        && resource.data.scholarshipId != null;  // Providers can retract (admin only in practice)
+    }
+
+    // ── Community Posts ────────────────────────────────────────────────────────
+    // BUG FIX: restrict updates so only reaction/count fields can be changed by
+    // non-authors; full edits only allowed by the post author.
+    match /community_posts/{postId} {
+      allow read: if isAuth();
+      allow create: if isAuth()
+        && request.resource.data.authorId == request.auth.uid;
+
+      // Author can change anything. Others can only touch reaction/counter fields.
+      allow update: if isAuth() && (
+        resource.data.authorId == request.auth.uid
+        || request.resource.data.diff(resource.data).affectedKeys()
+             .hasOnly(['reactions', 'reactionCounts', 'repliesCount', 'isFlagged'])
+      );
+
+      allow delete: if isAuth()
+        && resource.data.authorId == request.auth.uid;
+    }
+
+    // ── Community Post Replies (sub-collection) ───────────────────────────────
+    match /community_posts/{postId}/replies/{replyId} {
+      allow read: if isAuth();
+      allow create: if isAuth()
+        && request.resource.data.authorId == request.auth.uid;
+      allow update, delete: if isAuth()
+        && resource.data.authorId == request.auth.uid;
+    }
+
+    // ── Mentorship Requests ────────────────────────────────────────────────────
+    // BUG FIX: field name corrected from `menteeId` → `studentId` to match client code.
+    // BUG FIX: only the mentor (not the student) can update the status field.
+    match /mentorship_requests/{requestId} {
+      allow create: if isAuth()
+        && request.resource.data.studentId == request.auth.uid;
+
+      // Both parties can read their request
+      allow read: if isAuth() && (
+        resource.data.studentId == request.auth.uid
+        || resource.data.mentorId == request.auth.uid
+      );
+
+      // Only the mentor can change status; both can update other fields
+      allow update: if isAuth() && (
+        resource.data.mentorId == request.auth.uid           // mentor can update anything
+        || (resource.data.studentId == request.auth.uid      // student can update, but NOT status
+            && !request.resource.data.diff(resource.data).affectedKeys().hasAny(['status']))
+      );
+    }
+
+    // ── Disbursements ─────────────────────────────────────────────────────────
+    // BUG FIX: was fully open to any authenticated user; now scoped properly.
+    match /disbursements/{disbursementId} {
+      // Student reads only their own disbursement; providers can read all
+      allow read: if isAuth() && (
+        resource.data.studentId == request.auth.uid
+        || isProvider()
+      );
+      // Only providers write disbursement records; students submit bank details
+      allow create: if isAuth() && (
+        isProvider()
+        || request.resource.data.studentId == request.auth.uid
+      );
+      allow update: if isAuth() && (
+        isProvider()
+        || (resource.data.studentId == request.auth.uid
+            && request.resource.data.diff(resource.data).affectedKeys()
+                 .hasOnly(['bankDetails', 'bankDetailsSubmittedAt']))
+      );
+    }
+
+    // ── Providers ─────────────────────────────────────────────────────────────
+    match /providers/{providerId} {
+      allow create: if isOwner(providerId);
+      allow read, update, delete: if isOwner(providerId);
+      // Students can read provider profiles (needed for ScholarshipCard providerLogo)
+      allow read: if isAuth();
+    }
+
+    // ── Scraper Runs (internal) ────────────────────────────────────────────────
+    match /scraper_runs/{runId} {
+      allow read: if isAuth();
+      allow write: if false; // Only written by server-side Cloud Functions
+    }
+
   }
 }

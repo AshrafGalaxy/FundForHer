@@ -1,35 +1,123 @@
 
 // src/app/authenticated/profile/page.tsx
 'use client';
+import { type UserProfile, updateUserProfile, getUserProfile } from '@/server/db/user-data';
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
+import { Input } from '@/components/ui/input';
 import { deleteAccount, logout } from '@/lib/auth';
-import { LogOut, User as UserIcon, Edit, GraduationCap, BookUser, FileText, Trash2, AlertTriangle, Phone, Mail, Cake, Briefcase, Loader2, Building, Hash, BadgeCheck } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import {
+  LogOut, Edit, GraduationCap, BookUser, FileText, Shield, Trash2, AlertTriangle,
+  Loader2, BadgeCheck, Briefcase, User as UserIcon, Pencil, Check, X,
+} from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Progress } from '@/components/ui/progress';
-import { type UserProfile, updateUserProfile, getUserProfile } from '@/server/db/user-data';
 import { EditProfileForm } from '@/features/profile/EditProfileForm';
+import { DownloadResumeButton } from '@/features/profile/DownloadResumeButton';
+import { ScholarshipActivityChart } from '@/features/profile/ScholarshipActivityChart';
+import { TiltCard } from '@/features/profile/TiltCard';
+import { PersonalTab } from '@/features/profile/tabs/PersonalTab';
+import { AcademicTab } from '@/features/profile/tabs/AcademicTab';
+import { ExperienceTab } from '@/features/profile/tabs/ExperienceTab';
+import { DocumentVaultTab } from '@/features/profile/tabs/DocumentVaultTab';
+import { AvatarUploadModal } from '@/features/profile/AvatarUploadModal';
 import { useAuth } from '@/app/auth-provider';
+import { useAuth as useFirebaseAuth, useFirestore } from '@/firebase';
+import { linkWithPopup, GoogleAuthProvider, updateProfile } from 'firebase/auth';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { useToast } from '@/hooks/use-toast';
 import { format } from 'date-fns';
-import { useAuth as useFirebaseAuth, useFirestore } from '@/firebase';
-import { linkWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import type { DocumentVaultEntry } from '@/server/db/user-data';
 
+// ── Avatar Frame Styles ───────────────────────────────────────────────────────
+const FRAMES = [
+  { key: 'default',   label: '🔵 Default',   ring: 'ring-2 ring-background',                        locked: false },
+  { key: 'community', label: '🌸 Community', ring: 'ring-2 ring-pink-400 ring-offset-2',             locked: false },
+  { key: 'gold',      label: '🌟 Gold',       ring: 'ring-2 ring-amber-400 ring-offset-2',           locked: false },
+  { key: 'verified',  label: '💎 Verified',   ring: 'ring-2 ring-blue-500 ring-offset-2 ring-offset-background', locked: false },
+] as const;
+
+type FrameKey = typeof FRAMES[number]['key'];
+
+// ── Profile Completion ────────────────────────────────────────────────────────
+function calculateCompletion(p: UserProfile): number {
+  let score = 0;
+  // Personal basics (10)
+  if (p.fullName) score += 2; if (p.email) score += 2; if (p.phone) score += 2; if (p.dob) score += 2; if (p.address) score += 2;
+  // Personal extended (15)
+  if (p.gender) score += 3; if (p.category) score += 3; if (p.stateOfDomicile) score += 3; if (p.annualFamilyIncome) score += 3; if (p.languages?.length) score += 3;
+  // Education (30)
+  if (p.educationEntries?.length) { score += 20; if (p.educationEntries.length >= 2) score += 10; }
+  else if (p.qualification) score += 10;
+  // Test scores (5)
+  if (p.testScores?.length) score += 5;
+  // Experience (10)
+  if (p.internships?.length || p.fellowships?.length) score += 10;
+  // Awards (5)
+  if (p.scholarshipsWon?.length || p.achievements?.length) score += 5;
+  // Certifications (5)
+  if (p.certifications?.length) score += 5;
+  // Documents (15)
+  if (p.documents?.length) {
+    if (p.documents.length >= 2) score += 10;
+    if (p.documents.length >= 5) score += 5;
+  } else if (p.aadhar) score += 5;
+  // Bio + Tagline (5)
+  if (p.tagline) score += 2; if (p.bio) score += 3;
+  return Math.min(score, 100);
+}
+
+// ── Inline text edit helper ───────────────────────────────────────────────────
+function InlineEdit({ value, onSave, placeholder, maxLength, multiline = false, className }: {
+  value: string; onSave: (v: string) => Promise<void>; placeholder: string; maxLength: number;
+  multiline?: boolean; className?: string;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(value);
+  const [saving, setSaving] = useState(false);
+  const ref = useRef<HTMLInputElement & HTMLTextAreaElement>(null);
+
+  useEffect(() => { if (editing) ref.current?.focus(); }, [editing]);
+
+  const save = async () => {
+    if (draft === value) { setEditing(false); return; }
+    setSaving(true);
+    try { await onSave(draft); setEditing(false); } finally { setSaving(false); }
+  };
+
+  if (editing) {
+    const sharedProps = { ref, value: draft, maxLength, onChange: (e: any) => setDraft(e.target.value), onKeyDown: (e: any) => { if (!multiline && e.key === 'Enter') save(); if (e.key === 'Escape') { setEditing(false); setDraft(value); } }, className: cn('text-sm bg-card border rounded px-2 py-1 w-full', className), disabled: saving };
+    return (
+      <div className="flex items-start gap-2 w-full">
+        {multiline ? <textarea {...sharedProps} rows={3} className={cn(sharedProps.className, 'resize-none')} /> : <input {...sharedProps} />}
+        <div className="flex flex-col gap-1">
+          <Button size="icon" variant="ghost" className="h-7 w-7 text-emerald-600" onClick={save} disabled={saving}>{saving ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Check className="h-3.5 w-3.5" />}</Button>
+          <Button size="icon" variant="ghost" className="h-7 w-7 text-muted-foreground" onClick={() => { setEditing(false); setDraft(value); }}><X className="h-3.5 w-3.5" /></Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <button className={cn('group text-left w-full flex items-center gap-1.5 text-sm', !value && 'text-muted-foreground italic', className)} onClick={() => setEditing(true)}>
+      <span className="flex-1">{value || placeholder}</span>
+      <Pencil className="h-3 w-3 opacity-0 group-hover:opacity-60 shrink-0 transition-opacity" />
+    </button>
+  );
+}
+
+// ── Main Page ─────────────────────────────────────────────────────────────────
 export default function ProfilePage() {
   const auth = useFirebaseAuth();
   const db = useFirestore();
@@ -47,105 +135,55 @@ export default function ProfilePage() {
   useEffect(() => {
     if (!authLoading && user && db) {
       setProfileLoading(true);
-      getUserProfile(db, user.uid)
-        .then(profile => {
-          setUserProfile(profile);
-        })
-        .catch(console.error)
-        .finally(() => {
-          setProfileLoading(false);
-        });
-    } else if (!authLoading && !user) {
-      // If auth is done and there's no user, stop loading.
-      setProfileLoading(false);
-    }
+      getUserProfile(db, user.uid).then(p => setUserProfile(p)).catch(console.error).finally(() => setProfileLoading(false));
+    } else if (!authLoading && !user) { setProfileLoading(false); }
   }, [authLoading, user, db]);
 
-
-  const handleLogout = async () => {
-    if (!auth) return;
-    await logout(auth);
-    router.push('/login');
-  };
+  const handleLogout = async () => { if (!auth) return; await logout(auth); router.push('/login'); };
 
   const handleDeleteAccount = async () => {
     if (!user || !auth || !db) return;
     setIsDeleting(true);
     try {
       await deleteAccount(auth, db, user.uid);
-      toast({
-        title: "Account Deleted",
-        description: "Your account and all associated data have been permanently removed.",
-      });
+      toast({ title: 'Account Deleted', description: 'Your account has been permanently removed.' });
       router.push('/login');
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Deletion Failed",
-        description: `An error occurred: ${error.message}. Please try logging out and back in again.`,
-      });
-    } finally {
-      setIsDeleting(false);
-    }
-  }
+    } catch (err: any) {
+      toast({ variant: 'destructive', title: 'Deletion Failed', description: err.message });
+    } finally { setIsDeleting(false); }
+  };
 
-  const getInitials = (name: string | null | undefined) => {
+  const getInitials = (name?: string | null) => {
     if (!name) return 'U';
-    const names = name.split(' ');
-    if (names.length > 1 && names[0] && names[names.length - 1]) {
-      return `${names[0][0]}${names[names.length - 1][0]}`;
-    }
-    return name[0] || 'U';
+    const n = name.split(' ');
+    return n.length > 1 ? `${n[0][0]}${n[n.length - 1][0]}` : name[0] || 'U';
   };
 
-  const handleLinkGoogle = async () => {
-    if (!auth || !auth.currentUser) return;
-    try {
-      const provider = new GoogleAuthProvider();
-      const customParams: Record<string, string> = { prompt: 'select_account' };
-      if (userProfile?.email) {
-        customParams.login_hint = userProfile.email;
-      }
-      provider.setCustomParameters(customParams);
-      await linkWithPopup(auth.currentUser, provider);
-      toast({
-        title: "Account Linked!",
-        description: "Your Google account has been successfully linked.",
-      });
-      // Force a re-render to reflect the newly linked provider data
-      setProfileLoading(true);
-      const updatedProfile = await getUserProfile(db!, auth.currentUser.uid);
-      setUserProfile(updatedProfile);
-      setProfileLoading(false);
-    } catch (error: any) {
-      if (error.code === 'auth/credential-already-in-use') {
-        toast({ variant: 'destructive', title: "Linking Failed", description: "This Google account is already linked to another user." });
-      } else {
-        toast({ variant: 'destructive', title: "Linking Failed", description: error.message });
-      }
-    }
+  // Generic single-field save
+  const handleInlineSave = async (fieldKey: string, newValue: any) => {
+    if (!user || !db || !userProfile) return;
+    if (fieldKey === 'fullName' && newValue !== user.displayName) await updateProfile(user, { displayName: newValue }).catch(console.error);
+    await updateUserProfile(db, user.uid, { [fieldKey]: newValue });
+    setUserProfile(prev => prev ? { ...prev, [fieldKey]: newValue } : null);
+    toast({ title: 'Saved ✓' });
   };
 
-  const InfoField = ({ icon, label, value, placeholder }: { icon: React.ReactNode, label: string, value: string | number | null | undefined, placeholder: string }) => (
-    <div className="flex items-start gap-3">
-      <div className="text-theme-600 dark:text-theme-400 mt-1">{icon}</div>
-      <div>
-        <p className="text-sm text-muted-foreground">{label}</p>
-        <p className="font-semibold text-foreground">{value || <span className="text-muted-foreground italic">{placeholder}</span>}</p>
-      </div>
-    </div>
-  );
+  // Batch section save
+  const handleBatchSave = async (data: Partial<UserProfile>) => {
+    if (!user || !db) return;
+    await updateUserProfile(db, user.uid, data);
+    setUserProfile(prev => prev ? { ...prev, ...data } : null);
+    toast({ title: 'Section Saved ✓', description: 'Your profile has been updated.' });
+  };
 
   if (authLoading || profileLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="md:col-span-1">
-            <Skeleton className="h-48 w-full rounded-lg" />
-          </div>
-          <div className="md:col-span-2 space-y-8">
-            <Skeleton className="h-48 w-full rounded-lg" />
-            <Skeleton className="h-32 w-full rounded-lg" />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <Skeleton className="h-[500px] w-full rounded-2xl" />
+          <div className="lg:col-span-2 space-y-6">
+            <Skeleton className="h-12 w-full rounded-xl" />
+            <Skeleton className="h-64 w-full rounded-2xl" />
           </div>
         </div>
       </div>
@@ -155,186 +193,180 @@ export default function ProfilePage() {
   if (!userProfile || !user) {
     return (
       <div className="container mx-auto px-4 py-8">
-        <div className="text-center py-16 bg-card rounded-lg shadow-md">
-          <h2 className="text-2xl font-headline font-semibold text-card-foreground">Profile Not Found</h2>
-          <p className="text-muted-foreground mt-2">We couldn't load your profile. Please try logging out and back in.</p>
-          <Button onClick={handleLogout} variant="destructive" className="mt-4">
-            <LogOut className="mr-2 h-4 w-4" />
-            Logout
-          </Button>
+        <div className="text-center py-16 bg-card rounded-2xl shadow">
+          <h2 className="text-2xl font-headline font-semibold">Profile Not Found</h2>
+          <p className="text-muted-foreground mt-2">Please try logging out and back in.</p>
+          <Button onClick={handleLogout} variant="destructive" className="mt-4"><LogOut className="mr-2 h-4 w-4" /> Logout</Button>
         </div>
       </div>
-    )
+    );
   }
 
-  const googleProvider = user.providerData.find(p => p.providerId === 'google.com');
-  const isGoogleLinked = !!googleProvider;
-  const linkedGoogleEmail = googleProvider?.email || null;
+  const completionPct = calculateCompletion(userProfile);
+  const frame = FRAMES.find(f => f.key === (userProfile.avatarFrame ?? 'default')) ?? FRAMES[0];
 
-  const calculateCompletion = (profile: UserProfile): number => {
-    const coreFields = [
-      profile.fullName,
-      profile.email,
-      profile.phone,
-      profile.dob,
-      profile.address,
-      profile.qualification,
-      profile.college,
-      profile.fieldOfStudy,
-      profile.aadhar
-    ];
-    const filledFields = coreFields.filter(f => f && f.toString().trim() !== '');
-    return Math.round((filledFields.length / coreFields.length) * 100);
-  };
-
-  const completionPercentage = calculateCompletion(userProfile);
+  const tierBadge =
+    completionPct === 100 ? <Badge className="bg-blue-600 text-white text-[10px] border-0">💎 Verified</Badge> :
+    completionPct >= 70   ? <Badge className="bg-yellow-400 text-yellow-900 text-[10px] border-0">🥇 Gold</Badge> :
+    completionPct >= 40   ? <Badge variant="secondary" className="text-[10px]">🥈 Silver</Badge> :
+                             <Badge variant="outline" className="text-[10px]">🥉 Bronze</Badge>;
 
   return (
-    <div className="bg-secondary/50 min-h-screen">
+    <div className="bg-secondary/30 min-h-screen">
       <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
 
-          {/* Left Column */}
-          <div className="lg:col-span-1 space-y-8 mt-12 lg:mt-0">
-            <Card className="shadow-lg text-center mt-12">
-              <CardContent className="p-6">
-                <Avatar className="h-28 w-28 border-4 border-background shadow-lg mx-auto -mt-16 mb-4">
-                  <AvatarImage src={user.photoURL ?? ''} alt={user.displayName ?? 'User'} />
-                  <AvatarFallback className="text-4xl font-bold bg-primary text-primary-foreground">
-                    {getInitials(user.displayName)}
-                  </AvatarFallback>
-                </Avatar>
-                <h2 className="text-2xl font-headline font-bold">{userProfile.fullName}</h2>
-                <p className="text-muted-foreground">{userProfile.email}</p>
-
-                <div className="mt-6 mb-4 text-left">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm font-medium text-muted-foreground">Profile Completion</span>
-                    <span className="text-sm font-bold text-theme-600 dark:text-theme-400">{completionPercentage}%</span>
-                  </div>
-                  <Progress value={completionPercentage} className="h-2 w-full" />
-                  {completionPercentage < 100 && (
-                    <p className="text-xs text-muted-foreground mt-2 text-center">
-                      Complete your profile to access more scholarships!
-                    </p>
-                  )}
+          {/* ── LEFT SIDEBAR ─────────────────────────────────────────── */}
+          <div className="lg:col-span-1 space-y-6">
+            <TiltCard>
+              <Card className="shadow-lg overflow-hidden">
+                {/* Top gradient stripe */}
+                <div className="h-24 bg-gradient-to-br from-theme-400 via-primary to-theme-600 relative">
+                  <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(255,255,255,0.15),transparent)]" />
                 </div>
 
-                <EditProfileForm
-                  user={user}
-                  userProfile={userProfile}
-                  onProfileUpdate={(updatedProfile) => {
-                    setUserProfile(updatedProfile);
-                  }}
-                  isOpen={isEditDialogOpen}
-                  setIsOpen={setIsEditDialogOpen}
-                >
-                  <Button onClick={() => setIsEditDialogOpen(true)} className="mt-4 w-full">
-                    <Edit className="mr-2 h-4 w-4" /> Edit Profile
-                  </Button>
-                </EditProfileForm>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 font-headline text-xl">Account Actions</CardTitle>
-              </CardHeader>
-              <CardContent className="flex flex-col gap-3">
-                {isGoogleLinked ? (
-                  <div className="flex items-center gap-3 p-3 border rounded-md bg-green-50 border-green-200">
-                    <svg className="h-5 w-5 shrink-0" viewBox="0 0 24 24">
-                      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
-                      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
-                      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
-                      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
-                    </svg>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-green-800">Linked to Google</p>
-                      <p className="text-xs text-green-600 truncate">{linkedGoogleEmail || 'Connected'}</p>
+                <CardContent className="px-5 pb-6 pt-0">
+                  {/* Avatar */}
+                  <AvatarUploadModal user={user} currentPhotoUrl={user.photoURL} onUploadSuccess={(url) => setUserProfile(p => p ? { ...p, photoURL: url } : null)}>
+                    <div className="relative group cursor-pointer w-24 h-24 mx-auto -mt-12 mb-3">
+                      <Avatar className={cn('h-24 w-24 border-4 border-background shadow-lg transition-transform group-hover:scale-105', frame.ring)}>
+                        <AvatarImage src={user.photoURL ?? ''} alt={user.displayName ?? ''} className="object-cover" />
+                        <AvatarFallback className="text-3xl font-bold bg-primary text-primary-foreground">{getInitials(user.displayName)}</AvatarFallback>
+                      </Avatar>
+                      <div className="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Edit className="h-5 w-5 text-white" />
+                      </div>
                     </div>
-                    <BadgeCheck className="h-5 w-5 text-green-600" />
+                  </AvatarUploadModal>
+
+                  {/* Name + Tagline + Bio */}
+                  <div className="text-center space-y-1 mb-4">
+                    <h2 className="text-xl font-headline font-bold text-foreground">{userProfile.fullName}</h2>
+                    <p className="text-xs text-muted-foreground">{userProfile.email}</p>
+                    <InlineEdit value={userProfile.tagline ?? ''} onSave={v => handleInlineSave('tagline', v)} placeholder="+ Add your tagline (e.g. STEM researcher & change-maker)" maxLength={80} className="text-xs text-theme-600 dark:text-theme-400 font-medium text-center justify-center" />
+                    <InlineEdit value={userProfile.bio ?? ''} onSave={v => handleInlineSave('bio', v)} placeholder="+ Add a short bio..." maxLength={300} multiline className="text-xs text-muted-foreground text-center justify-center" />
                   </div>
-                ) : (
-                  <Button onClick={handleLinkGoogle} variant="outline" className="w-full justify-start text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 border-blue-200">
-                    <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
-                      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4" />
-                      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853" />
-                      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05" />
-                      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335" />
-                    </svg>
-                    Connect Google Account
-                  </Button>
-                )}
-                <Button onClick={handleLogout} variant="outline" className="w-full justify-start">
-                  <LogOut className="mr-2 h-4 w-4" />
-                  Logout
-                </Button>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="destructive" className="w-full justify-start">
-                      <Trash2 className="mr-2 h-4 w-4" />
-                      Delete Account
+
+                  {/* Avatar Frame picker */}
+                  <div className="mb-4">
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-wide mb-2 text-center">Profile Frame</p>
+                    <div className="flex justify-center gap-2 flex-wrap">
+                      {FRAMES.map(f => (
+                        <button
+                          key={f.key}
+                          onClick={() => handleInlineSave('avatarFrame', f.key)}
+                          className={cn('text-[10px] px-2 py-1 rounded-full border transition-all', userProfile.avatarFrame === f.key || (!userProfile.avatarFrame && f.key === 'default') ? 'border-primary bg-primary/10 text-primary font-semibold' : 'border-border text-muted-foreground hover:border-primary/50')}
+                        >
+                          {f.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Completion */}
+                  <div className="mb-4 bg-secondary/40 rounded-xl p-3 border">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-xs font-medium text-muted-foreground">Profile Status</span>
+                      {tierBadge}
+                    </div>
+                    <Progress value={completionPct} className="h-2 [&>div]:bg-theme-500" />
+                    <p className="text-xs text-center mt-1.5 font-semibold text-theme-600 dark:text-theme-400">{completionPct}% Complete</p>
+                    {completionPct < 100 && (
+                      <p className="text-[10px] text-muted-foreground text-center mt-1 flex items-center justify-center gap-1">
+                        <AlertTriangle className="h-3 w-3 text-amber-500" /> Fill more sections to unlock better matches
+                      </p>
+                    )}
+                  </div>
+
+                  <DownloadResumeButton userProfile={userProfile} completionPercentage={completionPct} />
+
+                  <EditProfileForm user={user} userProfile={userProfile} onProfileUpdate={setUserProfile} isOpen={isEditDialogOpen} setIsOpen={setIsEditDialogOpen}>
+                    <Button onClick={() => setIsEditDialogOpen(true)} className="mt-3 w-full" variant="outline" size="sm">
+                      <Edit className="mr-2 h-3.5 w-3.5" /> Quick Edit
                     </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle className="flex items-center gap-2">
-                        <AlertTriangle className="text-destructive" />Are you absolutely sure?
-                      </AlertDialogTitle>
-                      <AlertDialogDescription>
-                        This action is permanent and cannot be undone. This will permanently delete your account and remove all of your data from our servers.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>Cancel</AlertDialogCancel>
-                      <AlertDialogAction onClick={handleDeleteAccount} disabled={isDeleting}>
-                        {isDeleting ? 'Deleting...' : 'Yes, delete my account'}
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </CardContent>
-            </Card>
+                  </EditProfileForm>
+
+                  {/* Danger zone */}
+                  <div className="mt-4 pt-4 border-t flex flex-col gap-2">
+                    <Button onClick={handleLogout} variant="ghost" size="sm" className="w-full text-muted-foreground justify-start gap-2">
+                      <LogOut className="h-4 w-4" /> Sign Out
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button variant="ghost" size="sm" className="w-full text-destructive/70 hover:text-destructive hover:bg-destructive/10 justify-start gap-2">
+                          <Trash2 className="h-4 w-4" /> Delete Account
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete your account?</AlertDialogTitle>
+                          <AlertDialogDescription>This permanently removes all your data. This action cannot be undone.</AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction onClick={handleDeleteAccount} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                            {isDeleting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null} Delete Forever
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </CardContent>
+              </Card>
+            </TiltCard>
+
+            {/* Activity Chart */}
+            <ScholarshipActivityChart userId={user.uid} userProfile={userProfile} />
           </div>
 
-          {/* Right Column */}
-          <div className="lg:col-span-2 space-y-8">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 font-headline text-xl"><BookUser className="text-theme-600 dark:text-theme-400" /> Personal Details</CardTitle>
-              </CardHeader>
-              <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <InfoField icon={<UserIcon />} label="Full Name" value={userProfile.fullName} placeholder="Not set" />
-                <InfoField icon={<Mail />} label="Email Address" value={userProfile.email} placeholder="Not set" />
-                <InfoField icon={<Phone />} label="Phone Number" value={userProfile.phone} placeholder="e.g., 9876543210" />
-                <InfoField icon={<Cake />} label="Date of Birth" value={userProfile.dob ? format(userProfile.dob instanceof Date ? userProfile.dob : ((userProfile.dob as any).toDate ? (userProfile.dob as any).toDate() : new Date((userProfile.dob as unknown) as string | number)), 'PPP') : null} placeholder="Not set" />
-                <InfoField icon={<UserIcon />} label="Age" value={userProfile.age} placeholder="Not set" />
-                <InfoField icon={<UserIcon />} label="Address" value={userProfile.address} placeholder="e.g., 123, Main St, Mumbai, India" />
-              </CardContent>
-            </Card>
+          {/* ── RIGHT TABBED CONTENT ─────────────────────────────────── */}
+          <div className="lg:col-span-3">
+            <Tabs defaultValue="personal" className="w-full">
+              <TabsList className="w-full grid grid-cols-4 mb-6 h-auto bg-card border rounded-xl p-1 shadow-sm">
+                <TabsTrigger value="personal" className="flex-col gap-1 py-2.5 text-xs data-[state=active]:shadow-sm rounded-lg">
+                  <UserIcon className="h-4 w-4" />
+                  <span className="hidden sm:inline">Personal</span>
+                </TabsTrigger>
+                <TabsTrigger value="academic" className="flex-col gap-1 py-2.5 text-xs data-[state=active]:shadow-sm rounded-lg">
+                  <GraduationCap className="h-4 w-4" />
+                  <span className="hidden sm:inline">Academic</span>
+                </TabsTrigger>
+                <TabsTrigger value="experience" className="flex-col gap-1 py-2.5 text-xs data-[state=active]:shadow-sm rounded-lg">
+                  <Briefcase className="h-4 w-4" />
+                  <span className="hidden sm:inline">Experience</span>
+                </TabsTrigger>
+                <TabsTrigger value="documents" className="flex-col gap-1 py-2.5 text-xs data-[state=active]:shadow-sm rounded-lg">
+                  <Shield className="h-4 w-4" />
+                  <span className="hidden sm:inline">Documents</span>
+                  {(userProfile.documents?.length ?? 0) > 0 && (
+                    <Badge className="h-4 px-1 text-[9px] bg-emerald-500 text-white border-0 -mt-0.5">
+                      {userProfile.documents!.length}
+                    </Badge>
+                  )}
+                </TabsTrigger>
+              </TabsList>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 font-headline text-xl"><GraduationCap className="text-theme-600 dark:text-theme-400" /> Educational Background</CardTitle>
-              </CardHeader>
-              <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <InfoField icon={<Briefcase />} label="Highest Qualification" value={userProfile.qualification} placeholder="Not set" />
-                <InfoField icon={<GraduationCap />} label="Current School/College" value={userProfile.college} placeholder="e.g., University of Delhi" />
-                <InfoField icon={<BookUser />} label="Field of Study" value={userProfile.fieldOfStudy} placeholder="e.g., Computer Science" />
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 font-headline text-xl"><FileText className="text-theme-600 dark:text-theme-400" /> Documents & Identity</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <InfoField icon={<FileText />} label="Aadhar Number" value={userProfile.aadhar} placeholder="e.g., 1234 5678 9012" />
-              </CardContent>
-            </Card>
+              <Card className="shadow-sm border-border/60">
+                <CardContent className="p-6 sm:p-8">
+                  <TabsContent value="personal" className="mt-0">
+                    <PersonalTab profile={userProfile} onSave={handleInlineSave} onBatchSave={handleBatchSave} />
+                  </TabsContent>
+                  <TabsContent value="academic" className="mt-0">
+                    <AcademicTab profile={userProfile} onBatchSave={handleBatchSave} />
+                  </TabsContent>
+                  <TabsContent value="experience" className="mt-0">
+                    <ExperienceTab profile={userProfile} onBatchSave={handleBatchSave} />
+                  </TabsContent>
+                  <TabsContent value="documents" className="mt-0">
+                    <DocumentVaultTab
+                      profile={userProfile}
+                      onVaultUpdate={docs => setUserProfile(p => p ? { ...p, documents: docs } : null)}
+                    />
+                  </TabsContent>
+                </CardContent>
+              </Card>
+            </Tabs>
           </div>
-
         </div>
       </div>
     </div>

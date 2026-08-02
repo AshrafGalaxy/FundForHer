@@ -3,45 +3,52 @@
 'use client';
 
 import { useEffect, useState, ReactNode } from 'react';
-import { initializeFirebase } from '@/firebase/index';
-import type { FirebaseApp } from 'firebase/app';
-import type { Auth } from 'firebase/auth';
-import { enableNetwork, type Firestore } from 'firebase/firestore';
+import { initializeApp, getApps, getApp } from 'firebase/app';
+import { getAuth } from 'firebase/auth';
+import { getStorage } from 'firebase/storage';
+import {
+  initializeFirestore,
+  persistentLocalCache,
+  persistentMultipleTabManager,
+} from 'firebase/firestore';
 import { Loader2 } from 'lucide-react';
 import { FirebaseProvider } from './provider';
+
+const firebaseConfig = {
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
+};
 
 interface FirebaseClientProviderProps {
   children: ReactNode;
 }
 
 export const FirebaseClientProvider = ({ children }: FirebaseClientProviderProps) => {
-  const [firebase, setFirebase] = useState<{
-    app: FirebaseApp;
-    auth: Auth;
-    db: Firestore;
-  } | null>(null);
+  const [firebase, setFirebase] = useState<any>(null);
 
   useEffect(() => {
-    const init = async () => {
-      // Check if running on the client
-      if (typeof window !== 'undefined') {
-        const { app, auth, db } = initializeFirebase();
-        
-        try {
-          // Explicitly enable the network and wait for it to complete.
-          // This is the key fix to prevent race conditions.
-          await enableNetwork(db);
-          console.log("Firebase network connection enabled.");
-          setFirebase({ app, auth, db });
-        } catch (err) {
-          console.error("Failed to enable Firebase network:", err);
-          // Handle the error state if network can't be enabled,
-          // maybe show an error message to the user.
-        }
-      }
-    };
+    if (typeof window === 'undefined') return;
 
-    init();
+    const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const storage = getStorage(app);
+
+    // Priority 2: initializeFirestore with IndexedDB persistence.
+    // After the first load, ALL reads are served from the local IndexedDB cache —
+    // subsequent navigations and page reloads cost ZERO Firestore reads for cached docs.
+    // persistentMultipleTabManager shares the cache across all open browser tabs.
+    const db = initializeFirestore(app, {
+      localCache: persistentLocalCache({
+        tabManager: persistentMultipleTabManager(),
+      }),
+    });
+
+    setFirebase({ app, auth, db, storage });
   }, []);
 
   if (!firebase) {
@@ -57,7 +64,7 @@ export const FirebaseClientProvider = ({ children }: FirebaseClientProviderProps
 
   return (
     <FirebaseProvider value={firebase}>
-        {children}
+      {children}
     </FirebaseProvider>
   );
 };

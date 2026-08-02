@@ -1,53 +1,39 @@
 import { NextResponse } from 'next/server';
-import { ScraperOrchestrator } from '@/server/scraper/scraper-config';
 import { inngest } from '@/server/jobs/client';
 
-// Prevent Next.js from caching or timing out too early (max 300s requires Vercel Pro, but works locally)
-export const maxDuration = 300;
 export const dynamic = 'force-dynamic';
+// Safe for Vercel Hobby (10s hard limit) — this route only fires one Inngest event
+export const maxDuration = 10;
 
 export async function POST(request: Request) {
     try {
-        // Basic security for cron (optional but highly recommended)
         const { searchParams } = new URL(request.url);
         const secret = searchParams.get('secret');
         const expectedSecret = process.env.CRON_SECRET;
 
         if (expectedSecret && secret !== expectedSecret) {
-            return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+            console.error('Unauthorized sync attempt. Invalid or missing secret parameter.');
+            return NextResponse.json(
+                { error: 'Unauthorized', message: 'Invalid or missing secret parameter' },
+                { status: 401 }
+            );
         }
 
-        const orchestrator = new ScraperOrchestrator();
-        console.log('--- Starting Scholarship Sync ---');
-        const results = await orchestrator.runAll();
+        // Fire a single lightweight event to Inngest and return immediately.
+        // All heavy lifting (scraping, AI, Firestore writes) happens asynchronously
+        // inside the triggerDiscoveryPipeline Inngest function.
+        await inngest.send({
+            name: 'scholarship/trigger-discovery',
+            data: { triggeredAt: new Date().toISOString(), source: 'github-action' },
+        });
 
-        let queuedCount = 0;
-        const events = [];
-
-        for (const result of results) {
-            for (const raw of result.scholarships) {
-                events.push({
-                    name: "scholarship/scraped",
-                    data: raw,
-                });
-                queuedCount++;
-            }
-        }
-
-        if (events.length > 0) {
-            await inngest.send(events);
-            console.log(`Sent ${events.length} jobs to Inngest queue`);
-        }
-
-        console.log(`--- Sync Complete. Queued ${queuedCount} records for processing. ---`);
-
+        console.log('✅ Discovery pipeline triggered via Inngest event.');
         return NextResponse.json({
             success: true,
-            scrapedSources: results.map(r => r.source),
-            queuedItems: queuedCount,
+            message: 'Discovery pipeline triggered. Processing is async — check Inngest dashboard for results.',
         });
     } catch (error: any) {
-        console.error('Critical Sync Error:', error);
+        console.error('Failed to trigger discovery pipeline:', error);
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }

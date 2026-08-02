@@ -6,8 +6,9 @@ import { ThemeProvider } from '@/components/ThemeProvider';
 import AuthProvider from './auth-provider';
 import { BackToTop } from '@/components/ui/BackToTop';
 import { FirebaseClientProvider } from '@/firebase/client-provider';
-import { Analytics } from '@vercel/analytics/next';
-
+import InstallAppWidget from '@/components/pwa/InstallAppWidget';
+import { SpeedInsights } from '@vercel/speed-insights/next';
+import { Analytics } from '@vercel/analytics/react';
 
 import { Viewport } from 'next';
 
@@ -46,11 +47,13 @@ export default function RootLayout({
           <FirebaseClientProvider>
             <AuthProvider>
               {children}
+              <InstallAppWidget />
             </AuthProvider>
           </FirebaseClientProvider>
           <Toaster />
           <BackToTop />
         </ThemeProvider>
+        <SpeedInsights />
         <Analytics />
       </body>
     </html>

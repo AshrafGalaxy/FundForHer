@@ -3,6 +3,7 @@
 import { initializeApp, getApps, getApp, type FirebaseApp } from 'firebase/app';
 import { getFirestore, connectFirestoreEmulator, type Firestore } from 'firebase/firestore';
 import { getAuth, type Auth } from 'firebase/auth';
+import { getStorage, type FirebaseStorage } from 'firebase/storage';
 import { useFirebaseContext } from './provider';
 
 // Re-export providers and context hooks
@@ -46,7 +47,7 @@ const firebaseConfig = {
 
 
 // Singleton instance holder
-let firebaseInstance: { app: FirebaseApp; auth: Auth; db: Firestore; } | null = null;
+let firebaseInstance: { app: FirebaseApp; auth: Auth; db: Firestore; storage: FirebaseStorage } | null = null;
 
 export const initializeFirebase = () => {
   // This function can be called multiple times, but will only initialize once.
@@ -64,9 +65,10 @@ export const initializeFirebase = () => {
   const app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
   const db = getFirestore(app);
   const auth = getAuth(app);
+  const storage = getStorage(app);
 
   // Create and store the singleton instance.
-  firebaseInstance = { app, auth, db };
+  firebaseInstance = { app, auth, db, storage };
 
   return firebaseInstance;
 };
@@ -85,4 +87,9 @@ export const useAuth = (): Auth | null => {
 export const useFirestore = (): Firestore | null => {
   const context = useFirebaseContext();
   return context?.db ?? null;
+}
+
+export const useStorage = (): FirebaseStorage | null => {
+  const context = useFirebaseContext();
+  return context?.storage ?? null;
 }

@@ -10,8 +10,10 @@ import {
   updateProfile,
   type Auth,
   deleteUser,
+  GoogleAuthProvider,
+  signInWithPopup
 } from 'firebase/auth';
-import { createInitialUserProfile, deleteUserProfile, createInitialProviderProfile } from '@/server/db/user-data';
+import { createInitialUserProfile, deleteUserProfile, createInitialProviderProfile, getUserProfile } from '@/server/db/user-data';
 import type { ProviderProfile } from '@/server/db/user-data';
 import type { Firestore } from 'firebase/firestore';
 

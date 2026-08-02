@@ -52,4 +52,5 @@ fundforher-firebase-adminsdk-fbsvc-1d39533712.json
 *-firebase-adminsdk-*.json
 *service-account*.json
 google-credentials.json
+android/app/google-services.json
 

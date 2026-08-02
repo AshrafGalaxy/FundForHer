@@ -4,6 +4,46 @@ import { algoliaClient, ALGOLIA_INDEX_NAME } from '@/lib/algolia-admin';
 
 export const SCHOLARSHIPS_COLLECTION = 'scholarships';
 export const SCRAPER_RUNS_COLLECTION = 'scraper_runs';
+export const URL_PARSE_CACHE_COLLECTION = 'url_parse_cache';
+
+// ─────────────────────────────────────────────
+// URL PARSE CACHE (prevents re-scraping within 30 days)
+// ─────────────────────────────────────────────
+
+/**
+ * Marks a URL as recently parsed so we skip it in future runs.
+ * TTL: 30 days.
+ */
+export async function markUrlParsed(url: string, scholarshipsFound: number): Promise<void> {
+    try {
+        const key = Buffer.from(url).toString('base64').slice(0, 500);
+        await adminDb.collection(URL_PARSE_CACHE_COLLECTION).doc(key).set({
+            url,
+            parsedAt: new Date(),
+            scholarshipsFound,
+            expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+        });
+    } catch (err) {
+        console.warn('[url-cache] Failed to mark URL as parsed:', err);
+    }
+}
+
+/**
+ * Returns true if this URL was successfully parsed within the last 30 days.
+ * If expired or not found, returns false.
+ */
+export async function isUrlParsedRecently(url: string): Promise<boolean> {
+    try {
+        const key = Buffer.from(url).toString('base64').slice(0, 500);
+        const doc = await adminDb.collection(URL_PARSE_CACHE_COLLECTION).doc(key).get();
+        if (!doc.exists) return false;
+        const data = doc.data()!;
+        const expiresAt: Date = data.expiresAt?.toDate?.() ?? new Date(data.expiresAt);
+        return expiresAt > new Date();
+    } catch {
+        return false;
+    }
+}
 
 // ─────────────────────────────────────────────
 // VALIDATION
@@ -16,7 +56,8 @@ export interface ValidationResult {
 
 /**
  * Validates a parsed scholarship before writing to Firestore.
- * Rejects garbage AI output: empty titles, past deadlines, negative amounts.
+ * Rejects only hard garbage: empty titles, negative amounts.
+ * Null/rolling deadlines are allowed (status set to 'Upcoming').
  */
 export function validateScholarship(
     scholarship: Omit<Scholarship, 'id' | 'lastUpdated'>
@@ -33,15 +74,16 @@ export function validateScholarship(
         reasons.push('Amount is negative');
     }
 
-    // Reject past-deadline scholarships (with 1-day grace period)
+    // Only reject explicitly past-deadline scholarships with a 30-day grace period.
+    // Null/missing deadlines are allowed — they will be set to 'Upcoming'.
     if (scholarship.deadline) {
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
         const deadline = scholarship.deadline instanceof Date
             ? scholarship.deadline
             : new Date(scholarship.deadline as any);
-        if (!isNaN(deadline.getTime()) && deadline < yesterday) {
-            reasons.push(`Deadline already passed: ${deadline.toDateString()}`);
+        if (!isNaN(deadline.getTime()) && deadline < thirtyDaysAgo) {
+            reasons.push(`Deadline passed over 30 days ago: ${deadline.toDateString()}`);
         }
     }
 
@@ -176,11 +218,24 @@ export async function markExpiredScholarships(): Promise<number> {
 
     if (snapshot.empty) return 0;
 
-    const batch = adminDb.batch();
-    snapshot.docs.forEach(doc => {
-        batch.update(doc.ref, { status: 'Expired', lastUpdated: new Date() });
-    });
-    await batch.commit();
+    // Chunk into groups of 500 to respect Firestore batch limit
+    const BATCH_LIMIT = 500;
+    const docs = snapshot.docs;
+    const now = new Date();
+
+    for (let i = 0; i < docs.length; i += BATCH_LIMIT) {
+        const chunk = docs.slice(i, i + BATCH_LIMIT);
+        const batch = adminDb.batch();
+        chunk.forEach(doc => {
+            batch.update(doc.ref, { status: 'Expired', lastUpdated: now });
+        });
+        await batch.commit();
+
+        // Sync each expired doc to Algolia
+        for (const doc of chunk) {
+            await syncToAlgolia(doc.id, { ...doc.data(), status: 'Expired', lastUpdated: now });
+        }
+    }
 
     console.log(`🗑️ Marked ${snapshot.size} scholarships as Expired.`);
     return snapshot.size;

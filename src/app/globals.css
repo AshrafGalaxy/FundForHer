@@ -44,6 +44,10 @@
   --radius-lg: var(--radius);
   --radius-md: calc(var(--radius) - 2px);
   --radius-sm: calc(var(--radius) - 4px);
+
+  --font-sans: 'RupeeSystemFallback', 'PT Sans', ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-body: 'RupeeSystemFallback', 'PT Sans', ui-sans-serif, system-ui, sans-serif;
+  --font-headline: 'RupeeSystemFallback', 'Poppins', ui-sans-serif, system-ui, sans-serif;
 }
 
 @layer base {
@@ -80,37 +84,60 @@
   }
 
   .dark {
-    --background: hsl(240 10% 3.9%);
-    --foreground: hsl(0 0% 98%);
+    /* Premium Soft Baby Pink Theme Palette Override for Dark Mode */
+    --color-theme-50: hsl(5, 100%, 97%);
+    --color-theme-100: hsl(5, 100%, 94%);
+    --color-theme-200: hsl(5, 96%, 86%);
+    --color-theme-300: hsl(5, 95%, 78%);
+    /* Soft Baby Pink */
+    --color-theme-400: hsl(5, 94%, 65%);
+    --color-theme-500: hsl(5, 90%, 55%);
+    --color-theme-600: hsl(5, 85%, 45%);
+    --color-theme-700: hsl(5, 60%, 35%);
+    /* Lower saturation for darks */
+    --color-theme-800: hsl(5, 45%, 28%);
+    --color-theme-900: hsl(5, 40%, 20%);
+    --color-theme-950: hsl(5, 35%, 14%);
 
-    --card: hsl(240 10% 3.9%);
-    --card-foreground: hsl(0 0% 98%);
+    --background: hsl(5, 15%, 8%);
+    --foreground: hsl(0, 0%, 98%);
 
-    --popover: hsl(240 10% 3.9%);
-    --popover-foreground: hsl(0 0% 98%);
+    --card: hsl(5, 15%, 11%);
+    --card-foreground: hsl(0, 0%, 98%);
 
-    --primary: hsl(19 96% 25%);
-    --primary-foreground: hsl(20 40% 90%);
+    --popover: hsl(5, 15%, 11%);
+    --popover-foreground: hsl(0, 0%, 98%);
 
-    --secondary: hsl(240 3.7% 15.9%);
-    --secondary-foreground: hsl(0 0% 98%);
+    --primary: hsl(5, 95%, 78%);
+    /* Baby pink primary accent */
+    --primary-foreground: hsl(5, 40%, 15%);
+    /* Dark text on light pink */
 
-    --muted: hsl(240 3.7% 15.9%);
-    --muted-foreground: hsl(240 5% 64.9%);
+    --secondary: hsl(5, 15%, 16%);
+    --secondary-foreground: hsl(0, 0%, 98%);
 
-    --accent: hsl(240 3.7% 15.9%);
-    --accent-foreground: hsl(0 0% 98%);
+    --muted: hsl(5, 15%, 16%);
+    --muted-foreground: hsl(5, 20%, 70%);
 
-    --destructive: hsl(0 62.8% 30.6%);
-    --destructive-foreground: hsl(0 0% 98%);
+    --accent: hsl(5, 25%, 22%);
+    --accent-foreground: hsl(5, 95%, 85%);
 
-    --border: hsl(240 3.7% 15.9%);
-    --input: hsl(240 3.7% 15.9%);
-    --ring: hsl(240 4.9% 83.9%);
+    --destructive: hsl(0, 62.8%, 30.6%);
+    --destructive-foreground: hsl(0, 0%, 98%);
+
+    --border: hsl(5, 15%, 20%);
+    --input: hsl(5, 15%, 20%);
+    --ring: hsl(5, 95%, 78%);
   }
 }
 
 @layer base {
+  @font-face {
+    font-family: 'RupeeSystemFallback';
+    src: local('Arial'), local('-apple-system'), local('Segoe UI'), local('Roboto'), local('sans-serif');
+    unicode-range: U+20B9;
+  }
+
   * {
     border-color: var(--color-border);
   }
@@ -119,9 +146,22 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
-    font-family: 'PT Sans', sans-serif;
+    @apply font-body;
+    font-family: 'RupeeSystemFallback', 'PT Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     min-height: 100vh;
     transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+    
+    /* Native App Optimizations */
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior-y: none;
+  }
+
+  /* Allow text selection in inputs and textareas */
+  input, textarea {
+    -webkit-user-select: auto;
+    user-select: auto;
   }
 
   /* Custom Scrollbar Styles */
@@ -151,4 +191,19 @@
   .dark ::-webkit-scrollbar-thumb:hover {
     background: var(--color-theme-600);
   }
+}
+
+/* Infinite Marquee Animation — global utility */
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee 25s linear infinite;
 }

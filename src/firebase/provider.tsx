@@ -5,11 +5,13 @@ import { createContext, useContext, ReactNode } from 'react';
 import type { FirebaseApp } from 'firebase/app';
 import type { Auth } from 'firebase/auth';
 import type { Firestore } from 'firebase/firestore';
+import type { FirebaseStorage } from 'firebase/storage';
 
 interface FirebaseContextType {
   app: FirebaseApp;
   auth: Auth;
   db: Firestore;
+  storage: FirebaseStorage;
 }
 
 const FirebaseContext = createContext<FirebaseContextType | null>(null);
@@ -30,7 +32,7 @@ interface FirebaseProviderProps {
 export const FirebaseProvider = ({ children, value }: FirebaseProviderProps) => {
   return (
     <FirebaseContext.Provider value={value}>
-        {children}
+      {children}
     </FirebaseContext.Provider>
   );
 };

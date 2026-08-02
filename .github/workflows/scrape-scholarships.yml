@@ -20,10 +20,18 @@ jobs:
           # This prevents "https://https://fundforher.com" bugs (curl Exit Code 6)
           CLEAN_DOMAIN=$(echo "$DOMAIN" | sed -e 's|^https*://||' -e 's|/$||')
           
-          echo "Initiating sync trigger to domain: $CLEAN_DOMAIN"
+          if [ -z "$CLEAN_DOMAIN" ]; then
+            echo "::error::DOMAIN is empty. Please set the PROD_DOMAIN secret in GitHub Actions."
+            exit 1
+          fi
+
+          TARGET_URL="https://${CLEAN_DOMAIN}/api/scholarships/sync?secret=${CRON_AUTH}"
+          SAFE_LOG_URL="https://${CLEAN_DOMAIN}/api/scholarships/sync?secret=***MASKED***"
+
+          echo "Initiating sync trigger to: $SAFE_LOG_URL"
           
           # Execute curl with robust error handling (-v for verbose, --fail-with-body)
-          HTTP_STATUS=$(curl -s -v --fail-with-body -o response.txt -w "%{http_code}" -X POST "https://${CLEAN_DOMAIN}/api/scholarships/sync?secret=${CRON_AUTH}" -H "Content-Type: application/json")
+          HTTP_STATUS=$(curl -s -v --fail-with-body -o response.txt -w "%{http_code}" -X POST "$TARGET_URL" -H "Content-Type: application/json")
           
           echo "Response Status: $HTTP_STATUS"
           

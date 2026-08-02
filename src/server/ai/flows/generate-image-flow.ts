@@ -39,12 +39,14 @@ const generateImageFlow = ai.defineFlow(
       model: 'googleai/imagen-4.0-fast-generate-001',
       prompt: input.prompt,
     });
-    
-    const imageUrl = media.url;
+
+    // media can be null if the model returns no media content
+    const imageUrl = media?.url;
     if (!imageUrl) {
         throw new Error('Image generation failed to return a URL.');
     }
 
     return { imageUrl };
+
   }
 );

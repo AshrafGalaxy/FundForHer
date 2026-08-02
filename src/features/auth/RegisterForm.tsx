@@ -13,7 +13,8 @@ import { Loader2, UserPlus } from 'lucide-react';
 import { register } from '@/lib/auth';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
+import { Capacitor } from '@capacitor/core';
+import { GoogleAuthProvider, signInWithPopup, signInWithCredential } from 'firebase/auth';
 import { FirebaseError } from 'firebase/app';
 import { createInitialUserProfile } from '@/server/db/user-data';
 import { cn } from '@/lib/utils';
@@ -98,20 +99,23 @@ export function RegisterForm() {
     if (!auth || !db) return;
     setIsGoogleLoading(true);
     try {
-      const provider = new GoogleAuthProvider();
-      const result = await signInWithPopup(auth, provider);
+      if (Capacitor.isNativePlatform()) {
+        const { FirebaseAuthentication } = await import('@capacitor-firebase/authentication');
+        const nativeResult = await FirebaseAuthentication.signInWithGoogle();
 
-      // We pass some default/dummy data for the fields Google doesn't provide
-      // The user can edit these later in their profile.
-      await createInitialUserProfile(db, result.user.uid, {
-        fullName: result.user.displayName || 'New User',
-        email: result.user.email || '',
-        phone: result.user.phoneNumber || '',
-        dob: new Date('2000-01-01'), // Dummy fallback
-        qualification: 'Other',
-      });
+        if (nativeResult.credential?.idToken) {
+          const credential = GoogleAuthProvider.credential(nativeResult.credential.idToken);
+          await signInWithCredential(auth, credential);
+        } else {
+          throw new Error("No ID Token received from Native Google Auth");
+        }
+      } else {
+        const provider = new GoogleAuthProvider();
+        await signInWithPopup(auth, provider);
+      }
 
-      router.push('/authenticated/profile');
+      // Send the new 1-click user straight to the conversational onboarding
+      router.push('/onboarding');
     } catch (error: any) {
       let description = 'An unexpected error occurred during Google sign-up.';
       if (error instanceof FirebaseError) {

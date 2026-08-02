@@ -1,29 +1,60 @@
 {
-    "indexes": [
-        {
-            "collectionGroup": "scholarships",
-            "queryScope": "COLLECTION",
-            "fields": [
-                {
-                    "fieldPath": "lastUpdated",
-                    "order": "DESCENDING"
-                }
-            ]
-        },
-        {
-            "collectionGroup": "scholarships",
-            "queryScope": "COLLECTION",
-            "fields": [
-                {
-                    "fieldPath": "lastUpdated",
-                    "order": "DESCENDING"
-                },
-                {
-                    "fieldPath": "status",
-                    "order": "ASCENDING"
-                }
-            ]
-        }
-    ],
-    "fieldOverrides": []
+  "indexes": [
+    {
+      "collectionGroup": "applications",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "scholarshipId", "order": "ASCENDING" },
+        { "fieldPath": "appliedAt",     "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "applications",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "scholarshipId", "order": "ASCENDING" },
+        { "fieldPath": "submittedAt",   "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "applications",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "studentId", "order": "ASCENDING" },
+        { "fieldPath": "appliedAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "applications",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "studentId", "order": "ASCENDING" },
+        { "fieldPath": "status",    "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "mentorship_requests",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "mentorId",   "order": "ASCENDING" },
+        { "fieldPath": "createdAt",  "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "mentorship_requests",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "studentId",  "order": "ASCENDING" },
+        { "fieldPath": "mentorId",   "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "community_posts",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
 }

@@ -3,11 +3,10 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import InstallAppWidget from '@/components/pwa/InstallAppWidget';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { getProviderProfile } from '@/server/db/user-data';
 import type { Scholarship } from '@/lib/types';
-import { ArrowRight, BookCheck, Goal, HeartHandshake, Lightbulb, Target, Smartphone, Laptop, Tablet } from 'lucide-react';
+import { ArrowRight, BookCheck, Goal, HeartHandshake, Lightbulb, Target, Smartphone, Laptop, Tablet, CheckCircle2, Download } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import placeholderImages from '@/lib/placeholder-images.json';
@@ -17,7 +16,10 @@ import { useEffect, useState } from 'react';
 import { Loader2, Sparkles, Calendar } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useFirestore } from '@/firebase';
-import { collection, getDocs, doc, getDoc, query, orderBy, limit, where, Timestamp } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc, query, orderBy, limit, Timestamp } from 'firebase/firestore';
+import { FeaturedScholarshipCarousel } from '@/components/FeaturedScholarshipCarousel';
+import { InfiniteMarquee } from '@/components/InfiniteMarquee';
+import { MagneticWrapper } from '@/components/MagneticWrapper';
 
 const AboutSection = () => {
     const { aboutSection } = placeholderImages.landingPage;
@@ -128,6 +130,83 @@ const FeatureCard = ({ icon, title, description }: { icon: React.ReactNode, titl
 );
 
 export default function LandingPage() {
+    const [isPwaInstalled, setIsPwaInstalled] = useState(false);
+    const [deviceType, setDeviceType] = useState<'android' | 'ios' | 'desktop' | 'unknown'>('unknown');
+    const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+    const [pwaPromptAvailable, setPwaPromptAvailable] = useState(false);
+
+    useEffect(() => {
+        // ── Standalone / installed detection ────────────────────────────
+        if (window.matchMedia('(display-mode: standalone)').matches || (window.navigator as any).standalone === true) {
+            setIsPwaInstalled(true);
+        }
+        const handleAppInstalled = () => setIsPwaInstalled(true);
+        window.addEventListener('appinstalled', handleAppInstalled);
+
+        // ── Device matrix detection ─────────────────────────────────────
+        // Uses UA + touch capability + screen width for reliable classification.
+        const ua = window.navigator.userAgent.toLowerCase();
+        const isTouch = window.navigator.maxTouchPoints > 0;
+        const isMobileWidth = window.innerWidth <= 900;
+
+        if (/android/.test(ua) && isTouch) {
+            setDeviceType('android');
+        } else if (/iphone|ipad|ipod/.test(ua)) {
+            setDeviceType('ios');
+        } else if (/windows|macintosh|linux/.test(ua) && !isTouch) {
+            setDeviceType('desktop');
+        } else if (isMobileWidth && isTouch) {
+            // Fallback: touch + narrow screen = treat as android for download purposes
+            setDeviceType('android');
+        } else {
+            setDeviceType('desktop');
+        }
+
+        // ── Capture PWA deferred install prompt (Chrome/Edge on Android + Desktop) ──
+        const handleBeforeInstallPrompt = (e: Event) => {
+            e.preventDefault();
+            setDeferredPrompt(e);
+            setPwaPromptAvailable(true);
+        };
+        window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+
+        return () => {
+            window.removeEventListener('appinstalled', handleAppInstalled);
+            window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+        };
+    }, []);
+
+    // ── Adaptive download handler ────────────────────────────────────────────
+    const handleDownloadCTA = async (e: React.MouseEvent) => {
+        if (deviceType === 'android') {
+            // Android mobile: serve APK directly
+            const link = document.createElement('a');
+            link.href = '/downloads/fundherfuture-latest.apk';
+            link.download = 'FundHerFuture.apk';
+            link.setAttribute('type', 'application/vnd.android.package-archive');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } else if (deviceType === 'ios') {
+            // iOS: guide to Share → Add to Home Screen (Safari PWA)
+            alert('To install on iOS: tap the Share button (□↑) in Safari, then choose "Add to Home Screen".');
+        } else {
+            // Desktop: trigger native PWA install prompt or open shortcut guide
+            if (pwaPromptAvailable && deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    setIsPwaInstalled(true);
+                    setPwaPromptAvailable(false);
+                    setDeferredPrompt(null);
+                }
+            } else {
+                // Fallback: open the live web app in a new tab
+                window.open('https://fundherfuture.vercel.app', '_blank', 'noopener');
+            }
+        }
+    };
+
     const authContext = useAuth();
     const db = useFirestore();
     const router = useRouter();
@@ -161,44 +240,55 @@ export default function LandingPage() {
         }
 
         if (db) {
+            // Fetch global stats client-side (compatible with static export + Vercel)
             getDocs(collection(db, 'scholarships'))
-                .then(snapshot => {
-                    const data = snapshot.docs.map(doc => doc.data() as Scholarship);
-                    const amount = data.reduce((sum: number, s: Scholarship) => sum + (s.amount || 0), 0);
-                    setStats({ totalScholarships: data.length, totalAmount: amount, fetching: false });
+                .then(snap => {
+                    let totalAmount = 0;
+                    snap.forEach(d => {
+                        const amt = d.data().amount;
+                        if (typeof amt === 'number' && !isNaN(amt)) totalAmount += amt;
+                    });
+                    setStats({ totalScholarships: snap.size, totalAmount, fetching: false });
                 })
                 .catch(e => {
-                    console.error("Client SDK Fetch failed:", e);
+                    console.error('Stats fetch failed:', e);
                     setStats({ totalScholarships: 0, totalAmount: 0, fetching: false });
                 });
 
-            // Fetch scholarships added in the last 5 days only
-            const fiveDaysAgo = new Date();
-            fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
+            // Simple query: just orderBy + limit — no compound where clause, no composite index needed.
+            // Date filtering is done client-side to work for unauthenticated users.
             const recentQuery = query(
                 collection(db, 'scholarships'),
-                where('lastUpdated', '>=', Timestamp.fromDate(fiveDaysAgo)),
                 orderBy('lastUpdated', 'desc'),
-                limit(3)
+                limit(10)
             );
+            const fiveDaysAgo = new Date();
+            fiveDaysAgo.setDate(fiveDaysAgo.getDate() - 5);
             getDocs(recentQuery)
                 .then(snap => {
-                    const mapped = snap.docs.map(d => {
-                        const data = d.data();
-                        // Safely convert Firestore Timestamps → JS Dates
-                        const toDate = (val: any): Date | null => {
-                            if (!val) return null;
-                            if (val instanceof Date) return val;
-                            if (val?.toDate) return val.toDate();
-                            return new Date(val);
-                        };
-                        return {
-                            id: d.id,
-                            ...data,
-                            deadline: toDate(data.deadline),
-                            lastUpdated: toDate(data.lastUpdated),
-                        } as Scholarship;
-                    });
+                    const mapped = snap.docs
+                        .map(d => {
+                            const data = d.data();
+                            const toDate = (val: any): Date | null => {
+                                if (!val) return null;
+                                if (val instanceof Date) return val;
+                                if (val?.toDate) return val.toDate();
+                                return new Date(val);
+                            };
+                            return {
+                                id: d.id,
+                                ...data,
+                                deadline: toDate(data.deadline),
+                                lastUpdated: toDate(data.lastUpdated),
+                            } as Scholarship;
+                        })
+                        // Client-side filter: only last 5 days and not expired
+                        .filter(s => {
+                            if ((s as any).status === 'Expired') return false;
+                            if (!s.lastUpdated) return false;
+                            return s.lastUpdated >= fiveDaysAgo;
+                        })
+                        .slice(0, 3);
                     setLatestScholarships(mapped);
                     setFetchingLatest(false);
                 })
@@ -236,13 +326,14 @@ export default function LandingPage() {
             {/* Hero Section */}
             <section className="relative text-center py-24 md:py-44 overflow-hidden flex flex-col justify-center min-h-[75vh]">
                 {/* Background Image Overlay */}
-                <div className="absolute inset-0 z-0 pointer-events-none">
+                <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
                     <img
                         src="/fresh-graduate-with-diploma.jpg"
                         alt="Female graduate holding diploma"
                         className="w-full h-full object-cover"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-tr from-indigo-950/90 via-background/80 to-transparent mix-blend-multiply" />
+
+                    <div className="absolute inset-0 bg-gradient-to-tr from-indigo-950/90 via-white/80 to-transparent mix-blend-multiply" />
                     <div className="absolute inset-0 bg-black/40" />
                 </div>
 
@@ -251,129 +342,56 @@ export default function LandingPage() {
                     <p className="text-xl md:text-2xl text-slate-200 max-w-3xl mx-auto mb-10 drop-shadow-md font-medium px-4">
                         {marketing?.heroSubtitle || "The ultimate scholarship platform for women in India. Your journey to higher education and a brighter future starts right here."}
                     </p>
-                    <div className="flex flex-col sm:flex-row justify-center gap-6">
-                        <Button asChild size="lg" className="h-14 px-8 text-lg font-semibold shadow-xl shadow-primary/20 transition-all hover:scale-105">
-                            <Link href="/register">
-                                Get Started <ArrowRight className="ml-2 h-5 w-5" />
-                            </Link>
-                        </Button>
-                        <Button asChild size="lg" variant="outline" className="h-14 px-8 text-lg font-semibold bg-white/10 hover:bg-white/20 text-white border-white/30 backdrop-blur-sm transition-all hover:scale-105">
-                            <Link href="/login">Login</Link>
-                        </Button>
+                    <div className="flex flex-col sm:flex-row justify-center gap-6 items-center">
+                        <MagneticWrapper strength={25}>
+                            <Button asChild size="lg" className="h-14 px-8 text-lg font-semibold shadow-xl shadow-primary/30 transition-colors group">
+                                <Link href="/register">
+                                    Get Started <ArrowRight className="ml-2 h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                                </Link>
+                            </Button>
+                        </MagneticWrapper>
+                        <MagneticWrapper strength={25}>
+                            <Button asChild size="lg" variant="outline" className="h-14 px-8 text-lg font-semibold bg-white/10 hover:bg-white/20 text-white border-white/30 backdrop-blur-sm transition-colors">
+                                <Link href="/login">Login</Link>
+                            </Button>
+                        </MagneticWrapper>
                     </div>
                 </div>
             </section>
 
+            {/* Featured Scholarships Carousel */}
+            {!fetchingLatest && latestScholarships.length > 0 && (
+                <FeaturedScholarshipCarousel scholarships={latestScholarships} />
+            )}
+
+            {/* Trust-Building Infinite Partner Marquee */}
+            <InfiniteMarquee />
+
             {/* Stats Section */}
-            <section className="py-12 bg-background">
+            <section className="py-12 bg-background relative z-10">
                 <div className="container mx-auto px-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-center max-w-4xl mx-auto">
-                        <div className="bg-card p-6 rounded-lg shadow-sm">
+                        <div className="bg-card border p-8 rounded-2xl shadow-sm text-center hover:shadow-md transition-shadow">
                             {stats.fetching ? (
                                 <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-2" />
                             ) : (
-                                <p className="text-4xl font-bold text-theme-900 dark:text-theme-300">{stats.totalScholarships}+</p>
+                                <p className="text-4xl font-bold text-foreground">{stats.totalScholarships}+</p>
                             )}
-                            <p className="text-muted-foreground font-semibold">Scholarships Listed</p>
+                            <p className="text-muted-foreground font-semibold mt-1">Scholarships Listed</p>
                         </div>
-                        <div className="bg-card p-6 rounded-lg shadow-sm">
+                        <div className="bg-card border p-8 rounded-2xl shadow-sm text-center hover:shadow-md transition-shadow">
                             {stats.fetching ? (
                                 <Loader2 className="h-8 w-8 animate-spin text-primary mx-auto mb-2" />
                             ) : (
-                                <p className="text-4xl font-bold text-theme-900 dark:text-theme-300">
+                                <p className="text-4xl font-bold text-foreground">
                                     <span style={{ fontFamily: 'sans-serif' }}>₹</span>{new Intl.NumberFormat('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(stats.totalAmount)}
                                 </p>
                             )}
-                            <p className="text-muted-foreground font-semibold">In Total Funding Available</p>
+                            <p className="text-muted-foreground font-semibold mt-1">In Total Funding Available</p>
                         </div>
                     </div>
                 </div>
             </section>
-
-            {/* Newly Added Scholarships Section */}
-            {(fetchingLatest || latestScholarships.length > 0) && (
-                <section className="py-16 bg-secondary/30 border-y">
-                    <div className="container mx-auto px-4">
-                        <div className="flex flex-col md:flex-row justify-between items-end mb-10">
-                            <div>
-                                <h2 className="text-3xl md:text-4xl font-headline font-bold text-foreground mb-4">Newly Added Scholarships</h2>
-                            </div>
-                            <Button asChild variant="outline" className="mt-6 md:mt-0 hidden sm:flex">
-                                <Link href="/login">View All Scholarships &rarr;</Link>
-                            </Button>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            {fetchingLatest ? (
-                                // Skeleton loader — 3 animated placeholder cards while data loads
-                                Array.from({ length: 3 }).map((_, i) => (
-                                    <div key={i} className="flex flex-col bg-background border rounded-xl overflow-hidden shadow-sm">
-                                        <div className="p-6 space-y-4">
-                                            <div className="flex justify-between items-center">
-                                                <Skeleton className="h-6 w-12 rounded" />
-                                                <Skeleton className="h-6 w-20 rounded" />
-                                            </div>
-                                            <Skeleton className="h-5 w-3/4 rounded" />
-                                            <Skeleton className="h-4 w-1/2 rounded" />
-                                            <div className="space-y-2 pt-1">
-                                                <Skeleton className="h-3 w-full rounded" />
-                                                <Skeleton className="h-3 w-5/6 rounded" />
-                                                <Skeleton className="h-3 w-4/6 rounded" />
-                                            </div>
-                                        </div>
-                                        <div className="border-t bg-muted/20 px-6 py-3 flex justify-between items-center">
-                                            <Skeleton className="h-4 w-28 rounded" />
-                                            <Skeleton className="h-7 w-20 rounded" />
-                                        </div>
-                                    </div>
-                                ))
-                            ) : (
-                                // Real scholarship cards after data loads
-                                latestScholarships.map(scholarship => (
-                                    <Card key={scholarship.id} className="flex flex-col hover:shadow-lg hover:-translate-y-1 transition-all duration-200 bg-background border-primary/10">
-                                        <CardHeader>
-                                            <div className="flex justify-between items-start mb-2">
-                                                <span className="flex items-center gap-1 bg-primary/10 text-primary text-xs font-semibold px-2 py-1 rounded w-fit">
-                                                    <Sparkles className="h-3 w-3" /> New
-                                                </span>
-                                                {scholarship.amount && (
-                                                    <span className="text-sm font-bold text-green-600 bg-green-50 px-2 py-1 rounded">
-                                                        <span style={{ fontFamily: 'sans-serif' }}>₹</span>{scholarship.amount.toLocaleString('en-IN')}
-                                                    </span>
-                                                )}
-                                            </div>
-                                            <CardTitle className="font-headline text-lg line-clamp-2">{scholarship.title}</CardTitle>
-                                            <CardDescription className="line-clamp-1">{scholarship.provider}</CardDescription>
-                                        </CardHeader>
-                                        <CardContent className="flex-grow">
-                                            <p className="text-sm text-muted-foreground line-clamp-3">
-                                                {scholarship.description}
-                                            </p>
-                                        </CardContent>
-                                        <CardFooter className="justify-between items-center text-xs text-muted-foreground border-t bg-muted/20 p-4">
-                                            <span className="flex items-center gap-1.5">
-                                                <Calendar className="h-4 w-4" />
-                                                {scholarship.deadline
-                                                    ? (scholarship.deadline instanceof Date ? scholarship.deadline : new Date(scholarship.deadline)).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
-                                                    : 'Deadline Varies'}
-                                            </span>
-                                            <Button asChild size="sm" variant="ghost" className="h-8 hover:text-theme-900 dark:hover:text-theme-300">
-                                                <Link href="/register">View Details</Link>
-                                            </Button>
-                                        </CardFooter>
-                                    </Card>
-                                ))
-                            )}
-                        </div>
-
-                        <div className="flex justify-center mt-10">
-                            <Button asChild size="lg" className="px-10">
-                                <Link href="/register">Explore All Scholarships →</Link>
-                            </Button>
-                        </div>
-                    </div>
-                </section>
-            )}
 
             {/* Problem Section */}
             <ProblemSection />
@@ -382,28 +400,93 @@ export default function LandingPage() {
             <MissionSection />
 
 
-            {/* Features Section */}
-            <section className="py-16 md:py-24">
-                <div className="container mx-auto px-4">
-                    <h2 className="text-3xl md:text-4xl font-headline font-bold text-center mb-12">
-                        Why Choose Us?
-                    </h2>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                        <FeatureCard
-                            icon={<Target className="h-8 w-8" />}
-                            title="Centralized Hub"
-                            description="Find hundreds of scholarships from various providers all in one place, saving you time and effort."
-                        />
-                        <FeatureCard
-                            icon={<BookCheck className="h-8 w-8" />}
-                            title="Easy Application"
-                            description="Our standardized application process makes it simple to apply for multiple scholarships without redundant paperwork."
-                        />
-                        <FeatureCard
-                            icon={<HeartHandshake className="h-8 w-8" />}
-                            title="Exclusively for Girls"
-                            description="A dedicated platform focusing solely on opportunities for female students across India."
-                        />
+            {/* Premium Bento Box Features Section */}
+            <section className="py-24 bg-white dark:bg-[#301A18] transition-colors">
+                <div className="container mx-auto px-4 max-w-6xl">
+                    <div className="text-center mb-16">
+                        <h2 className="text-4xl md:text-5xl font-headline font-extrabold mb-4 tracking-tight text-foreground dark:text-[#FFF5F4]">
+                            Everything you need, <br className="hidden md:block" />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-orange-400 dark:from-[#FBA69B] dark:to-[#FFD1C8]">
+                                beautifully simple.
+                            </span>
+                        </h2>
+                        <p className="text-lg text-muted-foreground dark:text-[#FFEBE8]/80 max-w-2xl mx-auto">
+                            We've completely reimagined the scholarship experience to be fast, secure, and exclusively tailored for you.
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-5 auto-rows-[260px] md:auto-rows-[300px]">
+
+                        {/* Tile 1 — The Central Hub */}
+                        <div className="md:col-span-2 relative group rounded-[2rem] p-8 md:p-10 overflow-hidden
+                            bg-white dark:bg-[#47221E]/40 border border-primary/20 dark:border-[#672B25] backdrop-blur-xl
+                            shadow-lg shadow-primary/5 dark:shadow-black/20 hover:shadow-2xl hover:shadow-primary/10 transition-all duration-700 hover:-translate-y-1"
+                        >
+                            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/50 dark:via-white/10 to-transparent opacity-80 pointer-events-none" />
+                            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 dark:from-[#FBA69B]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                            <div className="h-full flex flex-col justify-end relative z-10 transition-transform duration-700">
+                                <Target className="w-12 h-12 text-primary dark:text-[#FBA69B] mb-5 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-700" />
+                                <h3 className="text-2xl md:text-3xl font-headline font-bold mb-2 text-foreground dark:text-[#FFF5F4]">The Central Hub</h3>
+                                <p className="text-muted-foreground dark:text-[#FFEBE8]/70 text-base font-medium max-w-md">
+                                    Discover hundreds of verified scholarships in one unified, clutter-free space. Stop hunting across the web.
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Tile 2 — Girls First */}
+                        <div className="relative group rounded-[2rem] p-8 overflow-hidden
+                            bg-white dark:bg-[#47221E]/30 border border-primary/20 dark:border-[#672B25] backdrop-blur-xl
+                            shadow-lg shadow-primary/5 dark:shadow-black/20 hover:shadow-xl hover:shadow-primary/10 transition-all duration-700 hover:-translate-y-1
+                            flex flex-col justify-between"
+                        >
+                            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/50 dark:via-white/10 to-transparent opacity-80 pointer-events-none" />
+                            <div className="absolute inset-0 bg-gradient-to-tr from-primary/15 dark:from-[#FBA69B]/15 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                            <HeartHandshake className="w-10 h-10 text-primary dark:text-[#FBA69B] group-hover:-rotate-12 group-hover:scale-110 transition-transform duration-700 relative z-10" />
+                            <div className="relative z-10">
+                                <h3 className="text-2xl font-headline font-bold mb-2 text-foreground dark:text-[#FFF5F4]">Girls First</h3>
+                                <p className="text-muted-foreground dark:text-[#FFEBE8]/70 font-medium text-sm">
+                                    100% focused on opportunities exclusively for female students across India.
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Tile 3 — Universal Apply */}
+                        <div className="relative group rounded-[2rem] p-8 overflow-hidden
+                            bg-white dark:bg-[#47221E]/30 border border-primary/20 dark:border-[#672B25] backdrop-blur-xl
+                            shadow-lg shadow-primary/5 dark:shadow-black/20 hover:shadow-xl hover:shadow-primary/10 transition-all duration-700 hover:-translate-y-1
+                            flex flex-col justify-between"
+                        >
+                            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/50 dark:via-white/10 to-transparent opacity-80 pointer-events-none" />
+                            <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 dark:from-[#FBA69B]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+                            <BookCheck className="w-10 h-10 text-primary dark:text-[#FBA69B] group-hover:-translate-y-2 group-hover:scale-110 transition-transform duration-700 relative z-10" />
+                            <div className="relative z-10">
+                                <h3 className="text-2xl font-headline font-bold mb-2 text-foreground dark:text-[#FFF5F4]">Universal Apply</h3>
+                                <p className="text-muted-foreground dark:text-[#FFEBE8]/70 font-medium text-sm">
+                                    One profile. One unified format. Zero repetitive paperwork.
+                                </p>
+                            </div>
+                        </div>
+
+                        {/* Tile 4 — AI-Powered Matches */}
+                        <div className="md:col-span-2 relative group rounded-[2rem] p-8 md:p-10 overflow-hidden
+                            bg-white dark:bg-[#47221E]/40 border border-primary/20 dark:border-[#672B25] backdrop-blur-xl
+                            shadow-lg shadow-primary/5 dark:shadow-black/20 hover:shadow-2xl hover:shadow-primary/10 transition-all duration-700 hover:-translate-y-1"
+                        >
+                            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/50 dark:via-white/10 to-transparent opacity-80 pointer-events-none" />
+                            <div className="absolute inset-0 bg-gradient-to-br from-primary/10 dark:from-[#FBA69B]/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
+
+                            {/* Decorative glowing orb */}
+                            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-64 h-64 bg-primary/20 dark:bg-[#FBA69B]/15 blur-[60px] rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+
+                            <div className="h-full flex flex-col justify-end relative z-10 transition-transform duration-700">
+                                <Sparkles className="w-12 h-12 text-primary dark:text-[#FBA69B] mb-5 group-hover:animate-pulse" />
+                                <h3 className="text-2xl md:text-3xl font-headline font-bold mb-2 text-foreground dark:text-[#FFF5F4]">AI-Powered Matches</h3>
+                                <p className="text-muted-foreground dark:text-[#FFEBE8]/70 text-base font-medium max-w-md">
+                                    Our intelligent engine instantly analyzes your profile and highlights the exact scholarships you're most likely to win.
+                                </p>
+                            </div>
+                        </div>
+
                     </div>
                 </div>
             </section>
@@ -412,47 +495,110 @@ export default function LandingPage() {
             <AboutSection />
 
             {/* App Download / PWA Section */}
-            <section className="py-20 md:py-28 bg-gradient-to-br from-theme-50 to-background border-y border-theme-100 dark:from-theme-950/40 dark:to-background dark:border-theme-900/50 relative overflow-hidden">
-                {/* Decorative background circles */}
-                <div className="absolute top-0 right-0 -mr-20 -mt-20 w-72 h-72 rounded-full bg-theme-200/20 dark:bg-theme-800/20 blur-3xl pointer-events-none" />
-                <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 rounded-full bg-primary/10 dark:bg-primary/5 blur-3xl pointer-events-none" />
+            <section className="py-20 md:py-28 bg-white dark:bg-[#301A18] relative overflow-hidden border-y border-primary/20 dark:border-[#47221E] transition-colors">
+                {/* Decorative background glows */}
+                <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 rounded-full bg-primary/20 dark:bg-[#FBA69B]/20 blur-3xl pointer-events-none" />
+                <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-96 h-96 rounded-full bg-primary/10 dark:bg-[#FBA69B]/10 blur-3xl pointer-events-none" />
 
                 <div className="container mx-auto px-4 relative z-10">
-                    <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-12 bg-card dark:bg-card/50 backdrop-blur-sm p-8 md:p-12 rounded-3xl shadow-xl shadow-theme-200/20 dark:shadow-none border border-theme-100 dark:border-theme-800/50">
+                    <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-12 p-4 md:p-8">
 
                         <div className="flex-1 text-center md:text-left space-y-6">
-                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-theme-100 dark:bg-theme-900 text-theme-800 dark:text-theme-200 text-sm font-semibold mb-2">
-                                <Smartphone className="w-4 h-4" /> Install from Browser
-                            </div>
-                            <h2 className="text-3xl md:text-5xl font-headline font-bold text-theme-950 dark:text-theme-50">
-                                Take Fund Her Future <span className="text-theme-600 dark:text-theme-400">Anywhere.</span>
-                            </h2>
-                            <p className="text-lg text-theme-950 dark:text-theme-200 max-w-lg mx-auto md:mx-0 font-medium">
-                                Install our fast, lightweight web app directly to your device. No app store required. Works perfectly across all your favorite platforms.
-                            </p>
+                            {isPwaInstalled ? (
+                                <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+                                    <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/10 dark:bg-[#47221E] text-primary dark:text-[#FDC8C0] text-sm font-semibold mb-2 border border-primary/20 dark:border-[#672B25] shadow-sm">
+                                        <CheckCircle2 className="w-4 h-4" /> App Installed
+                                    </div>
+                                    <h2 className="text-3xl md:text-5xl font-headline font-bold text-foreground dark:text-[#FFF5F4]">
+                                        You're all <span className="text-primary dark:text-[#FBA69B]">set!</span>
+                                    </h2>
+                                    <p className="text-lg text-muted-foreground dark:text-[#FFEBE8] max-w-lg mx-auto md:mx-0 font-medium">
+                                        Fund Her Future is successfully installed on your device. Enjoy the fastest, offline-ready experience right from your home screen.
+                                    </p>
+                                </div>
+                            ) : (
+                                <div className="space-y-6">
+                                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 dark:bg-[#47221E] text-primary dark:text-[#FFF5F4] text-sm font-semibold mb-2 border border-primary/20 dark:border-[#672B25]">
+                                        <Smartphone className="w-4 h-4" /> Install from Browser
+                                    </div>
+                                    <h2 className="text-3xl md:text-5xl font-headline font-bold text-foreground dark:text-[#FFF5F4]">
+                                        Take Fund Her Future <span className="text-primary dark:text-[#FBA69B]">Anywhere.</span>
+                                    </h2>
+                                    <p className="text-lg text-muted-foreground dark:text-[#FFEBE8] max-w-lg mx-auto md:mx-0 font-medium">
+                                        Install our fast, lightweight web app directly to your device. No app store required. Works perfectly across all your favorite platforms.
+                                    </p>
 
-                            <div className="flex items-center justify-center md:justify-start gap-6 pt-4 text-theme-700 dark:text-theme-300">
-                                <div className="flex flex-col items-center gap-2">
-                                    <Smartphone className="w-8 h-8 text-theme-500" />
-                                    <span className="text-xs font-semibold">Android</span>
+                                    <div className="pt-2 pb-2 flex flex-col gap-3 justify-center md:justify-start">
+                                        {/* ── Adaptive Download CTA ── */}
+                                        {deviceType === 'android' ? (
+                                            <Button
+                                                id="cta-download-android"
+                                                size="lg"
+                                                onClick={handleDownloadCTA}
+                                                className="bg-theme-600 hover:bg-theme-700 text-white font-bold px-8 py-6 rounded-full shadow-xl shadow-theme-900/40 border-none transition-transform hover:scale-105"
+                                            >
+                                                <Download className="w-5 h-5 mr-2" />
+                                                Download APK — Android
+                                            </Button>
+                                        ) : deviceType === 'ios' ? (
+                                            <Button
+                                                id="cta-install-ios"
+                                                size="lg"
+                                                onClick={handleDownloadCTA}
+                                                className="bg-theme-600 hover:bg-theme-700 text-white font-bold px-8 py-6 rounded-full shadow-xl shadow-theme-900/40 border-none transition-transform hover:scale-105"
+                                            >
+                                                <Smartphone className="w-5 h-5 mr-2" />
+                                                Add to Home Screen — iOS
+                                            </Button>
+                                        ) : (
+                                            // Desktop: PWA install or open web app
+                                            <Button
+                                                id="cta-install-desktop"
+                                                size="lg"
+                                                onClick={handleDownloadCTA}
+                                                className="bg-theme-600 hover:bg-theme-700 text-white font-bold px-8 py-6 rounded-full shadow-xl shadow-theme-900/40 border-none transition-transform hover:scale-105"
+                                            >
+                                                <Laptop className="w-5 h-5 mr-2" />
+                                                {pwaPromptAvailable ? 'Install Web App' : 'Open Web App'}
+                                            </Button>
+                                        )}
+                                        {deviceType !== 'unknown' && (
+                                            <p className="text-xs text-muted-foreground text-center md:text-left">
+                                                {deviceType === 'android' && '📦 Android APK · v1.1.0 · ~18 MB'}
+                                                {deviceType === 'ios' && '🍎 Safari → Share → Add to Home Screen'}
+                                                {deviceType === 'desktop' && '💻 Installs as a shortcut from your browser — no download needed'}
+                                            </p>
+                                        )}
+                                    </div>
+
+                                    <div className="flex items-center justify-center md:justify-start gap-8 pt-6 text-[#FDC8C0]">
+                                        <div className="flex flex-col items-center gap-3">
+                                            <Smartphone className="w-8 h-8 text-[#FBA69B]" />
+                                            <span className="text-xs font-semibold tracking-wide">ANDROID</span>
+                                        </div>
+                                        <div className="flex flex-col items-center gap-3">
+                                            <Tablet className="w-8 h-8 text-[#FBA69B]" />
+                                            <span className="text-xs font-semibold tracking-wide">iOS & iPAD</span>
+                                        </div>
+                                        <div className="flex flex-col items-center gap-3">
+                                            <Laptop className="w-8 h-8 text-[#FBA69B]" />
+                                            <span className="text-xs font-semibold tracking-wide">PC & MAC</span>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div className="flex flex-col items-center gap-2">
-                                    <Tablet className="w-8 h-8 text-theme-500" />
-                                    <span className="text-xs font-semibold">iOS / iPadOS</span>
-                                </div>
-                                <div className="flex flex-col items-center gap-2">
-                                    <Laptop className="w-8 h-8 text-theme-500" />
-                                    <span className="text-xs font-semibold">Windows & Mac</span>
-                                </div>
-                            </div>
+                            )}
                         </div>
 
-                        <div className="flex-shrink-0 w-full md:w-auto flex flex-col items-center p-8 bg-theme-50 dark:bg-theme-900 rounded-2xl border border-theme-200 dark:border-theme-800 shadow-sm">
-                            <h3 className="text-xl font-headline font-bold mb-2 text-theme-950 dark:text-theme-50">Get the App Now</h3>
-                            <p className="text-sm text-center text-theme-950 dark:text-theme-200 mb-6 max-w-[200px] font-medium">
-                                One tap to add it to your home screen or desktop.
-                            </p>
-                            <InstallAppWidget />
+                        {/* Right side illustration or spacing */}
+                        <div className="hidden md:flex flex-1 justify-center relative">
+                            <div className="w-64 h-64 bg-[#47221E]/50 rounded-full blur-3xl absolute -z-10" />
+                            <div className="w-48 h-64 bg-gradient-to-tr from-[#672B25] to-[#FBA69B] rounded-[2rem] shadow-2xl border border-[#FBA69B]/30 flex items-center justify-center -rotate-6 transform hover:rotate-0 transition-all duration-500">
+                                <div className="w-40 h-56 bg-[#301A18] rounded-[1.5rem] border border-[#47221E] flex flex-col items-center justify-center p-4">
+                                    <Image src="/icon-192x192.svg" alt="App Icon" width={64} height={64} className="mb-4" />
+                                    <div className="w-20 h-2 bg-[#47221E] rounded-full mb-2" />
+                                    <div className="w-16 h-2 bg-[#47221E] rounded-full" />
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
