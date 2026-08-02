@@ -1,6 +1,6 @@
 # 🌸 FundHerFuture (FundForHer)
 
-> Empowering women in India with accessible scholarship discovery, matching, and application support.
+> Empowering women in India with accessible scholarship discovery, smart matching, and application support.
 
 [![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19-61dafb)](https://react.dev/)
@@ -9,65 +9,98 @@
 
 ---
 
+## 📌 Quick Navigation
+
+- [✨ Overview](#-overview)
+- [🚀 Feature Highlights](#-feature-highlights)
+- [🧱 Architecture Diagram](#-architecture-diagram)
+- [🔄 User Journey Flow](#-user-journey-flow)
+- [🛠️ Tech Stack](#️-tech-stack)
+- [📂 Key App Areas](#-key-app-areas)
+- [🧪 Local Development](#-local-development)
+- [📜 Available Scripts](#-available-scripts)
+- [🎯 Mission](#-mission)
+
+---
+
 ## ✨ Overview
 
 **FundHerFuture** is a scholarship platform focused on helping female students:
-- discover relevant scholarships,
-- evaluate fit and eligibility,
+- discover relevant opportunities,
+- evaluate scholarship fit and eligibility,
 - apply efficiently,
-- and track their progress.
+- and track application progress.
 
-The project also includes dedicated **provider workflows** for posting scholarships and reviewing applicants.
+It also provides dedicated **provider workflows** for posting scholarships and managing applicants.
 
 ---
 
-## 🚀 Core Features
+## 🚀 Feature Highlights
 
-### 👩‍🎓 Student Features
-- 🔎 Scholarship discovery with filters (field, eligibility, type, location, etc.)
-- 📊 Match scoring against profile data
+### 👩‍🎓 Student Experience
+- 🔎 Scholarship discovery with advanced filters
+- 📊 Match scoring using profile data
 - 🤖 AI-powered scholarship odds analysis
-- ✍️ AI essay assistant for scholarship applications
-- 🔖 Bookmark/save scholarships
-- 📝 Application tracking and status views
-- 👥 Community and mentorship sections
-- 🙋 Profile management and document vault
+- ✍️ AI essay assistant for application writing support
+- 🔖 Bookmark and save scholarships
+- 📝 Application tracking and status monitoring
+- 👥 Community and mentorship areas
+- 🙋 Profile editing + document vault
 - 🧪 Feedback and bug reporting forms
 
-### 🏢 Provider Features
+### 🏢 Provider Experience
 - 📌 Provider authentication and protected dashboard
 - 🎯 Scholarship creation, editing, and publishing
-- 📈 KPI-driven dashboard insights
-- 🗂️ Applicant review workflows (including kanban-style management)
+- 📈 KPI-driven dashboard visibility
+- 🗂️ Applicant review workflows (kanban-style management)
 - 🗑️ Scholarship deletion with associated application cleanup
 
-### ⚙️ Platform Features
-- 🔐 Firebase authentication + role-based access control
-- ☁️ Firestore-backed data model
-- 📱 PWA support and Android build path (Capacitor)
-- 📬 Notification/email endpoint integration (Resend)
-- 🧠 AI + automation infrastructure (Genkit, Groq, Inngest)
-- 🛰️ Monitoring hooks via Sentry
+### ⚙️ Platform Capabilities
+- 🔐 Firebase auth with role-based route protection
+- ☁️ Firestore-backed data and workflows
+- 📱 PWA support + Android flow via Capacitor
+- 📬 Notification integration through Resend
+- 🧠 AI + automation stack (Groq, Genkit, Inngest)
+- 🛰️ Monitoring and observability with Sentry
 
 ---
 
-## 🧱 High-Level Architecture
+## 🧱 Architecture Diagram
+
+```mermaid
+flowchart LR
+    U[Users\nStudents & Providers] --> UI[Next.js App Router UI]
+    UI --> AUTH[Firebase Auth\nRole Guards]
+    UI --> API[App API Routes]
+    UI --> FS[(Cloud Firestore)]
+
+    API --> AI_ODDS[AI Odds Check\nGroq]
+    API --> AI_ESSAY[Essay Assistant\nStreaming AI]
+    API --> NOTIFY[Email Notifications\nResend]
+    API --> JOBS[Background Jobs\nInngest]
+
+    JOBS --> SCRAPE[Scholarship Discovery\nSerper + Firecrawl]
+    SCRAPE --> FS
+    AUTH --> FS
+```
+
+---
+
+## 🔄 User Journey Flow
 
 ```mermaid
 flowchart TD
-    U[Users\nStudents & Providers] --> W[Next.js App Router UI]
-    W --> A[Auth Layer\nFirebase Auth + Role Guards]
-    W --> DB[(Firestore)]
-    W --> API[API Routes]
+    A[Student Sign Up / Login] --> B[Complete Profile]
+    B --> C[Browse & Filter Scholarships]
+    C --> D[Check Match Score + AI Odds]
+    D --> E[Use Essay Assistant]
+    E --> F[Submit Application]
+    F --> G[Track Application Status]
 
-    API --> AI1[AI Odds Check\nGroq]
-    API --> AI2[Essay Assistant\nGroq Stream]
-    API --> NT[Notify Service\nResend]
-    API --> JOB[Automation\nInngest + Scraper Jobs]
-
-    JOB --> EXT[External Sources\nSerper / Firecrawl]
-    JOB --> DB
-    A --> DB
+    P1[Provider Login] --> P2[Create / Manage Scholarship]
+    P2 --> P3[Review Applicants]
+    P3 --> P4[Shortlist / Accept]
+    P4 --> G
 ```
 
 ---
@@ -77,18 +110,18 @@ flowchart TD
 - **Frontend:** Next.js 16, React 19, TypeScript, Tailwind CSS, Radix UI
 - **Backend Services:** Firebase (Auth, Firestore, Storage)
 - **AI:** AI SDK + Groq, Genkit
-- **Jobs/Automation:** Inngest, scholarship scraping pipeline
-- **Mobile/PWA:** next-pwa, Capacitor (Android)
+- **Automation:** Inngest + scraper pipeline
+- **Mobile/PWA:** `next-pwa`, Capacitor (Android)
 - **Observability:** Sentry
 
 ---
 
 ## 📂 Key App Areas
 
-- `/` – Landing page and project story
-- `/authenticated/*` – Student dashboard and student workflows
-- `/provider/*` – Provider login/registration and provider dashboard
-- `/app/api/*` – API routes (AI, notifications, sync, automation)
+- `/` → Landing page and mission narrative
+- `/authenticated/*` → Student dashboard and application workflows
+- `/provider/*` → Provider auth and scholarship management
+- `/app/api/*` → API endpoints for AI, notifications, sync, and jobs
 
 ---
 
@@ -99,14 +132,14 @@ flowchart TD
 - npm
 - Firebase project credentials
 
-### 2) Install
+### 2) Install dependencies
 
 ```bash
 npm install
 ```
 
 ### 3) Configure environment variables
-Create `.env.local` in the project root and set the required values used by this repo, including:
+Create `.env.local` in the project root and set required values, including:
 
 - `NEXT_PUBLIC_FIREBASE_API_KEY`
 - `NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN`
@@ -119,7 +152,7 @@ Create `.env.local` in the project root and set the required values used by this
 - `FIREBASE_CLIENT_EMAIL`
 - `FIREBASE_PROJECT_ID`
 - `GROQ_API_KEY`
-- `GEMINI_API_KEY` / `GEMINI_API_KEYS` / `GOOGLE_API_KEY` (if applicable)
+- `GEMINI_API_KEY` / `GEMINI_API_KEYS` / `GOOGLE_API_KEY` (if used)
 - `RESEND_API_KEY`
 - `DEVELOPER_EMAIL`
 - `CRON_SECRET`
@@ -130,38 +163,29 @@ Create `.env.local` in the project root and set the required values used by this
 - `CLOUDFLARE_ACCOUNT_ID`
 - `CLOUDFLARE_API_TOKEN`
 
-### 4) Run
+### 4) Run locally
 
 ```bash
 npm run dev
 ```
 
-Open `http://localhost:3000`.
+Open: `http://localhost:3000`
 
 ---
 
 ## 📜 Available Scripts
 
-- `npm run dev` – Start local development server
-- `npm run build` – Create production build
-- `npm run start` – Run production server
-- `npm run lint` – Run Next.js lint checks
-- `npm run typecheck` – Run TypeScript type checking
-- `npm run genkit:dev` – Start Genkit dev server
-- `npm run genkit:watch` – Start Genkit with watch mode
-- `npm run build:android` – Build/sync Android package flow
+- `npm run dev` – start development server
+- `npm run build` – create production build
+- `npm run start` – run production build
+- `npm run lint` – run Next.js lint checks
+- `npm run typecheck` – run TypeScript checks
+- `npm run genkit:dev` – start Genkit dev server
+- `npm run genkit:watch` – start Genkit in watch mode
+- `npm run build:android` – Android build/sync flow
 
 ---
 
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Commit clear, focused changes
-4. Open a pull request
-
----
-
-## 📌 Mission
+## 🎯 Mission
 
 FundHerFuture exists to reduce financial barriers and improve scholarship access for women through technology, guidance, and opportunity matching.
